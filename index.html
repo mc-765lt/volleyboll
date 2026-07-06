@@ -59,7 +59,7 @@
                     <span class="text-xs text-pink-400">99900</span>
                 </div>
                 <div class="text-red-500 flex flex-col items-center">
-                    <span id="p2NameLabel" class="text-[6px] md:text-[8px] text-slate-400 mb-0.5">RIVAL-2</span>
+                    <span id="p2NameLabel" class="text-[6px] md:text-[8px] text-slate-400 mb-0.5">RIGHT-2</span>
                     <span id="score2" class="text-xs md:text-sm text-red-500">00</span>
                 </div>
             </div>
@@ -721,11 +721,11 @@
                         this.vy -= this.currentFloatY;
                         this.vx -= this.currentFloatX; 
 
-                        // ★ 誤って消えてしまっていたブレの計算処理を復活
+                        // ★ 誤って消えてしまっていたブレ의 계산 처리 재생
                         let floatAmplitude = (this.floaterType === 'normal' ? 3.5 : 8.5) * this.floatAmp;
                         this.currentFloatY = (Math.random() - 0.5) * floatAmplitude;
                         
-                        // ★ 横方向のブレも、絶対に壁に当たらないよう最大限界値で補正
+                        // ★ 横方向의 브레도 절대 벽에 안닿게 한계 보정
                         this.currentFloatX = (Math.random() - 0.5) * floatAmplitude * 0.25; 
                         
                         if (this.vy < 0 && this.currentFloatY < 0) {
@@ -1059,7 +1059,7 @@
                         if (hitType === 'just') {
                             playSound('just_spike');
                             
-                            // ★壁に当たらないギリギリの奥へ落とすために、POWERタイプ/他タイプの横初速を厳重にデチューン
+                            // ★パワータイプのジャンプサーブ軌道を壁に当たらずコート奥に突き刺さるよう調整
                             let baseVx = player.typeName === 'POWER' ? 12.0 : 13.8;
                             let baseVy = player.typeName === 'POWER' ? 3.5 : 2.0;
                             
@@ -1299,7 +1299,6 @@
                         }
 
                         // ★ ボールをとらえる位置（前後の打点）によるスパイクの自動打ち分け
-                        // ratio（0～1）が小さい（後ろ側）なら奥へ（LONG）、大きい（前側）なら手前へ（SHARP）
                         let spikeDir = 0; // -1: 奥(LONG), 0: 通常, 1: 手前(SHARP)
                         if (ratio < 0.35) {
                             spikeDir = -1; // 体の後ろ側でとらえたら奥へ (LONG)
@@ -1318,7 +1317,7 @@
                             vxBonus = -2.5; 
                             textSuffix = ' (SHARP!)';
                         } else if (spikeDir === -1) {
-                            // 奥深く（ロングスパイク。壁衝突を防ぐため横初速ボーナス上限を調整）
+                            // 奥深く（ロングスパイク）
                             vyBonus = -0.9; 
                             vxBonus = 1.4;
                             textSuffix = ' (LONG!)';
@@ -1327,10 +1326,15 @@
                         if (hitType === 'just') {
                             playSound('just_spike'); 
                             
-                            // 壁へのバウンドを防ぐため基本横速度上限を15.5程度に引き下げ
-                            hitVx = targetDir * (15.2 - ratio * 3.5 + vxBonus) * pPower; 
-                            let baseVy = player.typeName === 'ALL-ROUNDER' ? (-0.1 + ratio * 2.2) : (-0.6 + ratio * 1.2);
-                            hitVy = baseVy + vyBonus;
+                            // ★ POWERタイプの場合は、ジャンプサーブと同一の強力な基準弾道に上書き設定
+                            if (player.typeName === 'POWER') {
+                                hitVx = targetDir * (12.0 + vxBonus) * pPower;
+                                hitVy = 3.5 + vyBonus;
+                            } else {
+                                hitVx = targetDir * (15.2 - ratio * 3.5 + vxBonus) * pPower; 
+                                let baseVy = player.typeName === 'ALL-ROUNDER' ? (-0.1 + ratio * 2.2) : (-0.6 + ratio * 1.2);
+                                hitVy = baseVy + vyBonus;
+                            }
                             
                             ball.shadowColor = 'rgba(255, 255, 255, 0.6)';
                             ball.spin = targetDir * (10.0 + ratio * 5.0); 
@@ -1344,9 +1348,15 @@
                         } else if (hitType === 'normal') {
                             playSound('spike');
                             
-                            hitVx = targetDir * (8.8 - ratio * 2.0 + vxBonus) * pPower; 
-                            let baseVy = player.typeName === 'ALL-ROUNDER' ? (0.6 + ratio * 3.0) : (-0.1 + ratio * 1.8);
-                            hitVy = baseVy + vyBonus;
+                            // ★ POWERタイプの場合は、ジャンプサーブの通常サーブと同一の強力な基準弾道に上書き設定
+                            if (player.typeName === 'POWER') {
+                                hitVx = targetDir * (9.8 + vxBonus) * pPower;
+                                hitVy = 2.8 + vyBonus;
+                            } else {
+                                hitVx = targetDir * (8.8 - ratio * 2.0 + vxBonus) * pPower; 
+                                let baseVy = player.typeName === 'ALL-ROUNDER' ? (0.6 + ratio * 3.0) : (-0.1 + ratio * 1.8);
+                                hitVy = baseVy + vyBonus;
+                            }
                             ball.spin = targetDir * (2.0 + ratio * 3.0);
                             
                             player.serveText = 'SPIKE!' + textSuffix;
@@ -1360,6 +1370,36 @@
                             ball.spin = targetDir * 1.0;
                             createRetroParticles(ball.x, ball.y, '#9ca3af'); 
                             ball.isPowerfulSpike = false;
+                        }
+
+                        // ★ 壁衝突自動回避シミュレーションロジック (ジャストミート・通常スパイク)
+                        if (hitType !== 'poor') {
+                            let testVx = hitVx;
+                            let testVy = hitVy;
+                            let testX = ball.x;
+                            let testY = ball.y;
+                            const gravityStep = GRAVITY * 0.90;
+                            let hitWall = false;
+                            let frames = 0;
+
+                            // 簡易物理シミュレータを走らせる
+                            while (testY < GROUND_Y - ball.radius && frames < 200) {
+                                testVy += gravityStep;
+                                testX += testVx;
+                                testY += testVy;
+                                frames++;
+                                if (testX < ball.radius || testX > VIEW_WIDTH - ball.radius) {
+                                    hitWall = true;
+                                    break;
+                                }
+                            }
+
+                            // 壁に激突すると判断された場合、壁から 40px 手前に着地する速度にクランプ調整
+                            if (hitWall && frames > 0) {
+                                const targetLandingX = targetDir === 1 ? (VIEW_WIDTH - 40) : 40;
+                                const distanceToLand = targetLandingX - ball.x;
+                                hitVx = distanceToLand / frames;
+                            }
                         }
 
                         // ★ TRICKYタイプのラリー中のスパイクブレ挙動も壁に当たらないよう調整
