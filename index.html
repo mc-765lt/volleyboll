@@ -780,7 +780,7 @@
                 // 画面外（天井）に消えないように当たり判定を復活
                 if (this.y < this.radius) {
                     this.y = this.radius;
-                    this.vy = -this.vy * 0.8; // 天井でバウンドさせる
+                    this.vy = -this.vy * 0.8; 
                 }
 
                 const currentSpeed = Math.hypot(this.vx, this.vy);
@@ -1183,17 +1183,37 @@
                     
                     const touchCount = player.id === 1 ? p1TouchCount : p2TouchCount;
                     
+                    // ★ 飛んできたボールの勢いを計算 (ファーストタッチの時のみ強打判定を適用)
+                    const incomingSpeed = Math.hypot(ball.vx, ball.vy);
+                    const isStrongHit = (touchCount === 1) && (incomingSpeed > 10.0 || ball.isPowerfulSpike);
+
                     // トス目標地点（ネット手前 12px に極限密着）
-                    const targetX = player.id === 1 
+                    let targetX = player.id === 1 
                         ? (touchCount >= 2 ? 388 : 200) 
                         : (touchCount >= 2 ? 412 : 600); 
+                        
+                    // ★ 強い勢いのボールを受けた場合は、勢いを殺すために高く弾き上げ、目標地点が少し手前（弾かれる）になる
+                    if (isStrongHit) {
+                        const absorbFactor = Math.min(40, (incomingSpeed - 8) * 5); 
+                        targetX += (player.id === 1 ? -absorbFactor : absorbFactor);
+                        
+                        player.serveText = 'ABSORB!';
+                        player.serveTextTimer = 45;
+                        createRetroParticles(ball.x, ball.y, '#fde047');
+                    }
                         
                     const dxToTarget = targetX - ball.x;
                     
                     if (player.state === 'dive') {
-                        ball.vy = -9.5; 
+                        // ダイブ時はより勢いを逃がすために上に上がる (天井に当たらないように少し抑える)
+                        ball.vy = isStrongHit ? -10.5 : -9.0; 
                     } else {
-                        ball.vy = (touchCount >= 2) ? -11.8 : -11.0; 
+                        // 通常レシーブ。強打の場合はより高く上げて勢いを殺す (天井に当たらないように調整)
+                        if (touchCount >= 2) {
+                            ball.vy = -10.5;
+                        } else {
+                            ball.vy = isStrongHit ? -12.0 : -10.0; 
+                        }
                     }
 
                     // 実際の滞空時間を重力から正確に計算して軌道を導き出す
@@ -1575,8 +1595,9 @@
                                 ball.vy = -11.0;
                                 ball.vx = dir * 0.5;
                             } else { 
-                                ball.vy = -15.0;
-                                ball.vx = dir * 2.0; 
+                                // ジャンプサーブ用のトスを少し低く調整
+                                ball.vy = -12.5;
+                                ball.vx = dir * 1.8; 
                             }
                         }
                     } else {
