@@ -142,7 +142,7 @@
         const CHARA_TYPES = {
             'ALL-ROUNDER': { speed: 6.0, jump: -9.5, gravityScale: 1.0, power: 1.0, float: 1.0, color: '#ffffff' },
             'POWER':       { speed: 5.0, jump: -10.2, gravityScale: 1.0, power: 1.35, float: 0.7, color: '#ef4444' },
-            'SPEED':       { speed: 7.8, jump: -12.5, gravityScale: 1.4, power: 0.8, float: 0.9, color: '#3b82f6' },
+            'SPEED':       { speed: 7.8, jump: -15.5, gravityScale: 1.4, power: 0.8, float: 0.9, color: '#3b82f6' },
             'TRICKY':      { speed: 5.8, jump: -9.5, gravityScale: 1.0, power: 1.05, float: 1.5, color: '#a855f7' }
         };
 
@@ -764,8 +764,8 @@
                     }
                 }
 
-                // ★ ボールの重力を強めに設定（フワフワ感を軽減）
-                this.vy += GRAVITY * 1.25;
+                // ★ ボールの重力をさらに強めに設定（1.5倍）
+                this.vy += GRAVITY * 1.5;
                 this.x += this.vx;
                 this.y += this.vy;
 
@@ -778,7 +778,7 @@
                 if (this.x < this.radius) {
                     this.x = this.radius;
                     this.vx = -this.vx * 0.65; // 横の勢いを少し殺す
-                    this.vy -= 4.5; // ボール重力増加に合わせて上にフワッと浮かせる力を強化
+                    this.vy -= 5.0; // ボール重力増加に合わせて上にフワッと浮かせる力を強化
                     this.isFloater = false; 
                     playSound('hit'); // 壁に当たった音
                     createRetroParticles(this.x, this.y, '#9ca3af'); // 壁衝突エフェクト
@@ -786,7 +786,7 @@
                 if (this.x > VIEW_WIDTH - this.radius) {
                     this.x = VIEW_WIDTH - this.radius;
                     this.vx = -this.vx * 0.65; // 横の勢いを少し殺す
-                    this.vy -= 4.5; // ボール重力増加に合わせて上にフワッと浮かせる力を強化
+                    this.vy -= 5.0; // ボール重力増加に合わせて上にフワッと浮かせる力を強化
                     this.isFloater = false; 
                     playSound('hit'); // 壁に当たった音
                     createRetroParticles(this.x, this.y, '#9ca3af'); // 壁衝突エフェクト
@@ -1045,7 +1045,7 @@
                         if (hitType === 'poor') {
                             playSound('hit');
                             ball.vx = targetDir * (4.2 + Math.random() * 0.8); 
-                            ball.vy = -(10.5 + Math.random() * 1.0); // ボール重力増加に合わせて変更
+                            ball.vy = -(11.5 + Math.random() * 1.0); // ボール重力増加に合わせて変更
                             ball.spin = targetDir * 0.5; 
                             ball.isFloater = false; 
                             createRetroParticles(ball.x, ball.y, '#9ca3af');
@@ -1054,7 +1054,7 @@
                             playSound('spike');
                             // ★ 壁に当たらないようにフローターサーブの横方向最高速度を制限
                             const randVx = 5.2 + Math.random() * 0.6;
-                            const randVy = -(10.5 + Math.random() * 1.0); // ボール重力増加に合わせて変更
+                            const randVy = -(11.5 + Math.random() * 1.0); // ボール重力増加に合わせて変更
 
                             ball.vx = targetDir * randVx; 
                             ball.vy = randVy; 
@@ -1101,7 +1101,7 @@
                         } else {
                             playSound('hit');
                             ball.vx = targetDir * 4.5; 
-                            ball.vy = -9.5; // ボール重力増加に合わせて変更
+                            ball.vy = -10.5; // ボール重力増加に合わせて変更
                             ball.spin = targetDir * 1.0; 
                             createRetroParticles(ball.x, ball.y, '#9ca3af');
                             player.serveText = 'MISS...';
@@ -1119,7 +1119,7 @@
                         if (hitType === 'poor') {
                             playSound('hit');
                             ball.vx = targetDir * 4.2; 
-                            ball.vy = -9.0; // ボール重力増加に合わせて変更
+                            ball.vy = -10.0; // ボール重力増加に合わせて変更
                             ball.spin = 0;
                             ball.isFloater = false; 
                             createRetroParticles(ball.x, ball.y, '#9ca3af');
@@ -1221,18 +1221,18 @@
                     
                     if (player.state === 'dive') {
                         // ダイブ時はより勢いを逃がすために上に上がる (天井に当たらないように少し抑える)
-                        ball.vy = isStrongHit ? -12.5 : -10.5; 
+                        ball.vy = isStrongHit ? -13.5 : -11.5; 
                     } else {
                         // 通常レシーブ。強打の場合はより高く上げて勢いを殺す (天井に当たらないように調整)
                         if (touchCount >= 2) {
-                            ball.vy = -12.5;
+                            ball.vy = -13.5;
                         } else {
-                            ball.vy = isStrongHit ? -14.5 : -12.0; 
+                            ball.vy = isStrongHit ? -16.0 : -13.0; 
                         }
                     }
 
                     // 実際の滞空時間を重力から正確に計算して軌道を導き出す
-                    const actualGravity = GRAVITY * 1.25; // ★ ボールの重力増加に合わせる
+                    const actualGravity = GRAVITY * 1.5; // ★ ボールの重力増加に合わせる
                     const estimatedAirFrames = Math.abs(ball.vy) * 2 / actualGravity;
 
                     // 目標地点にピッタリ落ちるための初速を計算
@@ -1262,7 +1262,7 @@
                     
                     // フェイント（ブロックの上をふんわり越える）
                     ball.vx = targetDir * 2.8 * pPower; 
-                    ball.vy = -8.5; // ボール重力増加に合わせて変更
+                    ball.vy = -9.5; // ボール重力増加に合わせて変更
                     ball.spin = targetDir * 1.0;
                     
                     player.serveText = 'FEINT!'; 
@@ -1401,7 +1401,7 @@
                         } else {
                             playSound('hit'); 
                             hitVx = targetDir * 4.0;
-                            hitVy = player.typeName === 'ALL-ROUNDER' ? -8.5 : -4.8; // ボール重力増加に合わせて変更
+                            hitVy = player.typeName === 'ALL-ROUNDER' ? -9.5 : -5.8; // ボール重力増加に合わせて変更
                             ball.spin = targetDir * 1.0;
                             createRetroParticles(ball.x, ball.y, '#9ca3af'); 
                             ball.isPowerfulSpike = false;
@@ -1413,7 +1413,7 @@
                             let testVy = hitVy;
                             let testX = ball.x;
                             let testY = ball.y;
-                            const gravityStep = GRAVITY * 1.25; // ボール重力増加に合わせる
+                            const gravityStep = GRAVITY * 1.5; // ボール重力増加に合わせる
                             let hitWall = false;
                             let frames = 0;
 
@@ -1449,7 +1449,7 @@
                     } else {
                         playSound('hit');
                         hitVx = (ball.vx * 0.35) + (dx / player.radiusY) * 3.5;
-                        hitVy = -Math.abs(ball.vy) * 0.5 - 4.8; // ボール重力増加に合わせて変更
+                        hitVy = -Math.abs(ball.vy) * 0.5 - 5.5; // ボール重力増加に合わせて変更
                         createRetroParticles(ball.x, ball.y, '#facc15');
                         ball.isPowerfulSpike = false; 
                     }
@@ -1607,11 +1607,11 @@
                             server.touchCooldown = 30; 
                             
                             if (e.code === 'KeyS' || e.code === 'KeyK') { 
-                                ball.vy = -12.5; // ボール重力増加に合わせて変更
+                                ball.vy = -13.5; // ボール重力増加に合わせて変更
                                 ball.vx = dir * 0.5;
                             } else { 
                                 // ジャンプサーブ用のトス
-                                ball.vy = -14.5; // ボール重力増加に合わせて変更
+                                ball.vy = -15.5; // ボール重力増加に合わせて変更
                                 ball.vx = dir * 1.8; 
                             }
                         }
