@@ -13,7 +13,6 @@
             user-select: none;
             overflow: hidden;
             background-color: #000000;
-            /* モバイルのスクロールやバウンスを防ぐ */
             touch-action: none;
         }
         .arcade-font {
@@ -23,7 +22,6 @@
             image-rendering: pixelated;
             box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
         }
-        /* CRTモニター風の走査線エフェクト */
         .crt::after {
             content: " ";
             display: block;
@@ -38,7 +36,6 @@
 </head>
 <body class="bg-black text-white flex flex-col items-center justify-center min-h-screen p-2 md:p-4">
 
-    <!-- ゲームのメインコンテナ -->
     <div class="w-full max-w-4xl flex flex-col justify-between items-center h-full max-h-screen my-auto">
         
         <!-- ヘッダーとスコアボード -->
@@ -116,7 +113,7 @@
                 <div class="flex flex-col gap-y-1 mt-1 text-slate-300">
                     <div>MOVE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">A</kbd>/<kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">D</kbd> <span class="text-yellow-500">(x2: DIVE)</span></div>
                     <div>TOSS: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">S</kbd> <span class="text-yellow-500">(IN AIR 3RD: FEINT)</span></div>
-                    <div>SPIKE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">W</kbd> <span class="text-yellow-500">(+MOVE: SHARP/LONG)</span></div>
+                    <div>SPIKE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">W</kbd> <span class="text-blue-300 font-bold">(SPEED: PRESS FAST FOR QUICK)</span></div>
                     <div>BLOCK: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">Q</kbd></div>
                 </div>
             </div>
@@ -125,25 +122,23 @@
                 <div class="flex flex-col gap-y-1 mt-1 text-slate-300">
                     <div>MOVE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">J</kbd>/<kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">L</kbd> <span class="text-yellow-500">(x2: DIVE)</span></div>
                     <div>TOSS: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">K</kbd> <span class="text-yellow-500">(IN AIR 3RD: FEINT)</span></div>
-                    <div>SPIKE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">I</kbd> <span class="text-yellow-500">(BEHIND: LONG / FRONT: SHARP)</span></div>
+                    <div>SPIKE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">I</kbd> <span class="text-blue-300 font-bold">(SPEED: PRESS FAST FOR QUICK)</span></div>
                     <div>BLOCK: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">U</kbd></div>
                 </div>
             </div>
         </div>
         
-        <!-- モバイル向けフッター注意書き -->
         <p class="text-[7px] md:text-[8px] text-slate-600 mt-2 text-center arcade-font">
             © 1980 2026 RETRO ARCADES INC.
         </p>
     </div>
 
     <script>
-        // --- キャラタイプ設定と見た目の定義 ---
         const CHARA_TYPES = {
             'ALL-ROUNDER': { speed: 6.0, jump: -9.5, gravityScale: 1.0, power: 1.0, float: 1.0, color: '#ffffff' },
             'POWER':       { speed: 5.0, jump: -10.2, gravityScale: 1.0, power: 1.35, float: 0.7, color: '#ef4444' },
-            'SPEED':       { speed: 7.8, jump: -15.5, gravityScale: 1.4, power: 0.8, float: 0.9, color: '#3b82f6' },
-            'TRICKY':      { speed: 5.8, jump: -9.5, gravityScale: 1.0, power: 1.05, float: 1.5, color: '#a855f7' }
+            'SPEED':       { speed: 7.8, jump: -11.5, gravityScale: 1.15, power: 0.8, float: 0.9, color: '#3b82f6' },
+            'TRICKY':      { speed: 5.8, jump: -9.5, gravityScale: 1.0, power: 0.85, float: 1.5, color: '#a855f7' }
         };
 
         const P1_COLORS = {
@@ -203,7 +198,6 @@
             updateTypeDisplay();
         });
 
-        // --- サウンドシステム ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         function playSound(type) {
@@ -296,7 +290,6 @@
             }
         }
 
-        // --- ゲームエンジン ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
@@ -306,7 +299,7 @@
         canvas.height = VIEW_HEIGHT;
 
         const keys = {};
-        const lastKeyDownTime = {}; // ダブルタップ判定用
+        const lastKeyDownTime = {};
 
         let score1 = 0;
         let score2 = 0;
@@ -328,6 +321,19 @@
         const NET_X = VIEW_WIDTH / 2;
         const GROUND_Y = VIEW_HEIGHT - 30;
 
+        let dummyBall = null;
+
+        function createDummyBall(realBall) {
+            dummyBall = null;
+        }
+
+        function updateDummyBall() {
+            if (dummyBall) dummyBall.active = false;
+            dummyBall = null;
+        }
+
+        function drawDummyBall() {}
+
         class Player {
             constructor(id, x, name) {
                 this.id = id;
@@ -345,17 +351,22 @@
                 this.serveTextTimer = 0;
                 this.serveText = '';
                 this.gravityScale = 1.0;
+                this.hp = 100; 
+                this.isIntimidated = false; 
+                this.intimidatedTimer = 0; 
+                this.hasSpikedInAir = false; 
+                this.warpCooldown = 0; 
+                this.tossActiveTimer = 0; // ★ クイック受付用タイマー
 
-                // タイプ初期化
                 this.setType('ALL-ROUNDER');
             }
 
             setType(typeName) {
-                this.typeName = typeName;
                 this.typeData = CHARA_TYPES[typeName];
                 this.speed = this.typeData.speed;
                 this.jumpStrength = this.typeData.jump;
                 this.gravityScale = this.typeData.gravityScale;
+                this.typeName = typeName;
 
                 const colors = this.id === 1 ? P1_COLORS[typeName] : P2_COLORS[typeName];
                 this.jerseyColor = colors.jersey;
@@ -392,24 +403,91 @@
                 this.vx = 0;
                 this.vy = 0;
                 this.isGrounded = true;
+                this.hasSpikedInAir = false; 
                 this.state = 'idle';
                 this.actionTimer = 0;
                 this.touchCooldown = 0;
                 this.justMeetTimer = 0;
                 this.serveTextTimer = 0;
+                this.intimidatedTimer = 0; 
+                this.isIntimidated = false; 
+                this.warpCooldown = 0; 
+                this.tossActiveTimer = 0;
             }
 
             update() {
                 if (this.touchCooldown > 0) this.touchCooldown--;
                 if (this.justMeetTimer > 0) this.justMeetTimer--;
                 if (this.serveTextTimer > 0) this.serveTextTimer--;
+                if (this.warpCooldown > 0) this.warpCooldown--;
+                if (this.tossActiveTimer > 0) this.tossActiveTimer--;
+
+                if (this.intimidatedTimer > 0) {
+                    this.intimidatedTimer--;
+                    this.isIntimidated = true;
+                } else {
+                    this.isIntimidated = false;
+                }
+
+                // ★ クイックスパイクへの飛び込み（アプローチ）処理
+                if (this.state === 'quick_approach') {
+                    if (this.actionTimer > 0) {
+                        this.actionTimer--;
+                        const progress = 1 - (this.actionTimer / 15.0); // ★ 15フレームに伸ばしてさらに目で追いやすく
+                        this.x = this.startX + (this.targetX - this.startX) * progress;
+                        this.y = this.startY + (this.targetY - this.startY) * progress;
+                        this.vx = 0;
+                        this.vy = 0;
+
+                        // 飛び込み中の残像エフェクト
+                        if (globalTick % 2 === 0) {
+                            particleSystem.push(new Particle(this.x, this.y, '#38bdf8'));
+                            particleSystem.push(new Particle(this.x, this.y, '#ffffff'));
+                        }
+
+                        // 飛び込み完了でスパイク発動
+                        if (this.actionTimer === 0) {
+                            this.state = 'quick_spike';
+                            this.actionTimer = 15;
+                            this.vy = -3.5; // 空中での軽い滞空
+                            
+                            playSound('just_spike');
+                            createRetroParticles(this.x, this.y - this.radiusY, '#38bdf8');
+                            this.serveText = 'QUICK SPIKE!!';
+                            this.serveTextTimer = 45;
+                            
+                            // ★ 軌道の変更：レーザー補正や自動角度計算を削除し、ジャンプサーブ(JUST)と全く同じ初速に設定
+                            let targetDir = this.id === 1 ? 1 : -1;
+                            
+                            let baseVx = 13.8; 
+                            let baseVy = 2.0;
+                            
+                            ball.vx = targetDir * baseVx * this.typeData.power; 
+                            ball.vy = baseVy;
+                            ball.spin = targetDir * 12.0; 
+                            
+                            ball.isFloater = false;
+                            ball.isPowerfulSpike = false;
+                            ball.isMegatonServe = false;
+                            ball.isQuickSpike = true; 
+                            ball.isServeBall = false;
+                            
+                            if (this.id === 1) p1TouchCount = 3;
+                            else p2TouchCount = 3;
+                        }
+                    }
+                    return; // 飛び込み中は通常の移動・重力をスキップ
+                }
 
                 let baseSpeed = this.speed;
+                if (this.isIntimidated) {
+                    baseSpeed *= 0.85; 
+                }
                 const currentSpeed = this.isGrounded ? baseSpeed : baseSpeed * 0.6;
 
                 if (rallyState === 'serving' && this.id === servingPlayerId) {
                     this.vx = 0;
-                } else if (this.state === 'dive') {
+                } else if (this.state === 'dive' || this.state === 'tumbled') {
                     if (this.isGrounded) {
                         this.vx *= 0.85; 
                     }
@@ -433,7 +511,7 @@
                     this.y = GROUND_Y;
                     this.vy = 0;
                     this.isGrounded = true;
-                    // 着地時にブロック状態を解除
+                    this.hasSpikedInAir = false; 
                     if (this.state === 'blocking') {
                         this.state = 'idle';
                     }
@@ -441,7 +519,7 @@
                     this.isGrounded = false;
                 }
 
-                const padding = this.state === 'dive' ? this.radiusY : this.radiusX;
+                const padding = (this.state === 'dive' || this.state === 'tumbled') ? this.radiusY : this.radiusX;
                 if (this.id === 1) {
                     if (this.x < padding) this.x = padding;
                     if (this.x > NET_X - NET_WIDTH/2 - padding) {
@@ -463,7 +541,36 @@
             }
 
             triggerAction(actionType, dir = 0) {
-                if (this.state === 'dive') return;
+                if (this.state === 'dive' || this.state === 'tumbled') return;
+
+                // ★ スピードタイプ限定：トスを上げた瞬間にスパイクが押されたら「クイックスパイク（飛び込み）」を開始
+                if (actionType === 'spike' && this.typeName === 'SPEED' && this.tossActiveTimer > 0) {
+                    this.state = 'quick_approach';
+                    this.actionTimer = 15; // ★ 15フレームかけて移動（目で追いやすくタメを作る）
+                    this.tossActiveTimer = 0; // 受付終了
+                    this.touchCooldown = 15; // フォータッチ防止
+                    
+                    let targetPlayerX = ball.x + (this.id === 1 ? -18 : 18); // ボールの少し手前 (バックアタック気味)
+                    const padding = this.radiusX;
+                    
+                    // ネットや壁を越えないように制限
+                    if (this.id === 1) {
+                        targetPlayerX = Math.max(padding, Math.min(targetPlayerX, NET_X - NET_WIDTH/2 - padding));
+                    } else {
+                        targetPlayerX = Math.max(NET_X + NET_WIDTH/2 + padding, Math.min(targetPlayerX, VIEW_WIDTH - padding));
+                    }
+                    
+                    this.startX = this.x;
+                    this.startY = this.y;
+                    this.targetX = targetPlayerX;
+                    this.targetY = Math.min(GROUND_Y, ball.y + this.radiusY + 12);
+                    
+                    this.isGrounded = false;
+                    this.hasSpikedInAir = true; 
+                    
+                    playSound('hit'); // 飛び込み開始音
+                    return;
+                }
 
                 this.state = actionType;
                 this.actionTimer = 15;
@@ -472,13 +579,29 @@
                     if (this.isGrounded) {
                         this.vy = this.jumpStrength;
                         this.isGrounded = false;
+                        this.hasSpikedInAir = false; 
                     } else {
+                        if (this.hasSpikedInAir) {
+                            this.state = 'idle';
+                            this.actionTimer = 0;
+                            return;
+                        }
+                        this.hasSpikedInAir = true; 
+
+                        const isBallInOwnCourt = (this.id === 1 && ball.x <= NET_X) || (this.id === 2 && ball.x > NET_X);
+
+                        if (this.typeName === 'POWER' && isBallInOwnCourt) {
+                            const opponent = this.id === 1 ? p2 : p1;
+                            if (opponent) {
+                                opponent.intimidatedTimer = 45; 
+                            }
+                        }
+
                         createRetroParticles(this.x, this.y - this.radiusY, '#f43f5e');
                         playSound('hit');
                     }
                 } else if (actionType === 'receive') {
                     if (!this.isGrounded) {
-                        // ★ 3段目(touchCount === 2)の時だけフェイントになり、それ以外はトス（通常レシーブ状態）にする
                         const touchCount = this.id === 1 ? p1TouchCount : p2TouchCount;
                         if (touchCount === 2) {
                             this.state = 'feint';
@@ -492,25 +615,53 @@
                     }
                 } else if (actionType === 'dive') {
                     if (this.isGrounded) {
-                        let diveForce = 8.5;
-                        if (this.typeName === 'SPEED') diveForce = 10.5;
-                        if (this.typeName === 'POWER') diveForce = 8.0;
+                        // ★ サーブ・トスフェーズではワープを発動できないように制限
+                        const canWarp = (this.typeName === 'TRICKY' && this.warpCooldown === 0 && rallyState !== 'serving' && rallyState !== 'serve_toss');
 
-                        this.vx = dir * diveForce;
-                        this.vy = -4.5;
-                        this.isGrounded = false;
-                        this.actionTimer = 40; 
-                        createRetroParticles(this.x, this.y, '#ffffff');
-                        playSound('hit'); 
+                        if (canWarp) {
+                            const prevX = this.x;
+                            this.x += dir * 260; 
+                            
+                            const padding = 22; 
+                            if (this.id === 1) {
+                                if (this.x < padding) this.x = padding;
+                                if (this.x > NET_X - NET_WIDTH/2 - padding) this.x = NET_X - NET_WIDTH/2 - padding;
+                            } else {
+                                if (this.x > VIEW_WIDTH - padding) this.x = VIEW_WIDTH - padding;
+                                if (this.x < NET_X + NET_WIDTH/2 + padding) this.x = NET_X + NET_WIDTH/2 + padding;
+                            }
+                            
+                            createRetroParticles(prevX, this.y, '#a855f7');
+                            createRetroParticles(this.x, this.y, '#a855f7');
+                            
+                            this.state = 'dive';
+                            this.vx = dir * 3.0; 
+                            this.vy = -3.5; 
+                            this.isGrounded = false; 
+                            this.actionTimer = 25; 
+                            this.warpCooldown = 0; // ★ ワープのクールタイムをなくす（180 -> 0）
+                            playSound('hit');
+                        } else {
+                            let diveForce = 5.5; 
+                            if (this.typeName === 'SPEED') diveForce = 7.5; 
+                            if (this.typeName === 'POWER') diveForce = 5.0; 
+
+                            this.vx = dir * diveForce;
+                            this.vy = -4.5;
+                            this.isGrounded = false;
+                            this.actionTimer = 40; 
+                            createRetroParticles(this.x, this.y, '#ffffff');
+                            playSound('hit'); 
+                        }
                     } else {
                         this.state = 'idle';
                     }
                 } else if (actionType === 'block') {
                     if (this.isGrounded) {
-                        this.vy = this.jumpStrength * 0.95; // ブロックは少しだけジャンプ力を抑える
+                        this.vy = this.jumpStrength * 0.95; 
                         this.isGrounded = false;
                         this.state = 'blocking';
-                        this.actionTimer = 0; // 着地するまで維持
+                        this.actionTimer = 0; 
                         playSound('hit');
                     }
                 }
@@ -522,7 +673,7 @@
                 const jumpHeight = GROUND_Y - this.y;
                 const shadowScale = Math.max(0.3, 1 - jumpHeight / 150);
                 
-                const shadowR = this.state === 'dive' ? this.radiusY : this.radiusX;
+                const shadowR = (this.state === 'dive' || this.state === 'tumbled') ? this.radiusY : this.radiusX;
                 
                 ctx.beginPath();
                 ctx.ellipse(this.x, GROUND_Y, shadowR * 0.9 * shadowScale, 3, 0, 0, Math.PI * 2);
@@ -531,11 +682,16 @@
 
                 ctx.translate(this.x, this.y);
 
+                let shakeX = 0;
                 let bounceY = 0;
                 if (this.vx !== 0 && this.isGrounded && this.state !== 'dive') {
                     bounceY = Math.floor(globalTick / 4) % 2 * -2;
                 }
-                ctx.translate(0, bounceY);
+                if (this.isIntimidated && this.state !== 'tumbled') {
+                    shakeX = (Math.random() - 0.5) * 3;
+                    bounceY += (Math.random() - 0.5) * 3;
+                }
+                ctx.translate(shakeX, bounceY);
 
                 const facingLeft = (this.id === 1) ? (this.vx < 0) : (this.vx <= 0);
                 let dirScale = facingLeft ? -1 : 1;
@@ -543,7 +699,7 @@
                 let scaleY = this.radiusY / 22;
                 ctx.scale(dirScale * scaleX, scaleY);
 
-                if (this.state === 'dive') {
+                if (this.state === 'dive' || this.state === 'tumbled') {
                     ctx.translate(0, -12);
                     ctx.rotate(Math.PI / 2); 
                     ctx.translate(0, 12);
@@ -552,9 +708,19 @@
                 ctx.fillStyle = '#ffffff'; 
                 ctx.fillRect(-4, -4, 2, 4);
                 ctx.fillRect(2, -4, 2, 4);
-                ctx.fillStyle = '#111111'; 
-                ctx.fillRect(-5, -1, 3, 2);
-                ctx.fillRect(1, -1, 3, 2);
+                
+                if (this.state === 'tumbled') {
+                    ctx.strokeStyle = '#111111';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(-5, -1); ctx.lineTo(-2, 1); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(-2, -1); ctx.lineTo(-5, 1); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(1, -1); ctx.lineTo(4, 1); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(4, -1); ctx.lineTo(1, 1); ctx.stroke();
+                } else {
+                    ctx.fillStyle = '#111111'; 
+                    ctx.fillRect(-5, -1, 3, 2);
+                    ctx.fillRect(1, -1, 3, 2);
+                }
 
                 ctx.fillStyle = '#111111';
                 ctx.fillRect(-5, -8, 10, 4);
@@ -594,7 +760,7 @@
                     ctx.lineTo(8, -21);
                     ctx.lineTo(12, -18);
                     ctx.stroke();
-                } else if (this.state === 'spike') {
+                } else if (this.state === 'spike' || this.state === 'quick_spike' || this.state === 'quick_approach') {
                     ctx.beginPath();
                     ctx.moveTo(-4, -20);
                     ctx.lineTo(-10, -12);
@@ -616,8 +782,16 @@
                     ctx.lineTo(2, -28);
                     ctx.lineTo(10, -26);
                     ctx.stroke();
+                } else if (this.state === 'tumbled') {
+                    ctx.beginPath();
+                    ctx.moveTo(-4, -21);
+                    ctx.lineTo(-8, -28);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(4, -21);
+                    ctx.lineTo(8, -28);
+                    ctx.stroke();
                 } else if (!this.isGrounded && this.state === 'blocking') {
-                    // 両手をまっすぐ上にあげるブロックポーズ
                     ctx.beginPath();
                     ctx.moveTo(-4, -20);
                     ctx.lineTo(-2, -32);
@@ -627,7 +801,6 @@
                     ctx.lineTo(6, -32);
                     ctx.stroke();
                 } else {
-                    // 通常ジャンプ中やアイドル時の手
                     ctx.beginPath();
                     ctx.moveTo(-4, -21);
                     ctx.lineTo(-6, -12);
@@ -640,19 +813,65 @@
 
                 ctx.restore();
 
+                // HPバーの描画
+                const hpRatio = this.hp / 100;
+                ctx.fillStyle = '#1e293b'; 
+                ctx.fillRect(this.x - 12, this.y - this.radiusY * 2.3, 24, 3);
+                ctx.fillStyle = this.hp <= 40 ? '#ef4444' : '#22c55e'; 
+                ctx.fillRect(this.x - 12, this.y - this.radiusY * 2.3, 24 * hpRatio, 3);
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(this.x - 12, this.y - this.radiusY * 2.3, 24, 3);
+
+                // クールタイムUI
+                if (this.typeName === 'TRICKY') {
+                    const warpRatio = 1 - (this.warpCooldown / 180);
+                    ctx.fillStyle = '#1e293b'; 
+                    ctx.fillRect(this.x - 12, this.y - this.radiusY * 2.3 + 4, 24, 2);
+                    if (warpRatio >= 1.0) {
+                        ctx.fillStyle = '#facc15'; 
+                    } else {
+                        ctx.fillStyle = '#64748b'; 
+                    }
+                    ctx.fillRect(this.x - 12, this.y - this.radiusY * 2.3 + 4, 24 * Math.max(0, warpRatio), 2);
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(this.x - 12, this.y - this.radiusY * 2.3 + 4, 24, 2);
+                }
+
+                // クイック受付中インジケータ（スピードタイプ用）
+                if (this.typeName === 'SPEED' && this.tossActiveTimer > 0) {
+                    ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y - this.radiusY - 35, 8, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#38bdf8';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+
                 if (this.serveTextTimer > 0) {
                     ctx.font = '6px "Press Start 2P"';
                     let tCol = '#ffffff';
                     if (this.serveText.includes('JUST')) tCol = '#fde047';
-                    else if (this.serveText.includes('JUMP') || this.serveText.includes('FEINT')) tCol = '#60a5fa';
+                    else if (this.serveText.includes('JUMP') || this.serveText.includes('FEINT') || this.serveText.includes('CTRL') || this.serveText.includes('MAGIC')) tCol = '#60a5fa';
                     else if (this.serveText.includes('BLOCK')) tCol = '#ef4444';
-                    else if (this.serveText.includes('CRASH')) tCol = '#f97316'; // ブロック貫通テキスト色
-                    
+                    else if (this.serveText.includes('CRASH') || this.serveText.includes('KNOCKDOWN') || this.serveText.includes('MEGATON')) tCol = '#f97316';
+                    else if (this.serveText.includes('QUICK')) tCol = '#38bdf8'; // クイック色
+                    else if (this.serveText.includes('TIME STOP')) tCol = '#c084fc'; // タイムストップ紫色
+
                     ctx.fillStyle = tCol;
                     ctx.textAlign = 'center';
                     if (Math.floor(globalTick / 4) % 2 === 0) {
                         ctx.fillText(this.serveText, this.x, this.y - this.radiusY * 3.3);
                     }
+                } else if (this.isIntimidated) {
+                    const textShakeX = (Math.random() - 0.5) * 3;
+                    const textShakeY = (Math.random() - 0.5) * 3;
+                    ctx.font = '6px "Press Start 2P"';
+                    ctx.fillStyle = '#a855f7';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('FEAR!!', this.x + textShakeX, this.y - this.radiusY * 2.8 + textShakeY);
                 } else if (this.state === 'dive') {
                     ctx.font = '5px "Press Start 2P"';
                     ctx.fillStyle = '#60a5fa';
@@ -668,6 +887,11 @@
                     ctx.fillStyle = '#ef4444';
                     ctx.textAlign = 'center';
                     ctx.fillText('SPIKE!', this.x, this.y - this.radiusY * 2.5);
+                } else if (this.state === 'quick_spike') {
+                    ctx.font = '5px "Press Start 2P"';
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('QUICK!', this.x, this.y - this.radiusY * 2.5);
                 }
             }
         }
@@ -688,10 +912,26 @@
                 this.floatTimer = 0;
                 this.currentFloatY = 0; 
                 this.currentFloatX = 0; 
-                this.floatForceX = 0; // ★ 空中での伸び・失速を決める力
+                this.floatForceX = 0; 
                 this.isServeBall = false; 
                 this.floatAmp = 1.0; 
                 this.isPowerfulSpike = false; 
+                this.magicControlTimer = 0; 
+                this.magicControllerId = null; 
+
+                this.isTrickyFloater = false; 
+                this.isMagicFeint = false;
+                this.magicFeintTimer = 0;
+
+                this.isMegatonServe = false; 
+                this.isQuickSpike = false; // ★ クイックスパイク弾道フラグ
+
+                // ★ タイムストップ能力の制御用変数
+                this.timeStopTimer = 0;
+                this.timeStopVx = 0;
+                this.timeStopVy = 0;
+                this.timeStopSpin = 0;
+                this.timeStopPostType = ''; // ★ 解除後のランダム球種を保持
             }
 
             reset(servingPlayerId, p1, p2) {
@@ -704,10 +944,26 @@
                 this.floatTimer = 0;
                 this.currentFloatY = 0;
                 this.currentFloatX = 0; 
-                this.floatForceX = 0; // ★ リセット
+                this.floatForceX = 0; 
                 this.isServeBall = false;
                 this.floatAmp = 1.0;
                 this.isPowerfulSpike = false;
+                this.magicControlTimer = 0;
+                this.magicControllerId = null;
+
+                this.isTrickyFloater = false;
+                this.isMagicFeint = false;
+                this.magicFeintTimer = 0;
+                this.isMegatonServe = false; 
+                this.isQuickSpike = false; 
+
+                this.timeStopTimer = 0;
+                this.timeStopVx = 0;
+                this.timeStopVy = 0;
+                this.timeStopSpin = 0;
+                this.timeStopPostType = '';
+
+                dummyBall = null;
 
                 const server = servingPlayerId === 1 ? p1 : p2;
                 const dir = servingPlayerId === 1 ? 1 : -1;
@@ -718,28 +974,151 @@
             update() {
                 if (rallyState === 'serving') return;
 
+                // ★ タイムストップ（時止め）処理
+                if (this.timeStopTimer > 0) {
+                    this.timeStopTimer--;
+                    if (globalTick % 3 === 0) {
+                        createRetroParticles(this.x, this.y, '#c084fc'); // タイムストップの紫粒子
+                    }
+                    if (this.timeStopTimer === 0) {
+                        // ★ ランダムに選ばれた球種で発射！（速度・角度もランダムにブレさせてさらにカオスに）
+                        
+                        if (this.timeStopPostType === 'floater') {
+                            this.vx = this.timeStopVx * (0.8 + Math.random() * 0.4); 
+                            this.vy = this.timeStopVy * (0.8 + Math.random() * 0.4);
+                            this.spin = this.timeStopSpin;
+                            this.isFloater = true;
+                            this.isTrickyFloater = true;
+                            this.floatTimer = 0;
+                        } else if (this.timeStopPostType === 'power') {
+                            let targetDir = this.timeStopVx > 0 ? 1 : -1;
+                            this.vx = targetDir * (13.0 + Math.random() * 4.0); // 超高速かつ重い
+                            this.vy = 3.0 + Math.random() * 3.0; // 角度もランダム
+                            this.spin = targetDir * 15.0;
+                            this.isPowerfulSpike = true; // ノックダウン・ガードクラッシュ有効
+                        } else if (this.timeStopPostType === 'quick') {
+                            let targetDir = this.timeStopVx > 0 ? 1 : -1;
+                            this.vx = targetDir * (13.5 + Math.random() * 3.0);
+                            this.vy = 1.0 + Math.random() * 2.0; // 直線的なクイック軌道
+                            this.spin = targetDir * 12.0;
+                            this.isQuickSpike = true;
+                        }
+                        
+                        // ★ どの球種でも、発射時は単色（紫）のバーストエフェクトで見た目を騙す
+                        for (let i = 0; i < 100; i++) {
+                            let p = new Particle(this.x, this.y, '#c084fc');
+                            p.vx = (Math.random() - 0.5) * 12; // 爆発を大きく
+                            p.vy = (Math.random() - 0.5) * 12 - 2;
+                            p.size = Math.random() * 4 + 2;
+                            particleSystem.push(p);
+                        }
+                        
+                        playSound('just_spike');
+                    }
+                    return; // タイムストップ中は以下の通常の移動・物理計算をスキップ
+                }
+
+                if (this.isMegatonServe && globalTick % 2 === 0) {
+                    createRetroParticles(this.x, this.y, '#f97316');
+                    createRetroParticles(this.x, this.y, '#dc2626');
+                }
+
+                // ★ タイムストップ解除後の各軌跡トレイル（いつもより派手に！）
+                if (rallyState === 'rally' && !this.isServeBall) {
+                    if (this.timeStopPostType !== '') {
+                        // ★ 時止め解除後は単色の紫トレイルを撒き散らす
+                        for (let i = 0; i < 4; i++) {
+                            particleSystem.push(new Particle(this.x, this.y, '#c084fc'));
+                        }
+                    } else if (this.isPowerfulSpike) {
+                        // パワータイプの赤炎軌跡
+                        if (globalTick % 2 === 0) {
+                            particleSystem.push(new Particle(this.x, this.y, '#ef4444'));
+                            particleSystem.push(new Particle(this.x, this.y, '#f97316'));
+                            particleSystem.push(new Particle(this.x, this.y, '#facc15'));
+                        }
+                    } else if (this.isQuickSpike) {
+                        // スピードタイプの青い電撃軌跡
+                        if (globalTick % 2 === 0) {
+                            particleSystem.push(new Particle(this.x, this.y, '#38bdf8'));
+                            particleSystem.push(new Particle(this.x, this.y, '#ffffff'));
+                            particleSystem.push(new Particle(this.x, this.y, '#0ea5e9'));
+                        }
+                    } else if (this.isFloater && this.isTrickyFloater) {
+                        // トリッキー本来の紫魔球軌跡
+                        if (globalTick % 2 === 0) {
+                            particleSystem.push(new Particle(this.x, this.y, '#c084fc'));
+                            particleSystem.push(new Particle(this.x, this.y, '#a855f7'));
+                            particleSystem.push(new Particle(this.x, this.y, '#f3e8ff'));
+                        }
+                    }
+                }
+
+                if (this.isMagicFeint && this.magicFeintTimer > 0) {
+                    this.magicFeintTimer--;
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (globalTick % 5 === 0) createRetroParticles(this.x, this.y, '#a855f7');
+                    
+                    if (this.magicFeintTimer === 0) {
+                        this.vx = (this.vx > 0 ? 1 : -1) * 1.5; 
+                        this.vy = 2.5; 
+                        createRetroParticles(this.x, this.y, '#ffffff');
+                    }
+                    return; 
+                }
+
+                if (this.magicControlTimer > 0 && rallyState === 'rally') {
+                    this.magicControlTimer--;
+                    let forceX = 0;
+                    let forceY = 0;
+                    const controlPower = 0.8; 
+
+                    if (this.magicControllerId === 1) {
+                        if (keys['KeyA']) forceX -= controlPower;
+                        if (keys['KeyD']) forceX += controlPower;
+                        if (keys['KeyW']) forceY -= controlPower;
+                        if (keys['KeyS']) forceY += controlPower;
+                    } else if (this.magicControllerId === 2) {
+                        if (keys['KeyJ']) forceX -= controlPower;
+                        if (keys['KeyL']) forceX += controlPower;
+                        if (keys['KeyI']) forceY -= controlPower;
+                        if (keys['KeyK']) forceY += controlPower;
+                    }
+
+                    if (forceX !== 0 || forceY !== 0) {
+                        const currentSpeed = Math.hypot(this.vx, this.vy);
+                        this.vx += forceX;
+                        this.vy += forceY;
+                        const newSpeed = Math.hypot(this.vx, this.vy);
+                        
+                        if (newSpeed > 0) {
+                            this.vx = (this.vx / newSpeed) * currentSpeed;
+                            this.vy = (this.vy / newSpeed) * currentSpeed;
+                        }
+
+                        if (globalTick % 4 === 0) {
+                            createRetroParticles(this.x, this.y, '#38bdf8');
+                        }
+                    }
+                }
+
                 if (this.isFloater) {
                     this.floatTimer++;
 
-                    // ★ 打球ごとに空中で「伸びる」か「失速する」かの力を加え、手前や奥への飛距離に大きな差を出す
                     if (this.floatForceX !== 0) {
                         this.vx += this.floatForceX * (this.vx > 0 ? 1 : -1);
-                        
-                        // 減速しすぎて空中で止まってしまわないようにガード
                         if (Math.abs(this.vx) < 1.5) {
                             this.floatForceX = 0; 
                         }
                     }
 
-                    if (this.floatTimer % 4 === 0) {
+                    if (this.floatTimer % 5 === 0) {
                         this.vy -= this.currentFloatY;
                         this.vx -= this.currentFloatX; 
 
-                        // ★ 誤って消えてしまっていたブレ의 계산 처리 재생
                         let floatAmplitude = (this.floaterType === 'normal' ? 3.5 : 8.5) * this.floatAmp;
                         this.currentFloatY = (Math.random() - 0.5) * floatAmplitude;
-                        
-                        // ★ 横方向의 브레도 절대 벽에 안닿게 한계 보정
                         this.currentFloatX = (Math.random() - 0.5) * floatAmplitude * 0.25; 
                         
                         if (this.vy < 0 && this.currentFloatY < 0) {
@@ -747,7 +1126,7 @@
                         }
 
                         this.vy += this.currentFloatY;
-                        this.vx += this.currentFloatX; // ★ 新しいブレを適用
+                        this.vx += this.currentFloatX; 
 
                         const particleColor = this.floaterType === 'normal' ? '#ffffff' : '#60a5fa';
                         createRetroParticles(this.x, this.y, particleColor); 
@@ -759,13 +1138,20 @@
                         this.currentFloatY = 0;
                     }
                     if (this.currentFloatX !== 0) {
-                        this.vx -= this.currentFloatX; // ★ ブレ終了時に横ブレを戻す
+                        this.vx -= this.currentFloatX; 
                         this.currentFloatX = 0;
                     }
                 }
 
-                // ★ ボールの重力をさらに強めに設定（1.5倍）
-                this.vy += GRAVITY * 1.5;
+                this.vy += GRAVITY * 1.35;
+
+                // ★ パワータイプの強打（メガトンサーブ・強スパイク）が壁ですり抜けないように下方向の力を追加
+                if (!this.isFloater && !this.isQuickSpike) {
+                    if (this.isMegatonServe || this.isPowerfulSpike) {
+                        this.vy += 0.15; 
+                    }
+                }
+
                 this.x += this.vx;
                 this.y += this.vy;
 
@@ -774,25 +1160,25 @@
 
                 this.rotation += this.vx * 0.07 + this.spin * 0.02;
 
-                // ★ 壁に当たらないように事前に軌道補正するが、万が一のための跳ね返りガードを維持
                 if (this.x < this.radius) {
                     this.x = this.radius;
-                    this.vx = -this.vx * 0.65; // 横の勢いを少し殺す
-                    this.vy -= 5.0; // ボール重力増加に合わせて上にフワッと浮かせる力を強化
+                    this.vx = -this.vx * 0.65; 
+                    this.vy -= 5.0; 
                     this.isFloater = false; 
-                    playSound('hit'); // 壁に当たった音
-                    createRetroParticles(this.x, this.y, '#9ca3af'); // 壁衝突エフェクト
+                    this.isQuickSpike = false;
+                    playSound('hit'); 
+                    createRetroParticles(this.x, this.y, '#9ca3af'); 
                 }
                 if (this.x > VIEW_WIDTH - this.radius) {
                     this.x = VIEW_WIDTH - this.radius;
-                    this.vx = -this.vx * 0.65; // 横の勢いを少し殺す
-                    this.vy -= 5.0; // ボール重力増加に合わせて上にフワッと浮かせる力を強化
+                    this.vx = -this.vx * 0.65; 
+                    this.vy -= 5.0; 
                     this.isFloater = false; 
-                    playSound('hit'); // 壁に当たった音
-                    createRetroParticles(this.x, this.y, '#9ca3af'); // 壁衝突エフェクト
+                    this.isQuickSpike = false;
+                    playSound('hit'); 
+                    createRetroParticles(this.x, this.y, '#9ca3af'); 
                 }
 
-                // 画面外（天井）に消えないように当たり判定を復活
                 if (this.y < this.radius) {
                     this.y = this.radius;
                     this.vy = -this.vy * 0.8; 
@@ -861,6 +1247,8 @@
             }
 
             draw() {
+                if (this.isMagicFeint && this.magicFeintTimer > 0) return;
+
                 ctx.save();
 
                 const shadowScale = Math.max(0.2, 1 - (GROUND_Y - this.y) / VIEW_HEIGHT);
@@ -869,24 +1257,28 @@
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
                 ctx.fill();
 
-                if (this.isFloater) {
+                if (this.magicControlTimer > 0 && rallyState === 'rally') {
                     ctx.save();
-                    ctx.globalAlpha = 0.35; 
-                    
-                    const ghostOffset = this.floaterType === 'normal' ? 6 : 9;
-
-                    ctx.save();
-                    ctx.translate(this.x, this.y - ghostOffset);
-                    ctx.rotate(this.rotation);
-                    this.drawBallBody(ctx);
+                    ctx.globalAlpha = 0.6;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#38bdf8';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius + 4, 0, Math.PI * 2);
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fill();
                     ctx.restore();
+                }
 
+                // ★ タイムストップ（時止め）の予兆エフェクト
+                if (this.timeStopTimer > 0) {
                     ctx.save();
-                    ctx.translate(this.x, this.y + ghostOffset);
-                    ctx.rotate(this.rotation);
-                    this.drawBallBody(ctx);
-                    ctx.restore();
-
+                    ctx.globalAlpha = 0.5 + Math.sin(globalTick * 0.15) * 0.2;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#c084fc';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius + 8, 0, Math.PI * 2);
+                    ctx.fillStyle = '#a855f7';
+                    ctx.fill();
                     ctx.restore();
                 }
 
@@ -905,18 +1297,18 @@
             constructor(x, y, color) {
                 this.x = x;
                 this.y = y;
-                this.vx = (Math.random() - 0.5) * 5;
-                this.vy = (Math.random() - 0.5) * 5 - 1.2;
-                this.size = Math.random() * 2 + 1.5;
+                this.vx = (Math.random() - 0.5) * 6; 
+                this.vy = (Math.random() - 0.5) * 6 - 1.5;
+                this.size = Math.random() * 3 + 1.5;
                 this.color = color;
                 this.alpha = 1;
-                this.life = Math.random() * 20 + 15;
+                this.life = Math.random() * 25 + 15; 
             }
 
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.vy += 0.10;
+                this.vy += 0.08;
                 this.alpha -= 1 / this.life;
             }
 
@@ -933,17 +1325,18 @@
         const p2 = new Player(2, VIEW_WIDTH * 0.82, 'RIGHT-2');
         const ball = new Ball();
         
-        // 初期状態の見た目設定
         updateTypeDisplay();
 
         function createRetroParticles(x, y, color) {
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 15; i++) {
                 particleSystem.push(new Particle(x, y, color));
             }
         }
 
         function checkNetCollision() {
             if (rallyState !== 'rally') return;
+            if (ball.isMagicFeint && ball.magicFeintTimer > 0) return;
+            if (ball.timeStopTimer > 0) return; // タイムストップ中は衝突判定を行わない
 
             const netTop = GROUND_Y - NET_HEIGHT;
             const netLeft = NET_X - NET_WIDTH / 2;
@@ -960,7 +1353,8 @@
                         ball.vx = -ball.vx * 0.8;
                     }
                     createRetroParticles(ball.x, ball.y, '#2563eb');
-                    ball.isPowerfulSpike = false; // ネットに当たったら威力減衰
+                    ball.isPowerfulSpike = false; 
+                    ball.isQuickSpike = false;
                 }
             } 
             else if (Math.abs(ball.x - NET_X) < (NET_WIDTH / 2 + ball.radius) && 
@@ -970,12 +1364,16 @@
                 ball.vy = -ball.vy * 0.8;
                 ball.vx = ball.vx * 0.5 + (Math.random() - 0.5) * 1.8;
                 createRetroParticles(ball.x, ball.y, '#2563eb');
-                ball.isPowerfulSpike = false; // ネットに当たったら威力減衰
+                ball.isPowerfulSpike = false; 
+                ball.isQuickSpike = false;
             }
         }
 
+        function checkDummyBallCollision(player) {}
+
         function checkPlayerBallCollision(player) {
             if (rallyState === 'serving') return;
+            if (ball.timeStopTimer > 0) return; // タイムストップ（時止め）中はレシーブできないようにする
 
             let currentRadiusX = player.radiusX;
             let currentRadiusY = player.radiusY;
@@ -985,6 +1383,11 @@
                 currentRadiusX = 22; 
                 currentRadiusY = 14; 
                 headY = player.y - currentRadiusY - 4; 
+                
+                if (player.typeName === 'TRICKY') {
+                    currentRadiusX = 35; 
+                    currentRadiusY = 22; 
+                }
             }
 
             const clampLimit = Math.max(0, currentRadiusX);
@@ -995,9 +1398,20 @@
             const distance = Math.hypot(dx, dy);
 
             const hitDistance = currentRadiusY + ball.radius - 2;
+            let assistDistance = hitDistance;
 
-            if (distance < hitDistance) {
+            if (player.state === 'spike' && !player.isGrounded) {
+                assistDistance += 25;
+            }
+
+            if (distance < assistDistance) {
                 if (player.touchCooldown > 0) return;
+                if (player.state === 'tumbled') return; 
+
+                if (rallyState === 'rally' && player.typeName === 'SPEED' && !player.isGrounded) {
+                    if (player.state === 'idle') return; 
+                    if (player.state === 'spike' && player.actionTimer < 7) return; 
+                }
 
                 if (rallyState === 'serve_toss') {
                     if (player.id !== servingPlayerId) {
@@ -1031,9 +1445,13 @@
 
                     const timing = player.actionTimer; 
                     let hitType = 'normal';
-                    if (timing >= 14 && timing <= 15) {
+                    
+                    // ★ サーブのタイミング判定: 全タイプ共通で「2.1フレーム」の猶予に統一
+                    let isServeJustTiming = (timing >= 14 && timing <= 15) || (timing === 13 && Math.random() < 0.10);
+                    
+                    if (isServeJustTiming) {
                         hitType = 'just';
-                    } else if (timing >= 7 && timing <= 13) {
+                    } else if (timing >= 2) {
                         hitType = 'normal';
                     } else {
                         hitType = 'poor';
@@ -1045,50 +1463,73 @@
                         if (hitType === 'poor') {
                             playSound('hit');
                             ball.vx = targetDir * (4.2 + Math.random() * 0.8); 
-                            ball.vy = -(11.5 + Math.random() * 1.0); // ボール重力増加に合わせて変更
+                            ball.vy = -(11.5 + Math.random() * 1.0); 
                             ball.spin = targetDir * 0.5; 
                             ball.isFloater = false; 
                             createRetroParticles(ball.x, ball.y, '#9ca3af');
                             player.serveText = 'MISS...';
                         } else {
                             playSound('spike');
-                            // ★ 壁に当たらないようにフローターサーブの横方向最高速度を制限
                             const randVx = 5.2 + Math.random() * 0.6;
-                            const randVy = -(11.5 + Math.random() * 1.0); // ボール重力増加に合わせて変更
+                            const randVy = -(11.5 + Math.random() * 1.0); 
 
                             ball.vx = targetDir * randVx; 
                             ball.vy = randVy; 
                             ball.spin = 0; 
                             ball.isFloater = true; 
                             ball.floaterType = 'normal'; 
-                            
-                            // TRICKYの通常フローターブレ幅調整
                             ball.floatForceX = (player.typeName === 'TRICKY') ? (Math.random() - 0.5) * 0.08 : 0;
                             
+                            if (player.typeName === 'TRICKY') {
+                                ball.isTrickyFloater = true;
+                                createDummyBall(ball);
+                            }
+
                             createRetroParticles(ball.x, ball.y, '#ffffff');
                             player.serveText = 'FLOATER!';
                         }
                         player.serveTextTimer = 45;
                         ball.isPowerfulSpike = false;
+                        ball.isMegatonServe = false;
+                        ball.isQuickSpike = false;
                     } else if (serveType === 'jump_spike') {
-                        if (hitType === 'just') {
+                        // ★ メガトンサーブ: パワータイプのみ、ミス(poor)以外なら35%の確率で発動
+                        let isMegaton = (player.typeName === 'POWER' && hitType !== 'poor' && Math.random() < 0.35);
+
+                        if (isMegaton) {
+                            playSound('just_spike');
+                            let baseVx = 14.0; 
+                            let baseVy = 3.5;
+                            ball.vx = targetDir * baseVx * pPower; 
+                            ball.vy = baseVy; 
+                            ball.spin = targetDir * 12.0; 
+                            
+                            player.serveText = 'MEGATON SERVE!!'; 
+                            ball.isPowerfulSpike = true; 
+                            ball.isMegatonServe = true; 
+                            for(let i=0; i<15; i++) {
+                                particleSystem.push(new Particle(ball.x, ball.y, '#dc2626'));
+                                particleSystem.push(new Particle(ball.x, ball.y, '#f97316'));
+                                particleSystem.push(new Particle(ball.x, ball.y, '#facc15'));
+                            }
+                        } else if (hitType === 'just') {
                             playSound('just_spike');
                             
-                            // ★パワータイプのジャンプサーブ軌道を壁に当たらずコート奥に突き刺さるよう調整
-                            let baseVx = player.typeName === 'POWER' ? 12.0 : 13.8;
+                            let baseVx = player.typeName === 'POWER' ? 14.0 : 13.8; 
                             let baseVy = player.typeName === 'POWER' ? 3.5 : 2.0;
                             
                             ball.vx = targetDir * baseVx * pPower; 
                             ball.vy = baseVy; 
                             ball.spin = targetDir * 12.0; 
+                            
+                            player.serveText = 'JUST SERVE!!'; 
+                            ball.isPowerfulSpike = false; 
+                            ball.isMegatonServe = false;
                             createRetroParticles(ball.x, ball.y, '#fde047');
                             createRetroParticles(ball.x, ball.y, '#f43f5e');
-                            player.serveText = 'JUST SERVE!!'; 
-                            ball.isPowerfulSpike = (player.typeName === 'POWER'); // 強打フラグオン
                         } else if (hitType === 'normal') {
                             playSound('spike');
                             
-                            // ★壁バウンド制限のために少し角度を下へ
                             let baseVx = player.typeName === 'POWER' ? 9.8 : 10.8;
                             let baseVy = player.typeName === 'POWER' ? 2.8 : 1.2;
                             
@@ -1097,51 +1538,29 @@
                             ball.spin = targetDir * 5.0; 
                             createRetroParticles(ball.x, ball.y, '#f43f5e');
                             player.serveText = 'JUMP SERVE';
-                            ball.isPowerfulSpike = (player.typeName === 'POWER'); // 強打フラグオン
+                            ball.isPowerfulSpike = false; 
+                            ball.isMegatonServe = false;
                         } else {
                             playSound('hit');
                             ball.vx = targetDir * 4.5; 
-                            ball.vy = -10.5; // ボール重力増加に合わせて変更
+                            ball.vy = -10.5; 
                             ball.spin = targetDir * 1.0; 
                             createRetroParticles(ball.x, ball.y, '#9ca3af');
                             player.serveText = 'MISS...';
                             ball.isPowerfulSpike = false;
+                            ball.isMegatonServe = false;
                         }
                         player.serveTextTimer = 45;
 
                         if (player.typeName === 'TRICKY' && hitType !== 'poor') {
                             ball.isFloater = true;
-                            ball.floaterType = 'jump';
-                            ball.floatAmp = 0.6; // ブレ幅をやや安定に
-                            ball.spin = 0;
-                        }
-                    } else if (serveType === 'jump_floater') {
-                        if (hitType === 'poor') {
-                            playSound('hit');
-                            ball.vx = targetDir * 4.2; 
-                            ball.vy = -10.0; // ボール重力増加に合わせて変更
-                            ball.spin = 0;
-                            ball.isFloater = false; 
-                            createRetroParticles(ball.x, ball.y, '#9ca3af');
-                            player.serveText = 'MISS...';
-                        } else {
-                            playSound('spike');
-                            
-                            // ★ 壁に絶対当たらないジャンプフローター初期値
-                            let randVx = 8.5 + Math.random() * 1.5;
-                            let randVy = -1.5 + Math.random() * 1.5;
-
-                            ball.vx = targetDir * randVx; 
-                            ball.vy = randVy; 
-                            ball.spin = 0; 
-                            ball.isFloater = true; 
                             ball.floaterType = 'jump'; 
                             
-                            // ★ TRICKYタイプの無回転空気抵抗の極端な横伸びを大幅にマイルドに制限し、壁バウンドを防ぐ
                             if (player.typeName === 'TRICKY') {
-                                ball.floatAmp = 0.5 + Math.random() * 1.5; // ブレ幅の制限
-                                // マイナス側（失速・手前に落ちる）に強めに倒し、プラス側（奥へ伸びる）を抑制
+                                ball.floatAmp = 0.5 + Math.random() * 1.5; 
                                 ball.floatForceX = (Math.random() - 0.7) * 0.10; 
+                                ball.isTrickyFloater = true;
+                                createDummyBall(ball); 
                             } else {
                                 ball.floatForceX = 0;
                             }
@@ -1150,7 +1569,37 @@
                             player.serveText = 'JUMP FLOATER!';
                         }
                         player.serveTextTimer = 45;
+                        ball.isQuickSpike = false;
+                    } else if (serveType === 'jump_floater') {
+                        if (hitType === 'poor') {
+                            playSound('hit');
+                            ball.vx = targetDir * 4.5; 
+                            ball.vy = -3.5; 
+                            ball.spin = targetDir * 1.0; 
+                            createRetroParticles(ball.x, ball.y, '#9ca3af');
+                            player.serveText = 'MISS...';
+                        } else {
+                            playSound('spike');
+                            ball.vx = targetDir * (8.5 + Math.random() * 1.2) * pPower; 
+                            ball.vy = -(1.5 + Math.random() * 1.5); 
+                            ball.spin = 0; 
+                            ball.isFloater = true; 
+                            ball.floaterType = 'jump'; 
+                            ball.floatAmp = 0.8 + Math.random() * 0.4; 
+                            ball.floatForceX = (player.typeName === 'TRICKY') ? (Math.random() - 0.5) * 0.15 : 0;
+                            
+                            if (player.typeName === 'TRICKY') {
+                                ball.isTrickyFloater = true;
+                                createDummyBall(ball);
+                            }
+
+                            createRetroParticles(ball.x, ball.y, '#ffffff');
+                            player.serveText = 'JUMP FLOATER!';
+                        }
+                        player.serveTextTimer = 45;
                         ball.isPowerfulSpike = false;
+                        ball.isMegatonServe = false;
+                        ball.isQuickSpike = false;
                     }
                     return; 
                 }
@@ -1165,8 +1614,6 @@
                     }
                     ball.isServeBall = false;
                 }
-
-                ball.isFloater = false; 
 
                 player.touchCooldown = 15; 
                 
@@ -1192,38 +1639,85 @@
                 const pPower = player.typeData.power;
                 const angle = Math.atan2(dy, dx);
 
+                const touchCount = player.id === 1 ? p1TouchCount : p2TouchCount;
+                
+                const incomingSpeed = Math.hypot(ball.vx, ball.vy);
+                const isStrongHit = (touchCount === 1) && (incomingSpeed > 10.0 || ball.isPowerfulSpike || ball.isMegatonServe);
+
+                // ★ 強スパイク/メガトンサーブをレシーブした際のダメージ&ノックダウン判定
+                if (isStrongHit && (ball.isPowerfulSpike || ball.isMegatonServe) && touchCount === 1 && !(player.state === 'blocking' && !player.isGrounded)) {
+                    if (Math.random() < 0.80) { 
+                        player.state = 'tumbled';
+                        player.hp -= 20; 
+
+                        if (player.hp <= 0) {
+                            player.actionTimer = 180; 
+                            player.serveText = 'EXHAUSTED!!';
+                            player.serveTextTimer = 180;
+                            player.hp = 100; 
+                        } else {
+                            player.actionTimer = 65; 
+                            player.serveText = ball.isMegatonServe ? 'MEGATON CRASH!!' : 'KNOCKDOWN!!';
+                            player.serveTextTimer = 65;
+                        }
+
+                        // 火花をまとった吹き飛ばしエフェクト
+                        for (let i = 0; i < 20; i++) {
+                            particleSystem.push(new Particle(player.x, player.y, '#dc2626'));
+                            particleSystem.push(new Particle(player.x, player.y, '#f97316'));
+                            particleSystem.push(new Particle(player.x, player.y, '#facc15'));
+                        }
+                        
+                        player.vx = (player.id === 1 ? -4 : 4);
+                        player.vy = -3.5;
+                        player.isGrounded = false;
+                        
+                        ball.vx = (ball.vx * 0.15) + (dx / player.radiusY) * 2.0;
+                        ball.vy = -13.0; 
+                        
+                        ball.isPowerfulSpike = false;
+                        ball.isMegatonServe = false;
+                        playSound('hit');
+                        return; 
+                    } else if (player.state === 'receive' || player.state === 'dive') {
+                        player.serveText = 'ABSORB!';
+                        player.serveTextTimer = 45;
+                        createRetroParticles(ball.x, ball.y, '#fde047');
+                    }
+                }
+
+                // 衝突時にボールの特殊フラグをリセット
+                ball.isFloater = false; 
+                ball.isTrickyFloater = false;
+                ball.isMagicFeint = false;
+                ball.magicFeintTimer = 0;
+                ball.timeStopPostType = ''; // ★ 極彩色トレイルを解除
+
                 if (player.state === 'receive' || player.state === 'dive') {
                     playSound('hit');
                     ball.y = headY - hitDistance;
                     
-                    const touchCount = player.id === 1 ? p1TouchCount : p2TouchCount;
+                    if (ball.isMegatonServe) {
+                        player.vx = (player.id === 1 ? -4.5 : 4.5);
+                        player.serveText = 'HEAVY!!';
+                        player.serveTextTimer = 30;
+                        createRetroParticles(player.x, player.y, '#f97316');
+                    }
                     
-                    // ★ 飛んできたボールの勢いを計算 (ファーストタッチの時のみ強打判定を適用)
-                    const incomingSpeed = Math.hypot(ball.vx, ball.vy);
-                    const isStrongHit = (touchCount === 1) && (incomingSpeed > 10.0 || ball.isPowerfulSpike);
-
-                    // トス目標地点（ネット手前 12px に極限密着）
                     let targetX = player.id === 1 
                         ? (touchCount >= 2 ? 388 : 200) 
                         : (touchCount >= 2 ? 412 : 600); 
                         
-                    // ★ 強い勢いのボールを受けた場合は、勢いを殺すために高く弾き上げ、目標地点が少し手前（弾かれる）になる
                     if (isStrongHit) {
                         const absorbFactor = Math.min(40, (incomingSpeed - 8) * 5); 
                         targetX += (player.id === 1 ? -absorbFactor : absorbFactor);
-                        
-                        player.serveText = 'ABSORB!';
-                        player.serveTextTimer = 45;
-                        createRetroParticles(ball.x, ball.y, '#fde047');
                     }
                         
                     const dxToTarget = targetX - ball.x;
                     
                     if (player.state === 'dive') {
-                        // ダイブ時はより勢いを逃がすために上に上がる (天井に当たらないように少し抑える)
                         ball.vy = isStrongHit ? -13.5 : -11.5; 
                     } else {
-                        // 通常レシーブ。強打の場合はより高く上げて勢いを殺す (天井に当たらないように調整)
                         if (touchCount >= 2) {
                             ball.vy = -13.5;
                         } else {
@@ -1231,18 +1725,15 @@
                         }
                     }
 
-                    // 実際の滞空時間を重力から正確に計算して軌道を導き出す
-                    const actualGravity = GRAVITY * 1.5; // ★ ボールの重力増加に合わせる
+                    const actualGravity = GRAVITY * 1.35; 
                     const estimatedAirFrames = Math.abs(ball.vy) * 2 / actualGravity;
 
-                    // 目標地点にピッタリ落ちるための初速を計算
                     ball.vx = dxToTarget / estimatedAirFrames;
 
                     if (player.state === 'dive') {
                         ball.vx += (player.vx > 0 ? 1 : -1) * 1.5; 
                     }
 
-                    // ネット越え防止（限界ラインをネット手前 6px に）
                     if (player.id === 1) {
                         const maxSafeVx = Math.max(0, (NET_X - 6 - ball.x) / estimatedAirFrames);
                         ball.vx = Math.min(ball.vx, maxSafeVx);
@@ -1253,51 +1744,81 @@
                     
                     ball.spin = targetDir * -1.0;
                     createRetroParticles(ball.x, ball.y, '#60a5fa');
+                    
                     ball.isPowerfulSpike = false; 
+                    ball.isMegatonServe = false;
+                    ball.isQuickSpike = false;
+
+                    // ★ トス（2回目のタッチ）の成功時に、クイックスパイクの受付タイマーを作動させる
+                    if (touchCount === 2) {
+                        player.tossActiveTimer = 40; 
+                    }
 
                 } else if (player.state === 'feint') {
                     playSound('hit');
                     ball.x = clampedX + Math.cos(angle) * hitDistance;
                     ball.y = headY + Math.sin(angle) * hitDistance;
                     
-                    // フェイント（ブロックの上をふんわり越える）
-                    ball.vx = targetDir * 2.8 * pPower; 
-                    ball.vy = -9.5; // ボール重力増加に合わせて変更
-                    ball.spin = targetDir * 1.0;
+                    if (player.typeName === 'TRICKY') {
+                        ball.vx = targetDir * 4.0; 
+                        ball.vy = -2.5; 
+                        ball.spin = targetDir * 5.0;
+                        ball.isMagicFeint = true;
+                        ball.magicFeintTimer = 25; 
+                        player.serveText = 'MAGIC FEINT!'; 
+                    } else {
+                        ball.vx = targetDir * 3.2 * pPower; 
+                        ball.vy = -6.0; 
+                        ball.spin = targetDir * 1.0;
+                        player.serveText = 'FEINT!'; 
+                    }
                     
-                    player.serveText = 'FEINT!'; 
                     player.serveTextTimer = 45;
                     createRetroParticles(ball.x, ball.y, '#a855f7');
                     ball.isPowerfulSpike = false; 
+                    ball.isMegatonServe = false;
+                    ball.isQuickSpike = false;
 
                 } else if (!player.isGrounded && player.state === 'blocking') {
-                    // POWERタイプの強スパイクを50%で弾き飛ばす処理
-                    if (ball.isPowerfulSpike && Math.random() < 0.5) {
+                    // ★ ガードクラッシュ
+                    if (ball.isPowerfulSpike || ball.isMegatonServe) {
                         playSound('hit'); 
                         
-                        // ブロッカーの弾き飛ばし硬直
-                        player.state = 'receive'; 
-                        player.actionTimer = 25;
-                        player.serveText = 'CRASH!!';
-                        player.serveTextTimer = 45;
+                        player.state = 'tumbled'; 
+                        player.hp -= 15; 
                         
-                        // そのまま貫通（壁に当たらないよう速度を少し抑えめに補正）
-                        ball.vx *= 0.65;
-                        ball.vy *= 0.70;
+                        if (player.hp <= 0) {
+                            player.actionTimer = 180; 
+                            player.serveText = 'EXHAUSTED!!';
+                            player.serveTextTimer = 180;
+                            player.hp = 100; 
+                        } else {
+                            player.actionTimer = 45; 
+                            player.serveText = 'GUARD CRASH!!';
+                            player.serveTextTimer = 45;
+                        }
+                        
+                        player.vx = (player.id === 1 ? -4.5 : 4.5);
+                        player.vy = -3.0;
+                        player.isGrounded = false;
+                        
+                        ball.vx *= 0.5;
+                        ball.vy = -12.0;
                         
                         for (let i = 0; i < 15; i++) {
                             particleSystem.push(new Particle(ball.x, ball.y, '#f97316')); 
                             particleSystem.push(new Particle(ball.x, ball.y, '#dc2626')); 
                         }
                         ball.isPowerfulSpike = false;
+                        ball.isMegatonServe = false;
+                        ball.isQuickSpike = false;
                         
                     } else {
-                        // 通常ブロック
                         playSound('just_spike');
                         ball.x = clampedX + Math.cos(angle) * hitDistance;
                         ball.y = headY + Math.sin(angle) * hitDistance;
                         
-                        ball.vx = targetDir * 5.8; // 跳ね返りスピードを微減し壁バウンドを抑制
+                        ball.vx = targetDir * 5.8; 
                         ball.vy = 4.2; 
                         ball.spin = targetDir * 1.0;
                         
@@ -1307,6 +1828,8 @@
                         player.serveTextTimer = 45;
                         createRetroParticles(ball.x, ball.y, '#ef4444');
                         ball.isPowerfulSpike = false;
+                        ball.isMegatonServe = false;
+                        ball.isQuickSpike = false;
                     }
 
                 } else {
@@ -1325,34 +1848,34 @@
                         const timing = player.actionTimer; 
                         let hitType = 'normal';
 
-                        if (timing >= 14 && timing <= 15) {
+                        // ★ スパイクのタイミング判定: 全タイプ共通で「2.1フレーム」の猶予に統一
+                        let isJustTiming = (timing >= 14 && timing <= 15) || (timing === 13 && Math.random() < 0.10);
+                        let isJustDistance = distance <= (currentRadiusY + ball.radius + 4); 
+
+                        if (isJustTiming && isJustDistance) {
                             hitType = 'just';
-                        } else if (timing >= 7 && timing <= 13) {
+                        } else if (timing >= 1) {
                             hitType = 'normal';
                         } else {
                             hitType = 'poor';
                         }
 
-                        // ★ ボールをとらえる位置（前後の打点）によるスパイクの自動打ち分け
-                        let spikeDir = 0; // -1: 奥(LONG), 0: 通常, 1: 手前(SHARP)
+                        let spikeDir = 0; 
                         if (ratio < 0.35) {
-                            spikeDir = -1; // 体の後ろ側でとらえたら奥へ (LONG)
+                            spikeDir = -1; 
                         } else if (ratio > 0.65) {
-                            spikeDir = 1;  // 体の前側でとらえたら手前へ (SHARP)
+                            spikeDir = 1;  
                         }
 
-                        // 壁に当たらない安全な範囲へボーナスを調整
                         let vyBonus = 0;
                         let vxBonus = 0;
                         let textSuffix = '';
                         
                         if (spikeDir === 1) {
-                            // 手前（鋭角ショート）
                             vyBonus = 1.8; 
                             vxBonus = -2.5; 
                             textSuffix = ' (SHARP!)';
                         } else if (spikeDir === -1) {
-                            // 奥深く（ロングスパイク）
                             vyBonus = -0.9; 
                             vxBonus = 1.4;
                             textSuffix = ' (LONG!)';
@@ -1361,7 +1884,6 @@
                         if (hitType === 'just') {
                             playSound('just_spike'); 
                             
-                            // ★ POWERタイプの場合は、ジャンプサーブと同一の強力な基準弾道に上書き設定
                             if (player.typeName === 'POWER') {
                                 hitVx = targetDir * (12.0 + vxBonus) * pPower;
                                 hitVy = 3.5 + vyBonus;
@@ -1371,6 +1893,11 @@
                                 hitVy = baseVy + vyBonus;
                             }
                             
+                            if (player.typeName === 'SPEED') {
+                                hitVx *= 0.85;
+                                hitVy *= 0.85;
+                            }
+
                             ball.shadowColor = 'rgba(255, 255, 255, 0.6)';
                             ball.spin = targetDir * (10.0 + ratio * 5.0); 
                             
@@ -1380,10 +1907,10 @@
                             createRetroParticles(ball.x, ball.y, '#ffffff'); 
                             createRetroParticles(ball.x, ball.y, '#f43f5e'); 
                             ball.isPowerfulSpike = (player.typeName === 'POWER'); 
+                            ball.isMegatonServe = false;
                         } else if (hitType === 'normal') {
                             playSound('spike');
                             
-                            // ★ POWERタイプの場合は、ジャンプサーブの通常サーブと同一の強力な基準弾道に上書き設定
                             if (player.typeName === 'POWER') {
                                 hitVx = targetDir * (9.8 + vxBonus) * pPower;
                                 hitVy = 2.8 + vyBonus;
@@ -1392,32 +1919,39 @@
                                 let baseVy = player.typeName === 'ALL-ROUNDER' ? (0.6 + ratio * 3.0) : (-0.1 + ratio * 1.8);
                                 hitVy = baseVy + vyBonus;
                             }
+
+                            if (player.typeName === 'SPEED') {
+                                hitVx *= 0.85;
+                                hitVy *= 0.85;
+                            }
+
                             ball.spin = targetDir * (2.0 + ratio * 3.0);
                             
                             player.serveText = 'SPIKE!' + textSuffix;
                             player.serveTextTimer = 45;
                             createRetroParticles(ball.x, ball.y, '#f43f5e');
                             ball.isPowerfulSpike = (player.typeName === 'POWER'); 
+                            ball.isMegatonServe = false;
                         } else {
                             playSound('hit'); 
                             hitVx = targetDir * 4.0;
-                            hitVy = player.typeName === 'ALL-ROUNDER' ? -9.5 : -5.8; // ボール重力増加に合わせて変更
+                            hitVy = player.typeName === 'ALL-ROUNDER' ? -9.5 : -5.8; 
                             ball.spin = targetDir * 1.0;
                             createRetroParticles(ball.x, ball.y, '#9ca3af'); 
                             ball.isPowerfulSpike = false;
+                            ball.isMegatonServe = false;
                         }
 
-                        // ★ 壁衝突自動回避シミュレーションロジック (ジャストミート・通常スパイク)
+                        // ボール軌道調整
                         if (hitType !== 'poor') {
                             let testVx = hitVx;
                             let testVy = hitVy;
                             let testX = ball.x;
                             let testY = ball.y;
-                            const gravityStep = GRAVITY * 1.5; // ボール重力増加に合わせる
+                            const gravityStep = GRAVITY * 1.35; 
                             let hitWall = false;
                             let frames = 0;
 
-                            // 簡易物理シミュレータを走らせる
                             while (testY < GROUND_Y - ball.radius && frames < 200) {
                                 testVy += gravityStep;
                                 testX += testVx;
@@ -1429,7 +1963,6 @@
                                 }
                             }
 
-                            // 壁に激突すると判断された場合、壁から 40px 手前に着地する速度にクランプ調整
                             if (hitWall && frames > 0) {
                                 const targetLandingX = targetDir === 1 ? (VIEW_WIDTH - 40) : 40;
                                 const distanceToLand = targetLandingX - ball.x;
@@ -1437,25 +1970,73 @@
                             }
                         }
 
-                        // ★ TRICKYタイプのラリー中のスパイクブレ挙動も壁に当たらないよう調整
+                        // ★ TRICKYタイプ専用：カオス・タイムストップ・スパイク
                         if (player.typeName === 'TRICKY' && hitType !== 'poor') {
-                            ball.isFloater = true;
-                            ball.floaterType = 'jump';
-                            ball.floatAmp = 0.5 + Math.random() * 1.0;
-                            ball.floatForceX = (Math.random() - 0.6) * 0.08; 
+                            playSound('hit'); // 静止の予兆音
+                            
+                            // ★ ランダム性の強化：0.2秒(10F)〜3秒(180F)の完全ランダムかつ、極端な長短が出やすいように抽選
+                            const randTime = Math.random();
+                            let stopDur;
+                            if (randTime < 0.35) {
+                                stopDur = 10 + Math.floor(Math.random() * 20); // 0.16s〜0.5s（即解除）
+                            } else if (randTime < 0.7) {
+                                stopDur = 120 + Math.floor(Math.random() * 60); // 2s〜3s（超長タメ）
+                            } else {
+                                stopDur = 40 + Math.floor(Math.random() * 60); // 0.6s〜1.6s（普通）
+                            }
+                            ball.timeStopTimer = stopDur; 
+                            
+                            // ★ フォータッチ防止：時止め解除直後に自分で触れないようクールダウンを延長
+                            player.touchCooldown = stopDur + 15;
+                            
+                            ball.timeStopVx = hitVx;
+                            ball.timeStopVy = hitVy;
+                            ball.timeStopSpin = 0;
+
+                            // 解除後の球種をランダム決定 (40%フローター, 30%パワー, 30%クイック)
+                            const randType = Math.random();
+                            if (randType < 0.4) {
+                                ball.timeStopPostType = 'floater';
+                                ball.floaterType = 'jump';
+                                ball.floatAmp = 0.5 + Math.random() * 1.0;
+                                ball.floatForceX = (Math.random() - 0.6) * 0.08;
+                            } else if (randType < 0.7) {
+                                ball.timeStopPostType = 'power';
+                            } else {
+                                ball.timeStopPostType = 'quick';
+                            }
+
+                            // 静止中はフラグをすべてオフ
+                            ball.isFloater = false; 
+                            ball.isPowerfulSpike = false;
+                            ball.isQuickSpike = false;
+                            
+                            ball.vx = 0;
+                            ball.vy = 0;
                             ball.spin = 0;
-                            createRetroParticles(ball.x, ball.y, '#a855f7');
+
+                            player.serveText = 'TIME STOP!!';
+                            player.serveTextTimer = 45;
+                            createRetroParticles(ball.x, ball.y, '#c084fc');
+                        } else {
+                            ball.vx = hitVx;
+                            ball.vy = hitVy;
+                        }
+
+                        if (player.typeName === 'SPEED' && hitType !== 'poor') {
+                            ball.magicControlTimer = 30; 
+                            ball.magicControllerId = player.id;
+                            player.serveText = player.serveText.replace('!', ' (CTRL)!');
                         }
                     } else {
                         playSound('hit');
                         hitVx = (ball.vx * 0.35) + (dx / player.radiusY) * 3.5;
-                        hitVy = -Math.abs(ball.vy) * 0.5 - 5.5; // ボール重力増加に合わせて変更
+                        hitVy = -Math.abs(ball.vy) * 0.5 - 5.5; 
                         createRetroParticles(ball.x, ball.y, '#facc15');
                         ball.isPowerfulSpike = false; 
+                        ball.vx = hitVx;
+                        ball.vy = hitVy;
                     }
-                    
-                    ball.vx = hitVx;
-                    ball.vy = hitVy;
                 }
             }
         }
@@ -1538,6 +2119,9 @@
                 lastScorer = 1;
                 document.getElementById('score1').innerText = '00';
                 document.getElementById('score2').innerText = '00';
+                // ★ 勝敗がついて次の試合が始まる時に体力をリセット
+                p1.hp = 100;
+                p2.hp = 100;
             }
 
             const overlay = document.getElementById('overlay');
@@ -1558,7 +2142,6 @@
             gameActive = true;
         }
 
-        // --- キー操作イベント ---
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
                 e.preventDefault();
@@ -1567,7 +2150,7 @@
             keys[e.code] = true;
 
             const now = Date.now();
-            const doubleTapDelay = 250; // 250ミリ秒以内ならダブルタップと判定
+            const doubleTapDelay = 250; 
 
             if (!gameActive && (e.code === 'Space' || e.code === 'Enter' || e.code.startsWith('Key'))) {
                 startNewRally();
@@ -1575,7 +2158,6 @@
 
             if (gameActive) {
                 if (!e.repeat) {
-                    // ★ダブルタップによるフライング（ダイブ）処理
                     if (e.code === 'KeyA' || e.code === 'KeyD') {
                         if (now - (lastKeyDownTime[e.code] || 0) < doubleTapDelay) {
                             if (p1.isGrounded && p1.state !== 'dive') {
@@ -1607,11 +2189,10 @@
                             server.touchCooldown = 30; 
                             
                             if (e.code === 'KeyS' || e.code === 'KeyK') { 
-                                ball.vy = -13.5; // ボール重力増加に合わせて変更
+                                ball.vy = -13.5; 
                                 ball.vx = dir * 0.5;
                             } else { 
-                                // ジャンプサーブ用のトス
-                                ball.vy = -15.5; // ボール重力増加に合わせて変更
+                                ball.vy = -15.5; 
                                 ball.vx = dir * 1.8; 
                             }
                         }
@@ -1650,6 +2231,10 @@
             p2TouchCount = 0;
             document.getElementById('score1').innerText = '00';
             document.getElementById('score2').innerText = '00';
+            
+            // ★ リセットボタンを押した時にも体力をリセット
+            p1.hp = 100;
+            p2.hp = 100;
             
             const overlay = document.getElementById('overlay');
             const title = document.getElementById('overlayTitle');
@@ -1764,9 +2349,11 @@
                 p1.update();
                 p2.update();
                 ball.update();
+                updateDummyBall(); 
 
                 checkPlayerBallCollision(p1);
                 checkPlayerBallCollision(p2);
+
                 checkNetCollision();
 
                 if (ball.y + ball.radius >= GROUND_Y) {
@@ -1792,6 +2379,8 @@
             p1.draw();
             p2.draw();
             ball.draw();
+            drawDummyBall(); 
+            
             particleSystem.forEach(p => p.draw());
 
             requestAnimationFrame(loop);
