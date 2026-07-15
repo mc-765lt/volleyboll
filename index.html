@@ -72,7 +72,7 @@
             <canvas id="gameCanvas" class="w-full h-full block"></canvas>
 
             <!-- スタート・ポーズ・勝敗表示のオーバーレイ -->
-            <div id="overlay" class="absolute inset-0 bg-black/85 flex flex-col items-center justify-center transition-opacity duration-300 z-20">
+            <div id="overlay" class="absolute inset-0 bg-black/85 flex flex-col items-center justify-center transition-opacity duration-300 z-20 cursor-pointer">
                 <h2 id="overlayTitle" class="text-lg md:text-3xl font-black text-yellow-400 mb-4 arcade-font text-center">READY!</h2>
                 <p id="overlaySub" class="text-[8px] md:text-xs text-blue-400 mb-2 text-center px-4 arcade-font leading-loose">
                     PRESS [SPACE] OR CLICK TO START
@@ -109,20 +109,20 @@
         <!-- 操作説明パネル -->
         <div class="w-full grid grid-cols-2 gap-2 mt-2 text-[7px] md:text-[9px] bg-slate-950 p-2.5 rounded-xl border border-blue-900 arcade-font leading-normal">
             <div class="border-r border-blue-900 pr-2">
-                <span class="font-bold text-yellow-400 text-[8px] md:text-[10px]">■ P1 (LEFT)</span>
+                <span class="font-bold text-yellow-400 text-[8px] md:text-[10px]">■ P1 (LEFT) - SPEED TYPE ENHANCED</span>
                 <div class="flex flex-col gap-y-1 mt-1 text-slate-300">
-                    <div>MOVE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">A</kbd>/<kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">D</kbd> <span class="text-yellow-500">(x2: DIVE)</span></div>
-                    <div>TOSS: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">S</kbd> <span class="text-yellow-500">(IN AIR 3RD: FEINT)</span></div>
-                    <div>SPIKE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">W</kbd> <span class="text-blue-300 font-bold">(SPEED: PRESS FAST FOR QUICK)</span></div>
+                    <div>MOVE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">A</kbd>/<kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">D</kbd> <span class="text-yellow-500">(x2: QUICK DIVE)</span></div>
+                    <div>TOSS: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">S</kbd> <span class="text-yellow-500">(IN AIR: FEINT)</span></div>
+                    <div>SPIKE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">W</kbd> <span class="text-cyan-400 font-bold">(W x2: QUICK / AIR+A/D+W: AUTO BLINK & CONNECT TO ACCEL)</span></div>
                     <div>BLOCK: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">Q</kbd></div>
                 </div>
             </div>
             <div class="pl-2">
                 <span id="p2InstructionsHeader" class="font-bold text-red-500 text-[8px] md:text-[10px]">■ PLAYER-2 (RIGHT)</span>
                 <div class="flex flex-col gap-y-1 mt-1 text-slate-300">
-                    <div>MOVE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">J</kbd>/<kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">L</kbd> <span class="text-yellow-500">(x2: DIVE)</span></div>
-                    <div>TOSS: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">K</kbd> <span class="text-yellow-500">(IN AIR 3RD: FEINT)</span></div>
-                    <div>SPIKE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">I</kbd> <span class="text-blue-300 font-bold">(SPEED: PRESS FAST FOR QUICK)</span></div>
+                    <div>MOVE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">J</kbd>/<kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">L</kbd> <span class="text-yellow-500">(x2: QUICK DIVE)</span></div>
+                    <div>TOSS: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">K</kbd> <span class="text-yellow-500">(IN AIR: FEINT)</span></div>
+                    <div>SPIKE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">I</kbd> <span class="text-cyan-400 font-bold">(I x2: QUICK / AIR+J/L+I: AUTO BLINK & CONNECT TO ACCEL)</span></div>
                     <div>BLOCK: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">U</kbd></div>
                 </div>
             </div>
@@ -137,7 +137,7 @@
         const CHARA_TYPES = {
             'ALL-ROUNDER': { speed: 6.0, jump: -9.5, gravityScale: 1.0, power: 1.0, float: 1.0, color: '#ffffff' },
             'POWER':       { speed: 5.0, jump: -10.2, gravityScale: 1.0, power: 1.35, float: 0.7, color: '#ef4444' },
-            'SPEED':       { speed: 7.8, jump: -11.5, gravityScale: 1.15, power: 0.8, float: 0.9, color: '#3b82f6' },
+            'SPEED':       { speed: 7.8, jump: -11.5, gravityScale: 1.15, power: 0.85, float: 0.9, color: '#3b82f6' },
             'TRICKY':      { speed: 5.8, jump: -9.5, gravityScale: 1.0, power: 0.85, float: 1.5, color: '#a855f7' }
         };
 
@@ -198,6 +198,7 @@
             updateTypeDisplay();
         });
 
+        // Initialize Web Audio context properly
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         function playSound(type) {
@@ -348,15 +349,19 @@
                 this.actionTimer = 0;
                 this.touchCooldown = 0; 
                 this.justMeetTimer = 0; 
-                this.serveTextTimer = 0;
                 this.serveText = '';
+                this.serveTextTimer = 0;
                 this.gravityScale = 1.0;
                 this.hp = 100; 
                 this.isIntimidated = false; 
                 this.intimidatedTimer = 0; 
                 this.hasSpikedInAir = false; 
                 this.warpCooldown = 0; 
-                this.tossActiveTimer = 0; // ★ クイック受付用タイマー
+                this.tossActiveTimer = 0; 
+                this.boostWindowTimer = 0;
+                
+                // Track visual ghosts for the Speed type after-image
+                this.ghosts = [];
 
                 this.setType('ALL-ROUNDER');
             }
@@ -413,6 +418,8 @@
                 this.isIntimidated = false; 
                 this.warpCooldown = 0; 
                 this.tossActiveTimer = 0;
+                this.boostWindowTimer = 0;
+                this.ghosts = [];
             }
 
             update() {
@@ -421,6 +428,7 @@
                 if (this.serveTextTimer > 0) this.serveTextTimer--;
                 if (this.warpCooldown > 0) this.warpCooldown--;
                 if (this.tossActiveTimer > 0) this.tossActiveTimer--;
+                if (this.boostWindowTimer > 0) this.boostWindowTimer--;
 
                 if (this.intimidatedTimer > 0) {
                     this.intimidatedTimer--;
@@ -429,38 +437,53 @@
                     this.isIntimidated = false;
                 }
 
-                // ★ クイックスパイクへの飛び込み（アプローチ）処理
+                // SPEED type quick spike approach routing
                 if (this.state === 'quick_approach') {
                     if (this.actionTimer > 0) {
                         this.actionTimer--;
-                        const progress = 1 - (this.actionTimer / 15.0); // ★ 15フレームに伸ばしてさらに目で追いやすく
-                        this.x = this.startX + (this.targetX - this.startX) * progress;
-                        this.y = this.startY + (this.targetY - this.startY) * progress;
+                        
+                        // Keep aligning with the ball dynamically
+                        const targetPlayerX = ball.x + (this.id === 1 ? -18 : 18);
+                        const targetPlayerY = Math.min(GROUND_Y, ball.y + this.radiusY + 12);
+                        
+                        // Seamless interpolation
+                        this.x += (targetPlayerX - this.x) * 0.28;
+                        this.y += (targetPlayerY - this.y) * 0.28;
                         this.vx = 0;
                         this.vy = 0;
 
-                        // 飛び込み中の残像エフェクト
+                        // Generate after-images on movement frames
                         if (globalTick % 2 === 0) {
+                            this.ghosts.push({
+                                x: this.x,
+                                y: this.y,
+                                opacity: 0.7
+                            });
                             particleSystem.push(new Particle(this.x, this.y, '#38bdf8'));
-                            particleSystem.push(new Particle(this.x, this.y, '#ffffff'));
                         }
 
-                        // 飛び込み完了でスパイク発動
+                        // Enforce strictly secured court boundaries
+                        const pad = this.radiusX;
+                        if (this.id === 1) {
+                            this.x = Math.max(pad, Math.min(this.x, NET_X - NET_WIDTH/2 - pad));
+                        } else {
+                            this.x = Math.max(NET_X + NET_WIDTH/2 + pad, Math.min(this.x, VIEW_WIDTH - pad));
+                        }
+
                         if (this.actionTimer === 0) {
                             this.state = 'quick_spike';
                             this.actionTimer = 15;
-                            this.vy = -3.5; // 空中での軽い滞空
+                            this.vy = -3.5; 
+                            this.touchCooldown = 25; // Block immediate recursive touch errors
                             
                             playSound('just_spike');
                             createRetroParticles(this.x, this.y - this.radiusY, '#38bdf8');
                             this.serveText = 'QUICK SPIKE!!';
                             this.serveTextTimer = 45;
                             
-                            // ★ 軌道の変更：レーザー補正や自動角度計算を削除し、ジャンプサーブ(JUST)と全く同じ初速に設定
                             let targetDir = this.id === 1 ? 1 : -1;
-                            
-                            let baseVx = 13.8; 
-                            let baseVy = 2.0;
+                            let baseVx = 15.5; 
+                            let baseVy = 4.2; 
                             
                             ball.vx = targetDir * baseVx * this.typeData.power; 
                             ball.vy = baseVy;
@@ -476,7 +499,7 @@
                             else p2TouchCount = 3;
                         }
                     }
-                    return; // 飛び込み中は通常の移動・重力をスキップ
+                    return; 
                 }
 
                 let baseSpeed = this.speed;
@@ -504,6 +527,29 @@
                 }
 
                 this.x += this.vx;
+
+                // Strongest court limitations
+                const padding = this.radiusX;
+                if (this.id === 1) {
+                    if (this.x < padding) {
+                        this.x = padding;
+                        this.vx = 0;
+                    }
+                    if (this.x > NET_X - NET_WIDTH/2 - padding) {
+                        this.x = NET_X - NET_WIDTH/2 - padding;
+                        this.vx = 0;
+                    }
+                } else {
+                    if (this.x > VIEW_WIDTH - padding) {
+                        this.x = VIEW_WIDTH - padding;
+                        this.vx = 0;
+                    }
+                    if (this.x < NET_X + NET_WIDTH/2 + padding) {
+                        this.x = NET_X + NET_WIDTH/2 + padding;
+                        this.vx = 0;
+                    }
+                }
+
                 this.vy += GRAVITY * this.gravityScale;
                 this.y += this.vy;
 
@@ -515,45 +561,39 @@
                     if (this.state === 'blocking') {
                         this.state = 'idle';
                     }
+                    if (this.state === 'dive' || this.state === 'tumbled') {
+                        if (this.actionTimer > 0) {
+                            this.actionTimer--;
+                        } else {
+                            this.state = 'idle';
+                        }
+                    }
                 } else {
                     this.isGrounded = false;
                 }
 
-                const padding = (this.state === 'dive' || this.state === 'tumbled') ? this.radiusY : this.radiusX;
-                if (this.id === 1) {
-                    if (this.x < padding) this.x = padding;
-                    if (this.x > NET_X - NET_WIDTH/2 - padding) {
-                        this.x = NET_X - NET_WIDTH/2 - padding;
-                    }
-                } else {
-                    if (this.x > VIEW_WIDTH - padding) this.x = VIEW_WIDTH - padding;
-                    if (this.x < NET_X + NET_WIDTH/2 + padding) {
-                        this.x = NET_X + NET_WIDTH/2 + padding;
-                    }
-                }
-
-                if (this.actionTimer > 0) {
-                    this.actionTimer--;
-                    if (this.actionTimer === 0) {
+                if (this.state !== 'dive' && this.state !== 'tumbled' && this.state !== 'blocking' && this.state !== 'quick_spike') {
+                    if (this.actionTimer > 0) {
+                        this.actionTimer--;
+                    } else {
                         this.state = 'idle';
                     }
                 }
             }
 
-            triggerAction(actionType, dir = 0) {
+            triggerAction(actionType, dir = 0, isDoubleTap = false) {
                 if (this.state === 'dive' || this.state === 'tumbled') return;
 
-                // ★ スピードタイプ限定：トスを上げた瞬間にスパイクが押されたら「クイックスパイク（飛び込み）」を開始
-                if (actionType === 'spike' && this.typeName === 'SPEED' && this.tossActiveTimer > 0) {
+                // Speed type Double Tap QUICK SPIKE route
+                if (actionType === 'spike' && this.typeName === 'SPEED' && this.tossActiveTimer > 0 && isDoubleTap) {
                     this.state = 'quick_approach';
-                    this.actionTimer = 15; // ★ 15フレームかけて移動（目で追いやすくタメを作る）
-                    this.tossActiveTimer = 0; // 受付終了
-                    this.touchCooldown = 15; // フォータッチ防止
+                    this.actionTimer = 15; 
+                    this.tossActiveTimer = 0; 
+                    this.touchCooldown = 15; 
                     
-                    let targetPlayerX = ball.x + (this.id === 1 ? -18 : 18); // ボールの少し手前 (バックアタック気味)
+                    let targetPlayerX = ball.x + (this.id === 1 ? -18 : 18); 
                     const padding = this.radiusX;
                     
-                    // ネットや壁を越えないように制限
                     if (this.id === 1) {
                         targetPlayerX = Math.max(padding, Math.min(targetPlayerX, NET_X - NET_WIDTH/2 - padding));
                     } else {
@@ -568,7 +608,7 @@
                     this.isGrounded = false;
                     this.hasSpikedInAir = true; 
                     
-                    playSound('hit'); // 飛び込み開始音
+                    playSound('hit'); 
                     return;
                 }
 
@@ -586,6 +626,76 @@
                             this.actionTimer = 0;
                             return;
                         }
+
+                        // --- AUTO AIR BLINK Action (自動追従スパイク & ソニック併用可能化) ---
+                        if (this.typeName === 'SPEED' && dir !== 0 && rallyState === 'rally') {
+                            const isBallPlayable = (this.id === 1 && ball.x <= NET_X + 50) || (this.id === 2 && ball.x >= NET_X - 50);
+                            
+                            if (isBallPlayable && ball.y < GROUND_Y - 30) {
+                                const prevX = this.x;
+                                
+                                // プレイヤーだけがボールの打点（横）に瞬間移動する！
+                                this.x = ball.x + (this.id === 1 ? -14 : 14);
+
+                                // 境界ガード
+                                const pad = this.radiusX;
+                                if (this.id === 1) {
+                                    this.x = Math.max(pad, Math.min(this.x, NET_X - NET_WIDTH/2 - pad));
+                                } else {
+                                    this.x = Math.max(NET_X + NET_WIDTH/2 + pad, Math.min(this.x, VIEW_WIDTH - pad));
+                                }
+
+                                // 残像生成
+                                this.ghosts.push({ x: prevX, y: this.y, opacity: 0.8 });
+                                this.ghosts.push({ x: (prevX + this.x) / 2, y: this.y, opacity: 0.5 });
+                                createRetroParticles(prevX, this.y, '#38bdf8');
+                                createRetroParticles(this.x, this.y, '#38bdf8');
+
+                                // 自動で超鋭角の「BLINK SPIKE」を打ち出す
+                                playSound('spike');
+                                let targetDir = this.id === 1 ? 1 : -1;
+                                
+                                ball.vx = targetDir * 11.5 * this.typeData.power;
+                                ball.vy = 4.2; // 鋭い角度
+                                ball.spin = targetDir * 6.0;
+                                
+                                ball.isFloater = false;
+                                ball.isPowerfulSpike = false;
+                                ball.isMegatonServe = false;
+                                ball.isQuickSpike = false;
+
+                                // タッチ数カウント
+                                if (this.id === 1) {
+                                    p1TouchCount++;
+                                    p2TouchCount = 0;
+                                    if (p1TouchCount > 3) {
+                                        playSound('whistle');
+                                        scorePoint(2, 'FOUR TOUCHES!');
+                                        return;
+                                    }
+                                } else {
+                                    p2TouchCount++;
+                                    p1TouchCount = 0;
+                                    if (p2TouchCount > 3) {
+                                        playSound('whistle');
+                                        scorePoint(1, 'FOUR TOUCHES!');
+                                        return;
+                                    }
+                                }
+
+                                this.hasSpikedInAir = true;
+                                this.touchCooldown = 20;
+
+                                // ★ソニック・アクセル（ブースト）コンボ用のウィンドウを開く！
+                                this.boostWindowTimer = 25; 
+                                this.serveText = 'BLINK BOOST!!';
+                                this.serveTextTimer = 45;
+
+                                createRetroParticles(ball.x, ball.y, '#38bdf8');
+                                return; // 処理を完了させて抜ける
+                            }
+                        }
+
                         this.hasSpikedInAir = true; 
 
                         const isBallInOwnCourt = (this.id === 1 && ball.x <= NET_X) || (this.id === 2 && ball.x > NET_X);
@@ -615,7 +725,6 @@
                     }
                 } else if (actionType === 'dive') {
                     if (this.isGrounded) {
-                        // ★ サーブ・トスフェーズではワープを発動できないように制限
                         const canWarp = (this.typeName === 'TRICKY' && this.warpCooldown === 0 && rallyState !== 'serving' && rallyState !== 'serve_toss');
 
                         if (canWarp) {
@@ -638,8 +747,8 @@
                             this.vx = dir * 3.0; 
                             this.vy = -3.5; 
                             this.isGrounded = false; 
-                            this.actionTimer = 25; 
-                            this.warpCooldown = 0; // ★ ワープのクールタイムをなくす（180 -> 0）
+                            this.actionTimer = 10; 
+                            this.warpCooldown = 0; 
                             playSound('hit');
                         } else {
                             let diveForce = 5.5; 
@@ -649,7 +758,7 @@
                             this.vx = dir * diveForce;
                             this.vy = -4.5;
                             this.isGrounded = false;
-                            this.actionTimer = 40; 
+                            this.actionTimer = 12; // Hyper fast slide recover of 12 frames
                             createRetroParticles(this.x, this.y, '#ffffff');
                             playSound('hit'); 
                         }
@@ -670,6 +779,25 @@
             draw() {
                 ctx.save();
                 
+                // Draw trailing silhouettes
+                this.ghosts.forEach((g) => {
+                    g.opacity -= 0.05;
+                    if (g.opacity <= 0) return;
+                    ctx.save();
+                    ctx.globalAlpha = g.opacity;
+                    ctx.translate(g.x, g.y);
+                    
+                    let dirScale = (this.id === 1) ? 1 : -1;
+                    ctx.scale(dirScale * (this.radiusX / 14), this.radiusY / 22);
+                    
+                    ctx.fillStyle = 'rgba(56, 189, 248, 0.45)';
+                    ctx.beginPath();
+                    ctx.ellipse(0, -this.radiusY, this.radiusX, this.radiusY, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+                this.ghosts = this.ghosts.filter(g => g.opacity > 0);
+
                 const jumpHeight = GROUND_Y - this.y;
                 const shadowScale = Math.max(0.3, 1 - jumpHeight / 150);
                 
@@ -733,7 +861,7 @@
                 ctx.textAlign = 'center';
                 ctx.fillText(this.id, -1, -14);
 
-                ctx.fillStyle = this.skinColor;
+                this.skinColor && (ctx.fillStyle = this.skinColor);
                 ctx.fillRect(-2, -26, 4, 3); 
                 ctx.beginPath();
                 ctx.arc(0, -31, 7, 0, Math.PI * 2); 
@@ -813,7 +941,7 @@
 
                 ctx.restore();
 
-                // HPバーの描画
+                // Draw health bar
                 const hpRatio = this.hp / 100;
                 ctx.fillStyle = '#1e293b'; 
                 ctx.fillRect(this.x - 12, this.y - this.radiusY * 2.3, 24, 3);
@@ -823,7 +951,7 @@
                 ctx.lineWidth = 1;
                 ctx.strokeRect(this.x - 12, this.y - this.radiusY * 2.3, 24, 3);
 
-                // クールタイムUI
+                // Draw special abilities cooldown bar
                 if (this.typeName === 'TRICKY') {
                     const warpRatio = 1 - (this.warpCooldown / 180);
                     ctx.fillStyle = '#1e293b'; 
@@ -839,7 +967,7 @@
                     ctx.strokeRect(this.x - 12, this.y - this.radiusY * 2.3 + 4, 24, 2);
                 }
 
-                // クイック受付中インジケータ（スピードタイプ用）
+                // SPEED type quick spike availability indicator
                 if (this.typeName === 'SPEED' && this.tossActiveTimer > 0) {
                     ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
                     ctx.beginPath();
@@ -857,8 +985,11 @@
                     else if (this.serveText.includes('JUMP') || this.serveText.includes('FEINT') || this.serveText.includes('CTRL') || this.serveText.includes('MAGIC')) tCol = '#60a5fa';
                     else if (this.serveText.includes('BLOCK')) tCol = '#ef4444';
                     else if (this.serveText.includes('CRASH') || this.serveText.includes('KNOCKDOWN') || this.serveText.includes('MEGATON')) tCol = '#f97316';
-                    else if (this.serveText.includes('QUICK')) tCol = '#38bdf8'; // クイック色
-                    else if (this.serveText.includes('TIME STOP')) tCol = '#c084fc'; // タイムストップ紫色
+                    else if (this.serveText.includes('QUICK')) tCol = '#38bdf8'; 
+                    else if (this.serveText.includes('TIME STOP')) tCol = '#c084fc'; 
+                    else if (this.serveText.includes('BOOST')) tCol = '#60a5fa'; 
+                    else if (this.serveText.includes('SONIC ACCEL')) tCol = '#38bdf8'; 
+                    else if (this.serveText.includes('AIR BLINK')) tCol = '#38bdf8';
 
                     ctx.fillStyle = tCol;
                     ctx.textAlign = 'center';
@@ -903,7 +1034,7 @@
                 this.vx = 1.2;
                 this.vy = 0;
                 this.radius = 12; 
-                this.speedLimit = 20; 
+                this.speedLimit = 22; 
                 this.spin = 0;
                 this.rotation = 0;
                 
@@ -924,14 +1055,19 @@
                 this.magicFeintTimer = 0;
 
                 this.isMegatonServe = false; 
-                this.isQuickSpike = false; // ★ クイックスパイク弾道フラグ
+                this.isQuickSpike = false; 
 
-                // ★ タイムストップ能力の制御用変数
+                // Sonic Accel and Time Stop triggers
                 this.timeStopTimer = 0;
                 this.timeStopVx = 0;
                 this.timeStopVy = 0;
                 this.timeStopSpin = 0;
-                this.timeStopPostType = ''; // ★ 解除後のランダム球種を保持
+                this.timeStopPostType = ''; 
+
+                this.sonicAccelTimer = 0;
+                this.sonicAccelVx = 0;
+                this.sonicAccelVy = 0;
+                this.sonicAccelDir = 1;
             }
 
             reset(servingPlayerId, p1, p2) {
@@ -963,6 +1099,10 @@
                 this.timeStopSpin = 0;
                 this.timeStopPostType = '';
 
+                this.sonicAccelTimer = 0;
+                this.sonicAccelVx = 0;
+                this.sonicAccelVy = 0;
+
                 dummyBall = null;
 
                 const server = servingPlayerId === 1 ? p1 : p2;
@@ -974,15 +1114,38 @@
             update() {
                 if (rallyState === 'serving') return;
 
-                // ★ タイムストップ（時止め）処理
+                // Sonic Accel freezer sequence
+                if (this.sonicAccelTimer > 0) {
+                    this.sonicAccelTimer--;
+                    if (globalTick % 2 === 0) {
+                        createRetroParticles(this.x, this.y, '#38bdf8'); 
+                    }
+                    if (this.sonicAccelTimer === 0) {
+                        playSound('just_spike');
+                        this.vx = this.sonicAccelVx;
+                        this.vy = this.sonicAccelVy;
+                        this.spin = this.sonicAccelDir * 15.0;
+                        this.isPowerfulSpike = false; 
+                        this.isQuickSpike = true; 
+                        
+                        for (let i = 0; i < 30; i++) {
+                            let p = new Particle(this.x, this.y, '#38bdf8');
+                            p.vx = (Math.random() - 0.5) * 16;
+                            p.vy = (Math.random() - 0.5) * 16 - 2;
+                            p.size = Math.random() * 5 + 2;
+                            particleSystem.push(p);
+                        }
+                    }
+                    return; 
+                }
+
+                // Tricky Time Stop sequence
                 if (this.timeStopTimer > 0) {
                     this.timeStopTimer--;
                     if (globalTick % 3 === 0) {
-                        createRetroParticles(this.x, this.y, '#c084fc'); // タイムストップの紫粒子
+                        createRetroParticles(this.x, this.y, '#c084fc'); 
                     }
                     if (this.timeStopTimer === 0) {
-                        // ★ ランダムに選ばれた球種で発射！（速度・角度もランダムにブレさせてさらにカオスに）
-                        
                         if (this.timeStopPostType === 'floater') {
                             this.vx = this.timeStopVx * (0.8 + Math.random() * 0.4); 
                             this.vy = this.timeStopVy * (0.8 + Math.random() * 0.4);
@@ -992,22 +1155,21 @@
                             this.floatTimer = 0;
                         } else if (this.timeStopPostType === 'power') {
                             let targetDir = this.timeStopVx > 0 ? 1 : -1;
-                            this.vx = targetDir * (13.0 + Math.random() * 4.0); // 超高速かつ重い
-                            this.vy = 3.0 + Math.random() * 3.0; // 角度もランダム
+                            this.vx = targetDir * (13.0 + Math.random() * 4.0); 
+                            this.vy = 3.0 + Math.random() * 3.0; 
                             this.spin = targetDir * 15.0;
-                            this.isPowerfulSpike = true; // ノックダウン・ガードクラッシュ有効
+                            this.isPowerfulSpike = true; 
                         } else if (this.timeStopPostType === 'quick') {
                             let targetDir = this.timeStopVx > 0 ? 1 : -1;
                             this.vx = targetDir * (13.5 + Math.random() * 3.0);
-                            this.vy = 1.0 + Math.random() * 2.0; // 直線的なクイック軌道
+                            this.vy = 1.0 + Math.random() * 2.0; 
                             this.spin = targetDir * 12.0;
                             this.isQuickSpike = true;
                         }
                         
-                        // ★ どの球種でも、発射時は単色（紫）のバーストエフェクトで見た目を騙す
                         for (let i = 0; i < 100; i++) {
                             let p = new Particle(this.x, this.y, '#c084fc');
-                            p.vx = (Math.random() - 0.5) * 12; // 爆発を大きく
+                            p.vx = (Math.random() - 0.5) * 12; 
                             p.vy = (Math.random() - 0.5) * 12 - 2;
                             p.size = Math.random() * 4 + 2;
                             particleSystem.push(p);
@@ -1015,7 +1177,7 @@
                         
                         playSound('just_spike');
                     }
-                    return; // タイムストップ中は以下の通常の移動・物理計算をスキップ
+                    return; 
                 }
 
                 if (this.isMegatonServe && globalTick % 2 === 0) {
@@ -1023,33 +1185,22 @@
                     createRetroParticles(this.x, this.y, '#dc2626');
                 }
 
-                // ★ タイムストップ解除後の各軌跡トレイル（いつもより派手に！）
                 if (rallyState === 'rally' && !this.isServeBall) {
-                    if (this.timeStopPostType !== '') {
-                        // ★ 時止め解除後は単色の紫トレイルを撒き散らす
-                        for (let i = 0; i < 4; i++) {
-                            particleSystem.push(new Particle(this.x, this.y, '#c084fc'));
-                        }
-                    } else if (this.isPowerfulSpike) {
-                        // パワータイプの赤炎軌跡
+                    if (this.isPowerfulSpike) {
                         if (globalTick % 2 === 0) {
                             particleSystem.push(new Particle(this.x, this.y, '#ef4444'));
                             particleSystem.push(new Particle(this.x, this.y, '#f97316'));
                             particleSystem.push(new Particle(this.x, this.y, '#facc15'));
                         }
                     } else if (this.isQuickSpike) {
-                        // スピードタイプの青い電撃軌跡
                         if (globalTick % 2 === 0) {
                             particleSystem.push(new Particle(this.x, this.y, '#38bdf8'));
                             particleSystem.push(new Particle(this.x, this.y, '#ffffff'));
-                            particleSystem.push(new Particle(this.x, this.y, '#0ea5e9'));
                         }
                     } else if (this.isFloater && this.isTrickyFloater) {
-                        // トリッキー本来の紫魔球軌跡
                         if (globalTick % 2 === 0) {
                             particleSystem.push(new Particle(this.x, this.y, '#c084fc'));
                             particleSystem.push(new Particle(this.x, this.y, '#a855f7'));
-                            particleSystem.push(new Particle(this.x, this.y, '#f3e8ff'));
                         }
                     }
                 }
@@ -1066,41 +1217,6 @@
                         createRetroParticles(this.x, this.y, '#ffffff');
                     }
                     return; 
-                }
-
-                if (this.magicControlTimer > 0 && rallyState === 'rally') {
-                    this.magicControlTimer--;
-                    let forceX = 0;
-                    let forceY = 0;
-                    const controlPower = 0.8; 
-
-                    if (this.magicControllerId === 1) {
-                        if (keys['KeyA']) forceX -= controlPower;
-                        if (keys['KeyD']) forceX += controlPower;
-                        if (keys['KeyW']) forceY -= controlPower;
-                        if (keys['KeyS']) forceY += controlPower;
-                    } else if (this.magicControllerId === 2) {
-                        if (keys['KeyJ']) forceX -= controlPower;
-                        if (keys['KeyL']) forceX += controlPower;
-                        if (keys['KeyI']) forceY -= controlPower;
-                        if (keys['KeyK']) forceY += controlPower;
-                    }
-
-                    if (forceX !== 0 || forceY !== 0) {
-                        const currentSpeed = Math.hypot(this.vx, this.vy);
-                        this.vx += forceX;
-                        this.vy += forceY;
-                        const newSpeed = Math.hypot(this.vx, this.vy);
-                        
-                        if (newSpeed > 0) {
-                            this.vx = (this.vx / newSpeed) * currentSpeed;
-                            this.vy = (this.vy / newSpeed) * currentSpeed;
-                        }
-
-                        if (globalTick % 4 === 0) {
-                            createRetroParticles(this.x, this.y, '#38bdf8');
-                        }
-                    }
                 }
 
                 if (this.isFloater) {
@@ -1145,7 +1261,6 @@
 
                 this.vy += GRAVITY * 1.35;
 
-                // ★ パワータイプの強打（メガトンサーブ・強スパイク）が壁ですり抜けないように下方向の力を追加
                 if (!this.isFloater && !this.isQuickSpike) {
                     if (this.isMegatonServe || this.isPowerfulSpike) {
                         this.vy += 0.15; 
@@ -1160,6 +1275,7 @@
 
                 this.rotation += this.vx * 0.07 + this.spin * 0.02;
 
+                // Walls collision bounce (Always active with absolute physical rebound)
                 if (this.x < this.radius) {
                     this.x = this.radius;
                     this.vx = -this.vx * 0.65; 
@@ -1257,19 +1373,7 @@
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
                 ctx.fill();
 
-                if (this.magicControlTimer > 0 && rallyState === 'rally') {
-                    ctx.save();
-                    ctx.globalAlpha = 0.6;
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = '#38bdf8';
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.radius + 4, 0, Math.PI * 2);
-                    ctx.fillStyle = '#38bdf8';
-                    ctx.fill();
-                    ctx.restore();
-                }
-
-                // ★ タイムストップ（時止め）の予兆エフェクト
+                // TIME STOP active glow
                 if (this.timeStopTimer > 0) {
                     ctx.save();
                     ctx.globalAlpha = 0.5 + Math.sin(globalTick * 0.15) * 0.2;
@@ -1278,6 +1382,19 @@
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, this.radius + 8, 0, Math.PI * 2);
                     ctx.fillStyle = '#a855f7';
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // Sonic Accel charging glow
+                if (this.sonicAccelTimer > 0) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.6 + Math.sin(globalTick * 0.3) * 0.2;
+                    ctx.shadowBlur = 25;
+                    ctx.shadowColor = '#38bdf8';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius + 10, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
                     ctx.fill();
                     ctx.restore();
                 }
@@ -1336,7 +1453,8 @@
         function checkNetCollision() {
             if (rallyState !== 'rally') return;
             if (ball.isMagicFeint && ball.magicFeintTimer > 0) return;
-            if (ball.timeStopTimer > 0) return; // タイムストップ中は衝突判定を行わない
+            if (ball.timeStopTimer > 0) return; 
+            if (ball.sonicAccelTimer > 0) return; 
 
             const netTop = GROUND_Y - NET_HEIGHT;
             const netLeft = NET_X - NET_WIDTH / 2;
@@ -1369,11 +1487,13 @@
             }
         }
 
-        function checkDummyBallCollision(player) {}
-
         function checkPlayerBallCollision(player) {
             if (rallyState === 'serving') return;
-            if (ball.timeStopTimer > 0) return; // タイムストップ（時止め）中はレシーブできないようにする
+            if (ball.timeStopTimer > 0) return; 
+            if (ball.sonicAccelTimer > 0) return; 
+            
+            // Absolutely prevent self-hitting or recursive touch bugs during Speed quick spikes
+            if (player.state === 'quick_approach' || player.state === 'quick_spike') return;
 
             let currentRadiusX = player.radiusX;
             let currentRadiusY = player.radiusY;
@@ -1407,6 +1527,57 @@
             if (distance < assistDistance) {
                 if (player.touchCooldown > 0) return;
                 if (player.state === 'tumbled') return; 
+
+                // ★パワータイプの強球に対する衝突判定（80%で吹き飛び、20%で耐える）
+                const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe;
+                if (isPowerBall) {
+                    if (Math.random() < 0.80) {
+                        player.touchCooldown = 30; // 衝突クールダウンを長く取り、二重接触を回避
+                        player.state = 'tumbled';
+                        player.hp -= 20; // 確定ダメージ
+
+                        if (player.hp <= 0) {
+                            player.actionTimer = 75; 
+                            player.serveText = 'EXHAUSTED!!';
+                            player.serveTextTimer = 75;
+                            player.hp = 100; 
+                        } else {
+                            player.actionTimer = 45; 
+                            player.serveText = ball.isMegatonServe ? 'MEGATON CRASH!!' : 'GUARD BREAK!!';
+                            player.serveTextTimer = 45;
+                        }
+
+                        // 爆発的スパークエフェクト
+                        for (let i = 0; i < 25; i++) {
+                            particleSystem.push(new Particle(player.x, player.y, '#dc2626'));
+                            particleSystem.push(new Particle(player.x, player.y, '#f97316'));
+                            particleSystem.push(new Particle(player.x, player.y, '#facc15'));
+                        }
+
+                        // キャラクターを後方に大きく吹き飛ばす
+                        player.vx = (player.id === 1 ? -5.5 : 5.5);
+                        player.vy = -4.0;
+                        player.isGrounded = false;
+
+                        // ボールを真上の超高高度（ハイドーム）へ高く跳ね上げる
+                        ball.vx = (player.id === 1 ? -1.5 : 1.5) + (Math.random() - 0.5) * 1.5;
+                        ball.vy = -16.5; 
+                        
+                        ball.isPowerfulSpike = false;
+                        ball.isMegatonServe = false;
+                        playSound('just_spike');
+                        return; 
+                    } else {
+                        // 20%の確率で奇跡的に耐え、通常レシーブへ移行
+                        player.state = 'receive';
+                        player.actionTimer = 15;
+                        player.serveText = 'ABSORB!!';
+                        player.serveTextTimer = 45;
+                        createRetroParticles(ball.x, ball.y, '#fde047');
+                        ball.isPowerfulSpike = false;
+                        ball.isMegatonServe = false;
+                    }
+                }
 
                 if (rallyState === 'rally' && player.typeName === 'SPEED' && !player.isGrounded) {
                     if (player.state === 'idle') return; 
@@ -1446,7 +1617,6 @@
                     const timing = player.actionTimer; 
                     let hitType = 'normal';
                     
-                    // ★ サーブのタイミング判定: 全タイプ共通で「2.1フレーム」の猶予に統一
                     let isServeJustTiming = (timing >= 14 && timing <= 15) || (timing === 13 && Math.random() < 0.10);
                     
                     if (isServeJustTiming) {
@@ -1493,7 +1663,6 @@
                         ball.isMegatonServe = false;
                         ball.isQuickSpike = false;
                     } else if (serveType === 'jump_spike') {
-                        // ★ メガトンサーブ: パワータイプのみ、ミス(poor)以外なら35%の確率で発動
                         let isMegaton = (player.typeName === 'POWER' && hitType !== 'poor' && Math.random() < 0.35);
 
                         if (isMegaton) {
@@ -1604,7 +1773,7 @@
                     return; 
                 }
 
-                // --- 通常ラリー中のヒット処理 ---
+                // --- NORMAL RALLY HITS ---
 
                 if (ball.isServeBall && player.id !== servingPlayerId) {
                     if (player.state === 'spike' || (!player.isGrounded && player.state !== 'dive')) {
@@ -1644,65 +1813,15 @@
                 const incomingSpeed = Math.hypot(ball.vx, ball.vy);
                 const isStrongHit = (touchCount === 1) && (incomingSpeed > 10.0 || ball.isPowerfulSpike || ball.isMegatonServe);
 
-                // ★ 強スパイク/メガトンサーブをレシーブした際のダメージ&ノックダウン判定
-                if (isStrongHit && (ball.isPowerfulSpike || ball.isMegatonServe) && touchCount === 1 && !(player.state === 'blocking' && !player.isGrounded)) {
-                    if (Math.random() < 0.80) { 
-                        player.state = 'tumbled';
-                        player.hp -= 20; 
-
-                        if (player.hp <= 0) {
-                            player.actionTimer = 180; 
-                            player.serveText = 'EXHAUSTED!!';
-                            player.serveTextTimer = 180;
-                            player.hp = 100; 
-                        } else {
-                            player.actionTimer = 65; 
-                            player.serveText = ball.isMegatonServe ? 'MEGATON CRASH!!' : 'KNOCKDOWN!!';
-                            player.serveTextTimer = 65;
-                        }
-
-                        // 火花をまとった吹き飛ばしエフェクト
-                        for (let i = 0; i < 20; i++) {
-                            particleSystem.push(new Particle(player.x, player.y, '#dc2626'));
-                            particleSystem.push(new Particle(player.x, player.y, '#f97316'));
-                            particleSystem.push(new Particle(player.x, player.y, '#facc15'));
-                        }
-                        
-                        player.vx = (player.id === 1 ? -4 : 4);
-                        player.vy = -3.5;
-                        player.isGrounded = false;
-                        
-                        ball.vx = (ball.vx * 0.15) + (dx / player.radiusY) * 2.0;
-                        ball.vy = -13.0; 
-                        
-                        ball.isPowerfulSpike = false;
-                        ball.isMegatonServe = false;
-                        playSound('hit');
-                        return; 
-                    } else if (player.state === 'receive' || player.state === 'dive') {
-                        player.serveText = 'ABSORB!';
-                        player.serveTextTimer = 45;
-                        createRetroParticles(ball.x, ball.y, '#fde047');
-                    }
-                }
-
-                // 衝突時にボールの特殊フラグをリセット
                 ball.isFloater = false; 
                 ball.isTrickyFloater = false;
                 ball.isMagicFeint = false;
                 ball.magicFeintTimer = 0;
-                ball.timeStopPostType = ''; // ★ 極彩色トレイルを解除
+                ball.timeStopPostType = ''; 
 
                 if (player.state === 'receive' || player.state === 'dive') {
                     playSound('hit');
                     ball.y = headY - hitDistance;
-                    
-                    if (ball.isMegatonServe) {
-                        player.vx = (player.id === 1 ? -4.5 : 4.5);
-                        player.serveText = 'HEAVY!!';
-                        player.serveTextTimer = 30;
-                        createRetroParticles(player.x, player.y, '#f97316');
-                    }
                     
                     let targetX = player.id === 1 
                         ? (touchCount >= 2 ? 388 : 200) 
@@ -1749,7 +1868,7 @@
                     ball.isMegatonServe = false;
                     ball.isQuickSpike = false;
 
-                    // ★ トス（2回目のタッチ）の成功時に、クイックスパイクの受付タイマーを作動させる
+                    // Set toss window for quick spikes
                     if (touchCount === 2) {
                         player.tossActiveTimer = 40; 
                     }
@@ -1780,57 +1899,22 @@
                     ball.isQuickSpike = false;
 
                 } else if (!player.isGrounded && player.state === 'blocking') {
-                    // ★ ガードクラッシュ
-                    if (ball.isPowerfulSpike || ball.isMegatonServe) {
-                        playSound('hit'); 
-                        
-                        player.state = 'tumbled'; 
-                        player.hp -= 15; 
-                        
-                        if (player.hp <= 0) {
-                            player.actionTimer = 180; 
-                            player.serveText = 'EXHAUSTED!!';
-                            player.serveTextTimer = 180;
-                            player.hp = 100; 
-                        } else {
-                            player.actionTimer = 45; 
-                            player.serveText = 'GUARD CRASH!!';
-                            player.serveTextTimer = 45;
-                        }
-                        
-                        player.vx = (player.id === 1 ? -4.5 : 4.5);
-                        player.vy = -3.0;
-                        player.isGrounded = false;
-                        
-                        ball.vx *= 0.5;
-                        ball.vy = -12.0;
-                        
-                        for (let i = 0; i < 15; i++) {
-                            particleSystem.push(new Particle(ball.x, ball.y, '#f97316')); 
-                            particleSystem.push(new Particle(ball.x, ball.y, '#dc2626')); 
-                        }
-                        ball.isPowerfulSpike = false;
-                        ball.isMegatonServe = false;
-                        ball.isQuickSpike = false;
-                        
-                    } else {
-                        playSound('just_spike');
-                        ball.x = clampedX + Math.cos(angle) * hitDistance;
-                        ball.y = headY + Math.sin(angle) * hitDistance;
-                        
-                        ball.vx = targetDir * 5.8; 
-                        ball.vy = 4.2; 
-                        ball.spin = targetDir * 1.0;
-                        
-                        player.state = 'block'; 
-                        player.actionTimer = 15;
-                        player.serveText = 'BLOCK!';
-                        player.serveTextTimer = 45;
-                        createRetroParticles(ball.x, ball.y, '#ef4444');
-                        ball.isPowerfulSpike = false;
-                        ball.isMegatonServe = false;
-                        ball.isQuickSpike = false;
-                    }
+                    playSound('just_spike');
+                    ball.x = clampedX + Math.cos(angle) * hitDistance;
+                    ball.y = headY + Math.sin(angle) * hitDistance;
+                    
+                    ball.vx = targetDir * 5.8; 
+                    ball.vy = 4.2; 
+                    ball.spin = targetDir * 1.0;
+                    
+                    player.state = 'block'; 
+                    player.actionTimer = 15;
+                    player.serveText = 'BLOCK!';
+                    player.serveTextTimer = 45;
+                    createRetroParticles(ball.x, ball.y, '#ef4444');
+                    ball.isPowerfulSpike = false;
+                    ball.isMegatonServe = false;
+                    ball.isQuickSpike = false;
 
                 } else {
                     ball.x = clampedX + Math.cos(angle) * hitDistance;
@@ -1848,7 +1932,6 @@
                         const timing = player.actionTimer; 
                         let hitType = 'normal';
 
-                        // ★ スパイクのタイミング判定: 全タイプ共通で「2.1フレーム」の猶予に統一
                         let isJustTiming = (timing >= 14 && timing <= 15) || (timing === 13 && Math.random() < 0.10);
                         let isJustDistance = distance <= (currentRadiusY + ball.radius + 4); 
 
@@ -1893,15 +1976,17 @@
                                 hitVy = baseVy + vyBonus;
                             }
                             
+                            // SPEED type: Open the window for Sonic Accel boost trigger
                             if (player.typeName === 'SPEED') {
-                                hitVx *= 0.85;
-                                hitVy *= 0.85;
+                                player.boostWindowTimer = 25; 
+                                player.serveText = 'BOOST READY!';
+                                player.serveTextTimer = 25;
                             }
 
                             ball.shadowColor = 'rgba(255, 255, 255, 0.6)';
                             ball.spin = targetDir * (10.0 + ratio * 5.0); 
                             
-                            player.serveText = 'JUST MEET!' + textSuffix;
+                            player.serveText = player.typeName === 'SPEED' ? 'BOOST READY!' : 'JUST MEET!' + textSuffix;
                             player.serveTextTimer = 45;
                             createRetroParticles(ball.x, ball.y, '#fde047'); 
                             createRetroParticles(ball.x, ball.y, '#ffffff'); 
@@ -1920,14 +2005,16 @@
                                 hitVy = baseVy + vyBonus;
                             }
 
+                            // SPEED type: Open boost window
                             if (player.typeName === 'SPEED') {
-                                hitVx *= 0.85;
-                                hitVy *= 0.85;
+                                player.boostWindowTimer = 25; 
+                                player.serveText = 'BOOST READY!';
+                                player.serveTextTimer = 25;
                             }
 
                             ball.spin = targetDir * (2.0 + ratio * 3.0);
                             
-                            player.serveText = 'SPIKE!' + textSuffix;
+                            player.serveText = player.typeName === 'SPEED' ? 'BOOST READY!' : 'SPIKE!' + textSuffix;
                             player.serveTextTimer = 45;
                             createRetroParticles(ball.x, ball.y, '#f43f5e');
                             ball.isPowerfulSpike = (player.typeName === 'POWER'); 
@@ -1942,7 +2029,7 @@
                             ball.isMegatonServe = false;
                         }
 
-                        // ボール軌道調整
+                        // Align physics nicely
                         if (hitType !== 'poor') {
                             let testVx = hitVx;
                             let testVy = hitVy;
@@ -1970,30 +2057,26 @@
                             }
                         }
 
-                        // ★ TRICKYタイプ専用：カオス・タイムストップ・スパイク
+                        // TRICKY Time Stop trigger
                         if (player.typeName === 'TRICKY' && hitType !== 'poor') {
-                            playSound('hit'); // 静止の予兆音
+                            playSound('hit'); 
                             
-                            // ★ ランダム性の強化：0.2秒(10F)〜3秒(180F)の完全ランダムかつ、極端な長短が出やすいように抽選
                             const randTime = Math.random();
                             let stopDur;
                             if (randTime < 0.35) {
-                                stopDur = 10 + Math.floor(Math.random() * 20); // 0.16s〜0.5s（即解除）
+                                stopDur = 10 + Math.floor(Math.random() * 20); 
                             } else if (randTime < 0.7) {
-                                stopDur = 120 + Math.floor(Math.random() * 60); // 2s〜3s（超長タメ）
+                                stopDur = 120 + Math.floor(Math.random() * 60); 
                             } else {
-                                stopDur = 40 + Math.floor(Math.random() * 60); // 0.6s〜1.6s（普通）
+                                stopDur = 40 + Math.floor(Math.random() * 60); 
                             }
                             ball.timeStopTimer = stopDur; 
-                            
-                            // ★ フォータッチ防止：時止め解除直後に自分で触れないようクールダウンを延長
                             player.touchCooldown = stopDur + 15;
                             
                             ball.timeStopVx = hitVx;
                             ball.timeStopVy = hitVy;
                             ball.timeStopSpin = 0;
 
-                            // 解除後の球種をランダム決定 (40%フローター, 30%パワー, 30%クイック)
                             const randType = Math.random();
                             if (randType < 0.4) {
                                 ball.timeStopPostType = 'floater';
@@ -2006,7 +2089,6 @@
                                 ball.timeStopPostType = 'quick';
                             }
 
-                            // 静止中はフラグをすべてオフ
                             ball.isFloater = false; 
                             ball.isPowerfulSpike = false;
                             ball.isQuickSpike = false;
@@ -2021,12 +2103,6 @@
                         } else {
                             ball.vx = hitVx;
                             ball.vy = hitVy;
-                        }
-
-                        if (player.typeName === 'SPEED' && hitType !== 'poor') {
-                            ball.magicControlTimer = 30; 
-                            ball.magicControllerId = player.id;
-                            player.serveText = player.serveText.replace('!', ' (CTRL)!');
                         }
                     } else {
                         playSound('hit');
@@ -2112,6 +2188,11 @@
         }
 
         function startNewRally() {
+            // Wake audio context on click
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
             if (winner !== null) {
                 score1 = 0;
                 score2 = 0;
@@ -2119,7 +2200,6 @@
                 lastScorer = 1;
                 document.getElementById('score1').innerText = '00';
                 document.getElementById('score2').innerText = '00';
-                // ★ 勝敗がついて次の試合が始まる時に体力をリセット
                 p1.hp = 100;
                 p2.hp = 100;
             }
@@ -2140,6 +2220,8 @@
             p1TouchCount = 0;
             p2TouchCount = 0;
             gameActive = true;
+            
+            playSound('whistle');
         }
 
         window.addEventListener('keydown', (e) => {
@@ -2152,8 +2234,16 @@
             const now = Date.now();
             const doubleTapDelay = 250; 
 
-            if (!gameActive && (e.code === 'Space' || e.code === 'Enter' || e.code.startsWith('Key'))) {
+            // 任意の移動キー・アクションキー・決定キーのいずれでも自動でゲームが再開するように拡張
+            const restartKeys = [
+                'Space', 'Enter', 
+                'KeyA', 'KeyD', 'KeyS', 'KeyW', 'KeyQ',
+                'KeyJ', 'KeyL', 'KeyK', 'KeyI', 'KeyU'
+            ];
+
+            if (!gameActive && restartKeys.includes(e.code)) {
                 startNewRally();
+                return; // 再開したフレームは余計な即時暴発操作を防ぐためここで処理を抜ける
             }
 
             if (gameActive) {
@@ -2197,16 +2287,69 @@
                             }
                         }
                     } else {
+                        // Action triggers
                         if (e.code === 'KeyS') {
                             p1.triggerAction('receive'); 
                         }
-                        if (e.code === 'KeyW') p1.triggerAction('spike');
+                        if (e.code === 'KeyW') {
+                            // SPEED Sonic Accel boost trigger checking
+                            if (p1.typeName === 'SPEED' && p1.boostWindowTimer > 0) {
+                                p1.boostWindowTimer = 0;
+                                p1.serveText = "SONIC ACCEL!!";
+                                p1.serveTextTimer = 45;
+                                playSound('hit');
+                                
+                                ball.sonicAccelTimer = 18; // Freeze ball momentarily
+                                let targetDir = 1;
+                                ball.sonicAccelVx = targetDir * 14.5; 
+                                ball.sonicAccelVy = 3.8;  
+                                ball.sonicAccelDir = targetDir;
+                                ball.vx = 0;
+                                ball.vy = 0;
+                                ball.spin = 0;
+                                createRetroParticles(ball.x, ball.y, '#ffffff');
+                                createRetroParticles(ball.x, ball.y, '#38bdf8');
+                            } else {
+                                let dir = 0;
+                                if (keys['KeyA']) dir = -1;
+                                if (keys['KeyD']) dir = 1;
+                                const isDouble = (now - (lastKeyDownTime['KeyW'] || 0) < doubleTapDelay);
+                                p1.triggerAction('spike', dir, isDouble);
+                                lastKeyDownTime['KeyW'] = now;
+                            }
+                        }
                         if (e.code === 'KeyQ') p1.triggerAction('block');
                         
                         if (e.code === 'KeyK') {
                             p2.triggerAction('receive');
                         }
-                        if (e.code === 'KeyI') p2.triggerAction('spike');
+                        if (e.code === 'KeyI') {
+                            // SPEED Sonic Accel boost trigger checking (2P)
+                            if (p2.typeName === 'SPEED' && p2.boostWindowTimer > 0) {
+                                p2.boostWindowTimer = 0;
+                                p2.serveText = "SONIC ACCEL!!";
+                                p2.serveTextTimer = 45;
+                                playSound('hit');
+                                
+                                ball.sonicAccelTimer = 18; 
+                                let targetDir = -1;
+                                ball.sonicAccelVx = targetDir * 14.5; 
+                                ball.sonicAccelVy = 3.8;  
+                                ball.sonicAccelDir = targetDir;
+                                ball.vx = 0;
+                                ball.vy = 0;
+                                ball.spin = 0;
+                                createRetroParticles(ball.x, ball.y, '#ffffff');
+                                createRetroParticles(ball.x, ball.y, '#38bdf8');
+                            } else {
+                                let dir = 0;
+                                if (keys['KeyJ']) dir = -1;
+                                if (keys['KeyL']) dir = 1;
+                                const isDouble = (now - (lastKeyDownTime['KeyI'] || 0) < doubleTapDelay);
+                                p2.triggerAction('spike', dir, isDouble);
+                                lastKeyDownTime['KeyI'] = now;
+                            }
+                        }
                         if (e.code === 'KeyU') p2.triggerAction('block');
                     }
                 }
@@ -2217,8 +2360,18 @@
             keys[e.code] = false;
         });
 
+        // Bind Start button click
         document.getElementById('btnStart').addEventListener('click', (e) => {
             e.stopPropagation();
+            startNewRally();
+        });
+
+        // Bind overlay background clicks to also trigger start (excluding type selector buttons)
+        document.getElementById('overlay').addEventListener('click', (e) => {
+            if (e.target.closest('#p1TypePrev') || e.target.closest('#p1TypeNext') || 
+                e.target.closest('#p2TypePrev') || e.target.closest('#p2TypeNext')) {
+                return;
+            }
             startNewRally();
         });
 
@@ -2232,7 +2385,6 @@
             document.getElementById('score1').innerText = '00';
             document.getElementById('score2').innerText = '00';
             
-            // ★ リセットボタンを押した時にも体力をリセット
             p1.hp = 100;
             p2.hp = 100;
             
