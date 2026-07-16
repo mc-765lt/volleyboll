@@ -106,25 +106,24 @@
             </div>
         </div>
 
-        <!-- 操作説明パネル -->
-        <div class="w-full grid grid-cols-2 gap-2 mt-2 text-[7px] md:text-[9px] bg-slate-950 p-2.5 rounded-xl border border-blue-900 arcade-font leading-normal">
-            <div class="border-r border-blue-900 pr-2">
-                <span class="font-bold text-yellow-400 text-[8px] md:text-[10px]">■ P1 (LEFT) - SPEED TYPE ENHANCED</span>
-                <div class="flex flex-col gap-y-1 mt-1 text-slate-300">
-                    <div>MOVE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">A</kbd>/<kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">D</kbd> <span class="text-yellow-500">(x2: QUICK DIVE)</span></div>
-                    <div>TOSS: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">S</kbd> <span class="text-yellow-500">(IN AIR: FEINT)</span></div>
-                    <div>SPIKE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">W</kbd> <span class="text-cyan-400 font-bold">(W x2: QUICK / AIR+A/D+W: AUTO BLINK & CONNECT TO ACCEL)</span></div>
-                    <div>BLOCK: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">Q</kbd></div>
-                </div>
+        <!-- 視認性を劇的に向上させた超シンプル＆超コンパクト操作説明パネル -->
+        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 bg-slate-950 p-2.5 rounded-lg border border-blue-900 text-[10px] md:text-[11px] leading-normal font-sans">
+            <!-- 左カラム：オールラウンダー -->
+            <div class="border-b md:border-b-0 md:border-r border-blue-950 pb-1.5 md:pb-0 md:pr-2">
+                <span class="font-bold text-green-400 text-[8px] md:text-[9px] arcade-font block mb-1">■ ALL-ROUNDER (GREEN) - ROLE MASTER</span>
+                <p class="text-slate-300">
+                    <strong>【特殊】</strong>1撃目: 0F無硬直ダイブ&レシーブ拡大 | 2撃目: 黄金トス(次が確定ジャスト) | 3撃目: 魔球化<br>
+                    <strong>【攻防】</strong>ブロック: 吹き飛ばず鋭く落とすカウンター | サーブ: Wトス＝急落下 / Sトス＝不規則ゾーン狙い
+                </p>
             </div>
-            <div class="pl-2">
-                <span id="p2InstructionsHeader" class="font-bold text-red-500 text-[8px] md:text-[10px]">■ PLAYER-2 (RIGHT)</span>
-                <div class="flex flex-col gap-y-1 mt-1 text-slate-300">
-                    <div>MOVE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">J</kbd>/<kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">L</kbd> <span class="text-yellow-500">(x2: QUICK DIVE)</span></div>
-                    <div>TOSS: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">K</kbd> <span class="text-yellow-500">(IN AIR: FEINT)</span></div>
-                    <div>SPIKE: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">I</kbd> <span class="text-cyan-400 font-bold">(I x2: QUICK / AIR+J/L+I: AUTO BLINK & CONNECT TO ACCEL)</span></div>
-                    <div>BLOCK: <kbd class="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">U</kbd></div>
-                </div>
+            
+            <!-- 右カラム：スピードタイプ -->
+            <div class="pt-1 md:pt-0 md:pl-2">
+                <span class="font-bold text-cyan-400 text-[8px] md:text-[9px] arcade-font block mb-1">■ SPEED TYPE (BLUE) - HYPER STAR</span>
+                <p class="text-slate-300">
+                    <strong>【機動】</strong>0.2秒超高速ダイブ復帰 | クイック: トス後Wキー2回連打で超速アプローチ<br>
+                    <strong>【奇襲】</strong>エア・ブリンク: 空中+方向キー+スパイクでワープ自動スパイク ➜ 直後に再スイングでソニック・アクセル
+                </p>
             </div>
         </div>
         
@@ -135,21 +134,21 @@
 
     <script>
         const CHARA_TYPES = {
-            'ALL-ROUNDER': { speed: 6.0, jump: -9.5, gravityScale: 1.0, power: 1.0, float: 1.0, color: '#ffffff' },
+            'ALL-ROUNDER': { speed: 6.0, jump: -9.5, gravityScale: 1.0, power: 1.0, float: 1.0, color: '#22c55e' }, // グリーンに修正
             'POWER':       { speed: 5.0, jump: -10.2, gravityScale: 1.0, power: 1.35, float: 0.7, color: '#ef4444' },
             'SPEED':       { speed: 7.8, jump: -11.5, gravityScale: 1.15, power: 0.85, float: 0.9, color: '#3b82f6' },
             'TRICKY':      { speed: 5.8, jump: -9.5, gravityScale: 1.0, power: 0.85, float: 1.5, color: '#a855f7' }
         };
 
         const P1_COLORS = {
-            'ALL-ROUNDER': { jersey: '#2563eb', hair: '#1e293b', skin: '#fbcfe8' },
+            'ALL-ROUNDER': { jersey: '#22c55e', hair: '#1e293b', skin: '#fbcfe8' },
             'POWER':       { jersey: '#1e3a8a', hair: '#0f172a', skin: '#fca5a5' },
             'SPEED':       { jersey: '#38bdf8', hair: '#fef08a', skin: '#fbcfe8' },
             'TRICKY':      { jersey: '#7e22ce', hair: '#ffffff', skin: '#f3e8ff' }
         };
 
         const P2_COLORS = {
-            'ALL-ROUNDER': { jersey: '#dc2626', hair: '#f59e0b', skin: '#ffedd5' },
+            'ALL-ROUNDER': { jersey: '#15803d', hair: '#f59e0b', skin: '#ffedd5' },
             'POWER':       { jersey: '#7f1d1d', hair: '#451a03', skin: '#fca5a5' },
             'SPEED':       { jersey: '#fb923c', hair: '#fef08a', skin: '#ffedd5' },
             'TRICKY':      { jersey: '#c026d3', hair: '#ffffff', skin: '#fae8ff' }
@@ -165,7 +164,7 @@
             
             const l1 = document.getElementById('p1TypeLabel');
             l1.innerText = p1Type;
-            l1.style.color = CHARA_TYPES[p1Type].color;
+            l1.style.color = CHARA_TYPES[p1Type].color; // ここで設定されるALL-ROUNDERが緑（#22c55e）になります。
             
             const l2 = document.getElementById('p2TypeLabel');
             l2.innerText = p2Type;
@@ -359,8 +358,9 @@
                 this.warpCooldown = 0; 
                 this.tossActiveTimer = 0; 
                 this.boostWindowTimer = 0;
+                this.lastTossType = 'W'; // Record S (control) or W (high) toss
                 
-                // Track visual ghosts for the Speed type after-image
+                // Track visual ghosts for the Speed/All-rounder type after-image
                 this.ghosts = [];
 
                 this.setType('ALL-ROUNDER');
@@ -627,15 +627,14 @@
                             return;
                         }
 
-                        // --- AUTO AIR BLINK Action (自動追従スパイク & ソニック併用可能化) ---
-                        if (this.typeName === 'SPEED' && dir !== 0 && rallyState === 'rally') {
+                        // --- AUTO AIR BLINK Action (SPEED専用：自動追従＆瞬間移動奇襲) ---
+                        if (this.typeName === 'SPEED' && dir !== 0) {
                             const isBallPlayable = (this.id === 1 && ball.x <= NET_X + 50) || (this.id === 2 && ball.x >= NET_X - 50);
                             
                             if (isBallPlayable && ball.y < GROUND_Y - 30) {
                                 const prevX = this.x;
-                                
-                                // プレイヤーだけがボールの打点（横）に瞬間移動する！
-                                this.x = ball.x + (this.id === 1 ? -14 : 14);
+                                const blinkDist = dir * 110; 
+                                this.x += blinkDist;
 
                                 // 境界ガード
                                 const pad = this.radiusX;
@@ -651,12 +650,16 @@
                                 createRetroParticles(prevX, this.y, '#38bdf8');
                                 createRetroParticles(this.x, this.y, '#38bdf8');
 
+                                // ボールは動かさず、プレイヤーだけがミート位置へ自動調整
+                                ball.x = this.x + (this.id === 1 ? 14 : -14);
+                                ball.y = this.y - this.radiusY - 4;
+
                                 // 自動で超鋭角の「BLINK SPIKE」を打ち出す
                                 playSound('spike');
                                 let targetDir = this.id === 1 ? 1 : -1;
                                 
                                 ball.vx = targetDir * 11.5 * this.typeData.power;
-                                ball.vy = 4.2; // 鋭い角度
+                                ball.vy = 4.2; 
                                 ball.spin = targetDir * 6.0;
                                 
                                 ball.isFloater = false;
@@ -686,13 +689,13 @@
                                 this.hasSpikedInAir = true;
                                 this.touchCooldown = 20;
 
-                                // ★ソニック・アクセル（ブースト）コンボ用のウィンドウを開く！
+                                // ソニック・アクセル用コンボ待機
                                 this.boostWindowTimer = 25; 
                                 this.serveText = 'BLINK BOOST!!';
                                 this.serveTextTimer = 45;
 
                                 createRetroParticles(ball.x, ball.y, '#38bdf8');
-                                return; // 処理を完了させて抜ける
+                                return; 
                             }
                         }
 
@@ -751,14 +754,19 @@
                             this.warpCooldown = 0; 
                             playSound('hit');
                         } else {
+                            // ALL-ROUNDERの守備覚醒（0F無硬直起き上がり）
                             let diveForce = 5.5; 
                             if (this.typeName === 'SPEED') diveForce = 7.5; 
                             if (this.typeName === 'POWER') diveForce = 5.0; 
+                            if (this.typeName === 'ALL-ROUNDER') diveForce = 6.8;
 
                             this.vx = dir * diveForce;
                             this.vy = -4.5;
                             this.isGrounded = false;
-                            this.actionTimer = 12; // Hyper fast slide recover of 12 frames
+                            
+                            // ALL-ROUNDERなら瞬時に起き上がる（無硬直リベロ）
+                            this.actionTimer = (this.typeName === 'ALL-ROUNDER') ? 2 : 12; 
+                            
                             createRetroParticles(this.x, this.y, '#ffffff');
                             playSound('hit'); 
                         }
@@ -790,7 +798,7 @@
                     let dirScale = (this.id === 1) ? 1 : -1;
                     ctx.scale(dirScale * (this.radiusX / 14), this.radiusY / 22);
                     
-                    ctx.fillStyle = 'rgba(56, 189, 248, 0.45)';
+                    ctx.fillStyle = this.typeName === 'ALL-ROUNDER' ? 'rgba(34, 197, 94, 0.45)' : 'rgba(56, 189, 248, 0.45)';
                     ctx.beginPath();
                     ctx.ellipse(0, -this.radiusY, this.radiusX, this.radiusY, 0, 0, Math.PI * 2);
                     ctx.fill();
@@ -990,6 +998,11 @@
                     else if (this.serveText.includes('BOOST')) tCol = '#60a5fa'; 
                     else if (this.serveText.includes('SONIC ACCEL')) tCol = '#38bdf8'; 
                     else if (this.serveText.includes('AIR BLINK')) tCol = '#38bdf8';
+                    else if (this.serveText.includes('GOLD TOSS')) tCol = '#facc15';
+                    else if (this.serveText.includes('ULTIMATE')) tCol = '#22c55e';
+                    else if (this.serveText.includes('SOLID MIRROR')) tCol = '#22c55e';
+                    else if (this.serveText.includes('DRIVE SERVE')) tCol = '#22c55e';
+                    else if (this.serveText.includes('ZONE SERVE')) tCol = '#60a5fa';
 
                     ctx.fillStyle = tCol;
                     ctx.textAlign = 'center';
@@ -1057,6 +1070,10 @@
                 this.isMegatonServe = false; 
                 this.isQuickSpike = false; 
 
+                // ALL-ROUNDER ロールマスタリー専用
+                this.isGoldToss = false; 
+                this.isUltimateDrive = false;
+
                 // Sonic Accel and Time Stop triggers
                 this.timeStopTimer = 0;
                 this.timeStopVx = 0;
@@ -1092,6 +1109,9 @@
                 this.magicFeintTimer = 0;
                 this.isMegatonServe = false; 
                 this.isQuickSpike = false; 
+
+                this.isGoldToss = false;
+                this.isUltimateDrive = false;
 
                 this.timeStopTimer = 0;
                 this.timeStopVx = 0;
@@ -1202,6 +1222,17 @@
                             particleSystem.push(new Particle(this.x, this.y, '#c084fc'));
                             particleSystem.push(new Particle(this.x, this.y, '#a855f7'));
                         }
+                    } else if (this.isGoldToss) {
+                        if (globalTick % 2 === 0) {
+                            particleSystem.push(new Particle(this.x, this.y, '#facc15'));
+                            particleSystem.push(new Particle(this.x, this.y, '#fef08a'));
+                        }
+                    } else if (this.isUltimateDrive) {
+                        if (globalTick % 2 === 0) {
+                            particleSystem.push(new Particle(this.x, this.y, '#22c55e'));
+                            particleSystem.push(new Particle(this.x, this.y, '#a7f3d0'));
+                            particleSystem.push(new Particle(this.x, this.y, '#34d399'));
+                        }
                     }
                 }
 
@@ -1262,7 +1293,7 @@
                 this.vy += GRAVITY * 1.35;
 
                 if (!this.isFloater && !this.isQuickSpike) {
-                    if (this.isMegatonServe || this.isPowerfulSpike) {
+                    if (this.isMegatonServe || this.isPowerfulSpike || this.isUltimateDrive) {
                         this.vy += 0.15; 
                     }
                 }
@@ -1399,6 +1430,32 @@
                     ctx.restore();
                 }
 
+                // Gold Toss active glow
+                if (this.isGoldToss) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.5 + Math.sin(globalTick * 0.25) * 0.2;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#facc15';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius + 4, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(250, 204, 21, 0.2)';
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // Ultimate Drive glow
+                if (this.isUltimateDrive) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.6 + Math.sin(globalTick * 0.3) * 0.2;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#22c55e';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius + 6, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(34, 197, 94, 0.25)';
+                    ctx.fill();
+                    ctx.restore();
+                }
+
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
 
@@ -1473,6 +1530,7 @@
                     createRetroParticles(ball.x, ball.y, '#2563eb');
                     ball.isPowerfulSpike = false; 
                     ball.isQuickSpike = false;
+                    ball.isUltimateDrive = false;
                 }
             } 
             else if (Math.abs(ball.x - NET_X) < (NET_WIDTH / 2 + ball.radius) && 
@@ -1484,6 +1542,7 @@
                 createRetroParticles(ball.x, ball.y, '#2563eb');
                 ball.isPowerfulSpike = false; 
                 ball.isQuickSpike = false;
+                ball.isUltimateDrive = false;
             }
         }
 
@@ -1520,6 +1579,12 @@
             const hitDistance = currentRadiusY + ball.radius - 2;
             let assistDistance = hitDistance;
 
+            // ALL-ROUNDER 覚醒1段目（リベロ守護神）：1タッチ目のレシーブ範囲1.5倍化
+            const touchCountBefore = player.id === 1 ? p1TouchCount : p2TouchCount;
+            if (player.typeName === 'ALL-ROUNDER' && touchCountBefore === 0) {
+                assistDistance *= 1.5; 
+            }
+
             if (player.state === 'spike' && !player.isGrounded) {
                 assistDistance += 25;
             }
@@ -1528,13 +1593,40 @@
                 if (player.touchCooldown > 0) return;
                 if (player.state === 'tumbled') return; 
 
-                // ★パワータイプの強球に対する衝突判定（80%で吹き飛び、20%で耐える）
-                const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe;
+                // 必殺弾（POWER強打 / ALL-ROUNDERアルティメット）の衝突・吹き飛び処理
+                const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive;
                 if (isPowerBall) {
-                    if (Math.random() < 0.80) {
-                        player.touchCooldown = 30; // 衝突クールダウンを長く取り、二重接触を回避
+                    // ALL-ROUNDERの完璧なブロック（SOLID MIRROR）の時は、どんな強打でも絶対に吹き飛ばず、鋭い角度で即座にカウンター！
+                    if (player.typeName === 'ALL-ROUNDER' && !player.isGrounded && player.state === 'blocking') {
+                        playSound('just_spike');
+                        ball.x = clampedX + Math.cos(angle) * hitDistance;
+                        ball.y = headY + Math.sin(angle) * hitDistance;
+
+                        // 鋭角シャープカウンター
+                        ball.vx = targetDir * 7.5;
+                        ball.vy = 5.2;
+                        ball.spin = targetDir * 3.0;
+
+                        player.state = 'block';
+                        player.actionTimer = 15;
+                        player.serveText = 'SOLID MIRROR!!';
+                        player.serveTextTimer = 45;
+
+                        createRetroParticles(ball.x, ball.y, '#22c55e');
+                        ball.isPowerfulSpike = false;
+                        ball.isMegatonServe = false;
+                        ball.isUltimateDrive = false;
+                        player.touchCooldown = 20;
+                        return;
+                    }
+
+                    // 通常時、またはALL-ROUNDER以外のガードブレイク判定（80%確率で弾き飛ばし）
+                    const blowawayChance = ball.isUltimateDrive ? 0.50 : 0.80;
+
+                    if (Math.random() < blowawayChance) {
+                        player.touchCooldown = 30; // 衝突クールダウン
                         player.state = 'tumbled';
-                        player.hp -= 20; // 確定ダメージ
+                        player.hp -= 20; 
 
                         if (player.hp <= 0) {
                             player.actionTimer = 75; 
@@ -1547,28 +1639,30 @@
                             player.serveTextTimer = 45;
                         }
 
-                        // 爆発的スパークエフェクト
+                        // 火花エフェクト
+                        const flashColor = ball.isUltimateDrive ? '#22c55e' : '#dc2626';
                         for (let i = 0; i < 25; i++) {
-                            particleSystem.push(new Particle(player.x, player.y, '#dc2626'));
+                            particleSystem.push(new Particle(player.x, player.y, flashColor));
                             particleSystem.push(new Particle(player.x, player.y, '#f97316'));
                             particleSystem.push(new Particle(player.x, player.y, '#facc15'));
                         }
 
-                        // キャラクターを後方に大きく吹き飛ばす
+                        // 吹き飛ばし物理
                         player.vx = (player.id === 1 ? -5.5 : 5.5);
                         player.vy = -4.0;
                         player.isGrounded = false;
 
-                        // ボールを真上の超高高度（ハイドーム）へ高く跳ね上げる
+                        // 救済用の高高度バウンド
                         ball.vx = (player.id === 1 ? -1.5 : 1.5) + (Math.random() - 0.5) * 1.5;
                         ball.vy = -16.5; 
                         
                         ball.isPowerfulSpike = false;
                         ball.isMegatonServe = false;
+                        ball.isUltimateDrive = false;
                         playSound('just_spike');
                         return; 
                     } else {
-                        // 20%の確率で奇跡的に耐え、通常レシーブへ移行
+                        // 確率でレシーブ成功（ABSORB!）
                         player.state = 'receive';
                         player.actionTimer = 15;
                         player.serveText = 'ABSORB!!';
@@ -1576,6 +1670,7 @@
                         createRetroParticles(ball.x, ball.y, '#fde047');
                         ball.isPowerfulSpike = false;
                         ball.isMegatonServe = false;
+                        ball.isUltimateDrive = false;
                     }
                 }
 
@@ -1629,6 +1724,42 @@
 
                     const pPower = player.typeData.power;
 
+                    // ALL-ROUNDERの戦術サーブ打ち分け (DRIVE / ZONE)
+                    if (player.typeName === 'ALL-ROUNDER') {
+                        if (serveType === 'jump_spike' && hitType !== 'poor') {
+                            if (player.lastTossType === 'W') {
+                                // 1. 超重ドライブサーブ (DRIVE SERVE) -> ネットを越えてから急落下
+                                playSound('just_spike');
+                                ball.vx = targetDir * 12.8;
+                                ball.vy = 0.5;
+                                ball.isUltimateDrive = true; // このフラグで緑色の残像＋急落下
+                                ball.spin = targetDir * 8.0;
+                                
+                                player.serveText = 'DRIVE SERVE!!';
+                                player.serveTextTimer = 45;
+                                createRetroParticles(ball.x, ball.y, '#22c55e');
+                            } else {
+                                // 2. ピンポイント・ゾーンサーブ (ZONE Floater) -> 狙い済ましたコーナーへの変化球
+                                playSound('spike');
+                                ball.vx = targetDir * 8.2;
+                                ball.vy = -1.5;
+                                ball.isFloater = true;
+                                ball.floaterType = 'jump';
+                                ball.floatAmp = 0.8;
+                                ball.floatForceX = (Math.random() - 0.5) * 0.12;
+                                
+                                player.serveText = 'ZONE SERVE!';
+                                player.serveTextTimer = 45;
+                                createRetroParticles(ball.x, ball.y, '#60a5fa');
+                            }
+                            ball.isPowerfulSpike = false;
+                            ball.isMegatonServe = false;
+                            ball.isQuickSpike = false;
+                            return;
+                        }
+                    }
+
+                    // 通常サーブ処理
                     if (serveType === 'floater') {
                         if (hitType === 'poor') {
                             playSound('hit');
@@ -1811,7 +1942,7 @@
                 const touchCount = player.id === 1 ? p1TouchCount : p2TouchCount;
                 
                 const incomingSpeed = Math.hypot(ball.vx, ball.vy);
-                const isStrongHit = (touchCount === 1) && (incomingSpeed > 10.0 || ball.isPowerfulSpike || ball.isMegatonServe);
+                const isStrongHit = (touchCount === 1) && (incomingSpeed > 10.0 || ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive);
 
                 ball.isFloater = false; 
                 ball.isTrickyFloater = false;
@@ -1822,6 +1953,13 @@
                 if (player.state === 'receive' || player.state === 'dive') {
                     playSound('hit');
                     ball.y = headY - hitDistance;
+                    
+                    if (ball.isMegatonServe) {
+                        player.vx = (player.id === 1 ? -4.5 : 4.5);
+                        player.serveText = 'HEAVY!!';
+                        player.serveTextTimer = 30;
+                        createRetroParticles(player.x, player.y, '#f97316');
+                    }
                     
                     let targetX = player.id === 1 
                         ? (touchCount >= 2 ? 388 : 200) 
@@ -1862,11 +2000,22 @@
                     }
                     
                     ball.spin = targetDir * -1.0;
-                    createRetroParticles(ball.x, ball.y, '#60a5fa');
+                    
+                    // ALL-ROUNDER 覚醒2段目：トスした球を黄金に輝かせる
+                    if (player.typeName === 'ALL-ROUNDER' && touchCount === 2) {
+                        ball.isGoldToss = true; 
+                        player.serveText = 'GOLD TOSS!!';
+                        player.serveTextTimer = 45;
+                        createRetroParticles(ball.x, ball.y, '#facc15');
+                    } else {
+                        ball.isGoldToss = false;
+                        createRetroParticles(ball.x, ball.y, '#60a5fa');
+                    }
                     
                     ball.isPowerfulSpike = false; 
                     ball.isMegatonServe = false;
                     ball.isQuickSpike = false;
+                    ball.isUltimateDrive = false;
 
                     // Set toss window for quick spikes
                     if (touchCount === 2) {
@@ -1897,8 +2046,11 @@
                     ball.isPowerfulSpike = false; 
                     ball.isMegatonServe = false;
                     ball.isQuickSpike = false;
+                    ball.isUltimateDrive = false;
 
                 } else if (!player.isGrounded && player.state === 'blocking') {
+                    // ALL-ROUNDER's Solid Mirror Block is already handled under power hit check at top.
+                    // This is the fallback for normal non-power ball blocking or other classes.
                     playSound('just_spike');
                     ball.x = clampedX + Math.cos(angle) * hitDistance;
                     ball.y = headY + Math.sin(angle) * hitDistance;
@@ -1915,6 +2067,7 @@
                     ball.isPowerfulSpike = false;
                     ball.isMegatonServe = false;
                     ball.isQuickSpike = false;
+                    ball.isUltimateDrive = false;
 
                 } else {
                     ball.x = clampedX + Math.cos(angle) * hitDistance;
@@ -1932,7 +2085,12 @@
                         const timing = player.actionTimer; 
                         let hitType = 'normal';
 
+                        // ALL-ROUNDER 覚醒2段目（ゴールドトス時）：タイミングに関わらず確定JUST MEET
                         let isJustTiming = (timing >= 14 && timing <= 15) || (timing === 13 && Math.random() < 0.10);
+                        if (ball.isGoldToss) {
+                            isJustTiming = true; 
+                        }
+                        
                         let isJustDistance = distance <= (currentRadiusY + ball.radius + 4); 
 
                         if (isJustTiming && isJustDistance) {
@@ -1970,6 +2128,14 @@
                             if (player.typeName === 'POWER') {
                                 hitVx = targetDir * (12.0 + vxBonus) * pPower;
                                 hitVy = 3.5 + vyBonus;
+                            } else if (player.typeName === 'ALL-ROUNDER' && ball.isGoldToss) {
+                                // 万能アタッカーとしてのハイブリッド魔球（アルティメット・ドライブ）
+                                hitVx = targetDir * (14.2 + vxBonus) * 1.25; 
+                                hitVy = 3.2 + vyBonus;
+                                ball.isUltimateDrive = true; 
+                                ball.isFloater = true; // 微妙に軌道が揺れる
+                                ball.floaterType = 'normal';
+                                ball.floatAmp = 0.5;
                             } else {
                                 hitVx = targetDir * (15.2 - ratio * 3.5 + vxBonus) * pPower; 
                                 let baseVy = player.typeName === 'ALL-ROUNDER' ? (-0.1 + ratio * 2.2) : (-0.6 + ratio * 1.2);
@@ -1986,11 +2152,18 @@
                             ball.shadowColor = 'rgba(255, 255, 255, 0.6)';
                             ball.spin = targetDir * (10.0 + ratio * 5.0); 
                             
-                            player.serveText = player.typeName === 'SPEED' ? 'BOOST READY!' : 'JUST MEET!' + textSuffix;
+                            if (ball.isUltimateDrive) {
+                                player.serveText = 'ULTIMATE DRIVE!!';
+                            } else {
+                                player.serveText = player.typeName === 'SPEED' ? 'BOOST READY!' : 'JUST MEET!' + textSuffix;
+                            }
                             player.serveTextTimer = 45;
-                            createRetroParticles(ball.x, ball.y, '#fde047'); 
+                            
+                            const flashColor = ball.isUltimateDrive ? '#22c55e' : '#fde047';
+                            createRetroParticles(ball.x, ball.y, flashColor); 
                             createRetroParticles(ball.x, ball.y, '#ffffff'); 
                             createRetroParticles(ball.x, ball.y, '#f43f5e'); 
+                            
                             ball.isPowerfulSpike = (player.typeName === 'POWER'); 
                             ball.isMegatonServe = false;
                         } else if (hitType === 'normal') {
@@ -1999,6 +2172,13 @@
                             if (player.typeName === 'POWER') {
                                 hitVx = targetDir * (9.8 + vxBonus) * pPower;
                                 hitVy = 2.8 + vyBonus;
+                            } else if (player.typeName === 'ALL-ROUNDER' && ball.isGoldToss) {
+                                hitVx = targetDir * (12.2 + vxBonus) * 1.2;
+                                hitVy = 2.8 + vyBonus;
+                                ball.isUltimateDrive = true;
+                                ball.isFloater = true;
+                                ball.floaterType = 'normal';
+                                ball.floatAmp = 0.4;
                             } else {
                                 hitVx = targetDir * (8.8 - ratio * 2.0 + vxBonus) * pPower; 
                                 let baseVy = player.typeName === 'ALL-ROUNDER' ? (0.6 + ratio * 3.0) : (-0.1 + ratio * 1.8);
@@ -2014,9 +2194,16 @@
 
                             ball.spin = targetDir * (2.0 + ratio * 3.0);
                             
-                            player.serveText = player.typeName === 'SPEED' ? 'BOOST READY!' : 'SPIKE!' + textSuffix;
+                            if (ball.isUltimateDrive) {
+                                player.serveText = 'ULTIMATE DRIVE!!';
+                            } else {
+                                player.serveText = player.typeName === 'SPEED' ? 'BOOST READY!' : 'SPIKE!' + textSuffix;
+                            }
                             player.serveTextTimer = 45;
-                            createRetroParticles(ball.x, ball.y, '#f43f5e');
+                            
+                            const flashColor = ball.isUltimateDrive ? '#22c55e' : '#f43f5e';
+                            createRetroParticles(ball.x, ball.y, flashColor);
+                            
                             ball.isPowerfulSpike = (player.typeName === 'POWER'); 
                             ball.isMegatonServe = false;
                         } else {
@@ -2027,6 +2214,7 @@
                             createRetroParticles(ball.x, ball.y, '#9ca3af'); 
                             ball.isPowerfulSpike = false;
                             ball.isMegatonServe = false;
+                            ball.isUltimateDrive = false;
                         }
 
                         // Align physics nicely
@@ -2089,9 +2277,11 @@
                                 ball.timeStopPostType = 'quick';
                             }
 
+                            ball.isGoldToss = false; 
                             ball.isFloater = false; 
                             ball.isPowerfulSpike = false;
                             ball.isQuickSpike = false;
+                            ball.isUltimateDrive = false;
                             
                             ball.vx = 0;
                             ball.vy = 0;
@@ -2110,9 +2300,13 @@
                         hitVy = -Math.abs(ball.vy) * 0.5 - 5.5; 
                         createRetroParticles(ball.x, ball.y, '#facc15');
                         ball.isPowerfulSpike = false; 
+                        ball.isUltimateDrive = false;
                         ball.vx = hitVx;
                         ball.vy = hitVy;
                     }
+                    
+                    // トス消化
+                    ball.isGoldToss = false; 
                 }
             }
         }
@@ -2281,9 +2475,11 @@
                             if (e.code === 'KeyS' || e.code === 'KeyK') { 
                                 ball.vy = -13.5; 
                                 ball.vx = dir * 0.5;
+                                server.lastTossType = 'S'; // Soft toss for precision
                             } else { 
                                 ball.vy = -15.5; 
                                 ball.vx = dir * 1.8; 
+                                server.lastTossType = 'W'; // High toss for high-topspin drive
                             }
                         }
                     } else {
@@ -2533,7 +2729,7 @@
             ball.draw();
             drawDummyBall(); 
             
-            particleSystem.forEach(p => p.draw());
+            particleSystem.forEach(p => p.update() || p.draw());
 
             requestAnimationFrame(loop);
         }
