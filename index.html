@@ -287,7 +287,7 @@
                 osc.start(now);
                 osc.stop(now + 0.25);
             } else if (type === 'meteor_burn') {
-                // ☄️ 彗星が空気を切り裂いて激しく燃え盛る超低音焦熱爆発音 (1.0秒)
+                // ☄️ 彗星が空気を切り裂いて激しく燃え盛る超低音焦熱爆発音 (1.0秒に延長)
                 const duration = 1.0;
                 const bufferSize = audioCtx.sampleRate * duration;
                 const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -1005,7 +1005,7 @@
                     ctx.restore();
                 }
 
-                // ☄️ POWER TYPE RED ELECTRIC LIGHTNING EFFECT (スパイク動作時限定の赤い稲妻)
+                // ☄️ POWER TYPE RED ELECTRIC LIGHTNING EFFECT (赤い稲妻を追加!)
                 const isPowerAttacking = this.typeName === 'POWER' && 
                     (this.state === 'spike' || this.state === 'quick_spike' || this.state === 'quick_approach');
                 
@@ -1360,6 +1360,7 @@
             update() {
                 if (rallyState === 'serving') return;
 
+                // ☄️ 彗星（流れ星）の軌跡記録システム
                 const hasAnyTrail = this.isPowerfulSpike || this.isMegatonServe || this.isUltimateDrive || this.isSonicSpike || this.isQuickSpike;
                 if (hasAnyTrail) {
                     this.trail.push({ x: this.x, y: this.y });
@@ -1437,6 +1438,7 @@
                     return; 
                 }
 
+                // ☄️ 流れ星・流星のバックファイヤ粒子生成
                 if (rallyState === 'rally' && !this.isServeBall) {
                     if (this.isPowerfulSpike || this.isMegatonServe) {
                         for (let i = 0; i < 3; i++) {
@@ -1649,6 +1651,7 @@
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
                 ctx.fill();
 
+                // ☄️ 流れ星（流星）のグラデーション・トレイル尾を描画
                 if (this.trail.length > 0) {
                     ctx.save();
                     for (let i = 0; i < this.trail.length; i++) {
@@ -1682,6 +1685,7 @@
 
                 // ☄️ POWER TYPE MEGA EFFECT (赤い熱気 ＋ 稲妻 ＋ 風を切るソニックブーム)
                 if (this.isPowerfulSpike || this.isMegatonServe) {
+                    // ボール背後のオーラを小さくし、視認性をキープ！
                     ctx.save();
                     ctx.globalAlpha = 0.25 + Math.sin(globalTick * 0.25) * 0.1;
                     ctx.shadowBlur = 12;
@@ -2018,101 +2022,7 @@
                 const targetDir = player.id === 1 ? 1 : -1;
                 const angle = Math.atan2(dy, dx);
 
-                const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive;
-                if (isPowerBall) {
-                    if (player.typeName === 'ALL-ROUNDER' && !player.isGrounded && player.state === 'blocking') {
-                        playSound('just_spike');
-                        ball.x = clampedX + Math.cos(angle) * hitDistance;
-                        ball.y = headY + Math.sin(angle) * hitDistance;
-
-                        ball.vx = targetDir * 9.5;
-                        ball.vy = 8.5;
-                        ball.spin = targetDir * 6.0;
-
-                        player.state = 'block';
-                        player.actionTimer = 15;
-                        player.serveText = 'SOLID MIRROR!!';
-                        player.serveTextTimer = 45;
-
-                        activeBlockEffect = new BlockEffect(ball.x, ball.y, '#22c55e');
-                        ctx.fillStyle = 'rgba(34, 197, 94, 0.45)';
-                        ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
-
-                        for (let i = 0; i < 45; i++) {
-                            const p = new Particle(ball.x, ball.y, '#22c55e');
-                            p.size = Math.random() * 6 + 3;
-                            p.vx = (Math.random() - 0.5) * 14;
-                            p.vy = (Math.random() - 0.5) * 14 - 3;
-                            particleSystem.push(p);
-                        }
-
-                        ball.isPowerfulSpike = false;
-                        ball.isMegatonServe = false;
-                        ball.isUltimateDrive = false;
-                        ball.isTrickySpike = false; 
-                        ball.isSonicSpike = false;
-                        player.touchCooldown = 20;
-                        return;
-                    }
-
-                    const blowawayChance = ball.isUltimateDrive ? 0.50 : 0.80;
-
-                    if (Math.random() < blowawayChance) {
-                        player.touchCooldown = 30; 
-                        player.state = 'tumbled';
-                        player.hp -= 20; 
-
-                        if (player.hp <= 0) {
-                            player.actionTimer = 75; 
-                            player.serveText = 'EXHAUSTED!!';
-                            player.serveTextTimer = 75;
-                            player.hp = 100; 
-                        } else {
-                            player.actionTimer = (player.typeName === 'ALL-ROUNDER') ? 10 : 28; 
-                            player.serveText = ball.isMegatonServe ? 'MEGATON CRASH!!' : 'GUARD BREAK!!';
-                            player.serveTextTimer = (player.typeName === 'ALL-ROUNDER') ? 10 : 28;
-                        }
-
-                        const flashColor = ball.isUltimateDrive ? '#22c55e' : '#dc2626';
-                        for (let i = 0; i < 25; i++) {
-                            particleSystem.push(new Particle(player.x, player.y, flashColor));
-                            particleSystem.push(new Particle(player.x, player.y, '#f97316'));
-                            particleSystem.push(new Particle(player.x, player.y, '#facc15'));
-                        }
-
-                        player.vx = (player.id === 1 ? -5.5 : 5.5);
-                        player.vy = -4.0;
-                        player.isGrounded = false;
-
-                        ball.vx = (player.id === 1 ? -1.5 : 1.5) + (Math.random() - 0.5) * 1.5;
-                        ball.vy = -16.5; 
-                        
-                        ball.isPowerfulSpike = false;
-                        ball.isMegatonServe = false;
-                        ball.isUltimateDrive = false;
-                        ball.isTrickySpike = false;
-                        ball.isSonicSpike = false;
-                        playSound('just_spike');
-                        return; 
-                    } else {
-                        player.state = 'receive';
-                        player.actionTimer = 15;
-                        player.serveText = 'ABSORB!!';
-                        player.serveTextTimer = 45;
-                        createRetroParticles(ball.x, ball.y, '#fde047');
-                        ball.isPowerfulSpike = false;
-                        ball.isMegatonServe = false;
-                        ball.isUltimateDrive = false;
-                        ball.isTrickySpike = false;
-                        ball.isSonicSpike = false;
-                    }
-                }
-
-                if (rallyState === 'rally' && player.typeName === 'SONIC' && !player.isGrounded) {
-                    if (player.state === 'idle') return; 
-                    if (player.state === 'spike' && player.actionTimer < 7) return; 
-                }
-
+                // サーブトス衝突時の処理
                 if (rallyState === 'serve_toss') {
                     if (player.id !== servingPlayerId) {
                         playSound('whistle');
@@ -2339,17 +2249,7 @@
                     return; 
                 }
 
-                if (ball.isServeBall && player.id !== servingPlayerId) {
-                    if (player.state === 'spike' || (!player.isGrounded && player.state !== 'dive')) {
-                        playSound('whistle');
-                        scorePoint(servingPlayerId, 'ILLEGAL ATTACK!'); 
-                        return;
-                    }
-                    ball.isServeBall = false;
-                }
-
-                player.touchCooldown = 15; 
-                
+                // 🚨 吹っ飛び（ノックダウン）時も「タッチ判定」を完全に計上するための最優先タッチカウント加算処理 🚨
                 if (player.id === 1) {
                     p1TouchCount++;
                     p2TouchCount = 0; 
@@ -2369,11 +2269,116 @@
                 }
 
                 const touchCount = player.id === 1 ? p1TouchCount : p2TouchCount;
+                player.touchCooldown = 15; // 連続接触防止用
                 
+                // サーブ返球ルール判定
+                if (ball.isServeBall && player.id !== servingPlayerId) {
+                    if (player.state === 'spike' || (!player.isGrounded && player.state !== 'dive')) {
+                        playSound('whistle');
+                        scorePoint(servingPlayerId, 'ILLEGAL ATTACK!'); 
+                        return;
+                    }
+                    ball.isServeBall = false;
+                }
+
                 const incomingSpeed = Math.hypot(ball.vx, ball.vy);
                 const isStrongHit = (touchCount === 1) && (incomingSpeed > 10.0 || ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive);
 
-                if (isStrongHit && (ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive) && touchCount === 1 && !(player.state === 'blocking' && !player.isGrounded)) {
+                // ☄️ メテオボール/メガトンサーブを1打目に食らった時の吹っ飛び処理 (フレーム数調整)
+                const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive;
+                if (isPowerBall && touchCount === 1 && !(player.state === 'blocking' && !player.isGrounded)) {
+                    
+                    // オールラウンダーの「ソリッドミラー完全ブロック」が優先される
+                    if (player.typeName === 'ALL-ROUNDER' && !player.isGrounded && player.state === 'blocking') {
+                        playSound('just_spike');
+                        ball.x = clampedX + Math.cos(angle) * hitDistance;
+                        ball.y = headY + Math.sin(angle) * hitDistance;
+
+                        ball.vx = targetDir * 9.5;
+                        ball.vy = 8.5;
+                        ball.spin = targetDir * 6.0;
+
+                        player.state = 'block';
+                        player.actionTimer = 15;
+                        player.serveText = 'SOLID MIRROR!!';
+                        player.serveTextTimer = 45;
+
+                        activeBlockEffect = new BlockEffect(ball.x, ball.y, '#22c55e');
+                        ctx.fillStyle = 'rgba(34, 197, 94, 0.45)';
+                        ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+
+                        for (let i = 0; i < 45; i++) {
+                            const p = new Particle(ball.x, ball.y, '#22c55e');
+                            p.size = Math.random() * 6 + 3;
+                            p.vx = (Math.random() - 0.5) * 14;
+                            p.vy = (Math.random() - 0.5) * 14 - 3;
+                            particleSystem.push(p);
+                        }
+
+                        ball.isPowerfulSpike = false;
+                        ball.isMegatonServe = false;
+                        ball.isUltimateDrive = false;
+                        ball.isTrickySpike = false; 
+                        ball.isSonicSpike = false;
+                        return;
+                    }
+
+                    const blowawayChance = ball.isUltimateDrive ? 0.50 : 0.80;
+
+                    if (Math.random() < blowawayChance) {
+                        player.touchCooldown = 30; 
+                        player.state = 'tumbled';
+                        player.hp -= 20; 
+
+                        if (player.hp <= 0) {
+                            player.actionTimer = 75; 
+                            player.serveText = 'EXHAUSTED!!';
+                            player.serveTextTimer = 75;
+                            player.hp = 100; 
+                        } else {
+                            // 🌟 ガードブレイク時のノックダウン時間を短縮! (一般 28F / 万能 10F)
+                            player.actionTimer = (player.typeName === 'ALL-ROUNDER') ? 10 : 28; 
+                            player.serveText = ball.isMegatonServe ? 'MEGATON CRASH!!' : 'GUARD BREAK!!';
+                            player.serveTextTimer = player.actionTimer;
+                        }
+
+                        const flashColor = ball.isUltimateDrive ? '#22c55e' : '#dc2626';
+                        for (let i = 0; i < 25; i++) {
+                            particleSystem.push(new Particle(player.x, player.y, flashColor));
+                            particleSystem.push(new Particle(player.x, player.y, '#f97316'));
+                            particleSystem.push(new Particle(player.x, player.y, '#facc15'));
+                        }
+
+                        player.vx = (player.id === 1 ? -5.5 : 5.5);
+                        player.vy = -4.0;
+                        player.isGrounded = false;
+
+                        ball.vx = (player.id === 1 ? -1.5 : 1.5) + (Math.random() - 0.5) * 1.5;
+                        ball.vy = -16.5; 
+                        
+                        ball.isPowerfulSpike = false;
+                        ball.isMegatonServe = false;
+                        ball.isUltimateDrive = false;
+                        ball.isTrickySpike = false;
+                        ball.isSonicSpike = false;
+                        playSound('just_spike');
+                        return; 
+                    } else {
+                        player.state = 'receive';
+                        player.actionTimer = 15;
+                        player.serveText = 'ABSORB!!';
+                        player.serveTextTimer = 45;
+                        createRetroParticles(ball.x, ball.y, '#fde047');
+                        ball.isPowerfulSpike = false;
+                        ball.isMegatonServe = false;
+                        ball.isUltimateDrive = false;
+                        ball.isTrickySpike = false;
+                        ball.isSonicSpike = false;
+                    }
+                }
+
+                // 🌟 通常の「強打（スマッシュ）」による通常吹っ飛び処理 (吹っ飛び硬直を極限短縮!)
+                if (isStrongHit && !isPowerBall && !(player.state === 'blocking' && !player.isGrounded)) {
                     if (Math.random() < 0.80) { 
                         player.state = 'tumbled';
                         player.hp -= 20; 
@@ -2384,9 +2389,10 @@
                             player.serveTextTimer = 75;
                             player.hp = 100; 
                         } else {
+                            // 🌟 通常吹っ飛び時間を短縮! (一般 22F / 万能 8F)
                             player.actionTimer = (player.typeName === 'ALL-ROUNDER') ? 8 : 22; 
-                            player.serveText = ball.isMegatonServe ? 'MEGATON CRASH!!' : 'KNOCKDOWN!!';
-                            player.serveTextTimer = (player.typeName === 'ALL-ROUNDER') ? 8 : 22;
+                            player.serveText = 'KNOCKDOWN!!';
+                            player.serveTextTimer = player.actionTimer;
                         }
 
                         for (let i = 0; i < 20; i++) {
