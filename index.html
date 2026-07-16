@@ -112,8 +112,8 @@
             <div class="border-b md:border-b-0 md:border-r border-blue-950 pb-1.5 md:pb-0 md:pr-2">
                 <span class="font-bold text-green-400 text-[8px] md:text-[9px] arcade-font block mb-1">■ ALL-ROUNDER (GREEN) - ROLE MASTER</span>
                 <p class="text-slate-300">
-                    <strong>【特殊】</strong>1撃目: 0F無硬直ダイブ&レシーブ拡大 | 2撃目: 黄金トス(次が確定ジャスト) | 3撃目: 魔球化<br>
-                    <strong>【攻防】</strong>ブロック: 吹き飛ばず鋭く落とすカウンター | サーブ: Wトス＝急落下 / Sトス＝不規則ゾーン狙い
+                    <strong>【特殊】</strong>1撃目: レシーブ範囲拡大 | 2撃目: 黄金トス(確定ジャスト) | 3撃目: 魔球化<br>
+                    <strong>【攻防】</strong>ブロック(Q/U): 唯一無二の「ソリッドミラー」完全防御＆鋭い叩き落としカウンター！
                 </p>
             </div>
             
@@ -122,7 +122,7 @@
                 <span class="font-bold text-cyan-400 text-[8px] md:text-[9px] arcade-font block mb-1">■ SPEED TYPE (BLUE) - HYPER STAR</span>
                 <p class="text-slate-300">
                     <strong>【機動】</strong>0.2秒超高速ダイブ復帰 | クイック: トス後Wキー2回連打で超速アプローチ<br>
-                    <strong>【奇襲】</strong>エア・ブリンク: 空中+方向キー+スパイクでワープ自動スパイク ➜ 直後に再スイングでソニック・アクセル
+                    <strong>【奇襲】</strong>エア・ブリンク: 空中+方向キー+スパイクでワープ(※ラリー中、レシーブ後のみ発動可)
                 </p>
             </div>
         </div>
@@ -676,15 +676,15 @@
                         }
 
                         // --- AUTO AIR BLINK Action (自動追従スパイク & ソニック併用可能化) ---
-                        // ボールは元の軌道のまま、プレイヤーだけをボールの空中打点へ瞬間移動させます。
-                        if (this.typeName === 'SPEED' && dir !== 0) {
+                        // 【制限を徹底適用】ラリー中であり、かつサーブされたばかりのボール（isServeBall）ではない場合のみ発動可能
+                        if (this.typeName === 'SPEED' && dir !== 0 && rallyState === 'rally' && !ball.isServeBall) {
                             const isBallPlayable = (this.id === 1 && ball.x <= NET_X + 50) || (this.id === 2 && ball.x >= NET_X - 50);
                             
                             if (isBallPlayable && ball.y < GROUND_Y - 30) {
                                 const prevX = this.x;
                                 const prevY = this.y;
                                 
-                                // ボールは一切動かさず、プレイヤーのみをボールの現在地にワープさせる
+                                // プレイヤーのみをボールの現在地にワープさせる
                                 let targetPlayerX = ball.x + (this.id === 1 ? -14 : 14);
                                 let targetPlayerY = Math.min(GROUND_Y, ball.y + this.radiusY + 4);
                                 
@@ -705,7 +705,7 @@
                                 createRetroParticles(prevX, prevY, '#38bdf8');
                                 createRetroParticles(this.x, this.y, '#38bdf8');
 
-                                // 自動でスパイクを放つ（ボールの座標は元のままで、速度ベクトルのみ書き換えて射出）
+                                // 自動スパイクを放つ
                                 playSound('spike');
                                 let targetDir = this.id === 1 ? 1 : -1;
                                 
@@ -741,7 +741,7 @@
                                 this.hasSpikedInAir = true;
                                 this.touchCooldown = 20;
 
-                                // ソニック・アクセルコンボの受付時間を開始
+                                // ソニック・アクセルコンボの受付時間開始
                                 this.boostWindowTimer = 25; 
                                 this.serveText = 'BLINK BOOST!!';
                                 this.serveTextTimer = 45;
@@ -825,6 +825,15 @@
                         this.state = 'idle';
                     }
                 } else if (actionType === 'block') {
+                    // ★ブロックをオールラウンダー（ALL-ROUNDER）専用に制限
+                    if (this.typeName !== 'ALL-ROUNDER') {
+                        this.serveText = 'AR ONLY!';
+                        this.serveTextTimer = 35;
+                        this.state = 'idle';
+                        this.actionTimer = 0;
+                        return;
+                    }
+
                     if (this.isGrounded) {
                         this.vy = this.jumpStrength * 0.95; 
                         this.isGrounded = false;
@@ -1054,6 +1063,7 @@
                     else if (this.serveText.includes('SOLID MIRROR')) tCol = '#22c55e';
                     else if (this.serveText.includes('DRIVE SERVE')) tCol = '#22c55e';
                     else if (this.serveText.includes('ZONE SERVE')) tCol = '#60a5fa';
+                    else if (this.serveText.includes('AR ONLY')) tCol = '#ef4444'; // レッド警告
 
                     ctx.fillStyle = tCol;
                     ctx.textAlign = 'center';
@@ -1602,11 +1612,14 @@
             if (ball.timeStopTimer > 0) return; 
             if (ball.sonicAccelTimer > 0) return; 
             
-            // ★トリッキータイプのマジックフェイント中は、多重衝突判定（およびフォータッチ自滅）を防ぐため、衝突判定を完全に無効化する
+            // トリッキータイプのマジックフェイント中は、多重衝突判定（およびフォータッチ自滅）を防ぐため、衝突判定を完全に無効化する
             if (ball.isMagicFeint && ball.magicFeintTimer > 0) return;
             
-            // Absolutely prevent self-hitting or recursive touch bugs during Speed quick spikes
+            // Speedアタック中の衝突バグを完全に回避
             if (player.state === 'quick_approach' || player.state === 'quick_spike') return;
+
+            // キャラクター固有のパワー倍率を衝突判定の全スコープで利用できるようにここで定義
+            const pPower = player.typeData.power;
 
             let currentRadiusX = player.radiusX;
             let currentRadiusY = player.radiusY;
@@ -1633,7 +1646,7 @@
             const hitDistance = currentRadiusY + ball.radius - 2;
             let assistDistance = hitDistance;
 
-            // BLOCK IN-AIR SHIELD ASSIST EXTRA RANGE
+            // ブロック時のアシスト範囲拡大
             if (!player.isGrounded && player.state === 'blocking') {
                 assistDistance += 43; 
             }
@@ -1652,6 +1665,9 @@
                 if (player.touchCooldown > 0) return;
                 if (player.state === 'tumbled') return; 
 
+                const targetDir = player.id === 1 ? 1 : -1;
+                const angle = Math.atan2(dy, dx);
+
                 // Power Spikes & Ultimate Drives knockdown handling
                 const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive;
                 if (isPowerBall) {
@@ -1661,10 +1677,10 @@
                         ball.x = clampedX + Math.cos(angle) * hitDistance;
                         ball.y = headY + Math.sin(angle) * hitDistance;
 
-                        // COUNTER
-                        ball.vx = targetDir * 7.5;
-                        ball.vy = 5.2;
-                        ball.spin = targetDir * 3.0;
+                        // COUNTER (さらに強烈に叩き落とし)
+                        ball.vx = targetDir * 9.5;
+                        ball.vy = 8.5;
+                        ball.spin = targetDir * 6.0;
 
                         player.state = 'block';
                         player.actionTimer = 15;
@@ -1676,8 +1692,8 @@
                         ctx.fillStyle = 'rgba(34, 197, 94, 0.45)';
                         ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
 
-                        // Sparkling particles
-                        for (let i = 0; i < 35; i++) {
+                        // Sparkling particles (45個に強化)
+                        for (let i = 0; i < 45; i++) {
                             const p = new Particle(ball.x, ball.y, '#22c55e');
                             p.size = Math.random() * 6 + 3;
                             p.vx = (Math.random() - 0.5) * 14;
@@ -1768,7 +1784,6 @@
                     p1TouchCount = player.id === 1 ? 1 : 0;
                     p2TouchCount = player.id === 2 ? 1 : 0;
 
-                    const targetDir = player.id === 1 ? 1 : -1;
                     let serveType = '';
 
                     if (player.isGrounded) {
@@ -1793,8 +1808,6 @@
                     } else {
                         hitType = 'poor';
                     }
-
-                    const pPower = player.typeData.power;
 
                     // ALL-ROUNDER Tactical Serves
                     if (player.typeName === 'ALL-ROUNDER') {
@@ -2006,10 +2019,6 @@
                     }
                 }
 
-                const targetDir = player.id === 1 ? 1 : -1;
-                const pPower = player.typeData.power;
-                const angle = Math.atan2(dy, dx);
-
                 const touchCount = player.id === 1 ? p1TouchCount : p2TouchCount;
                 
                 const incomingSpeed = Math.hypot(ball.vx, ball.vy);
@@ -2167,29 +2176,29 @@
                     ball.x = clampedX + Math.cos(angle) * hitDistance;
                     ball.y = headY + Math.sin(angle) * hitDistance;
                     
-                    ball.vx = targetDir * 5.8; 
-                    ball.vy = 4.2; 
-                    ball.spin = targetDir * 1.0;
+                    // ALL-ROUNDER専用のアルティメット・ブロック(SOLID MIRROR)により、凄まじい軌道で反射
+                    ball.vx = targetDir * 9.5; 
+                    ball.vy = 8.5; 
+                    ball.spin = targetDir * 6.0;
                     
                     player.state = 'block'; 
                     player.actionTimer = 15;
-                    player.serveText = 'BLOCK!';
+                    player.serveText = 'SOLID MIRROR!!';
                     player.serveTextTimer = 45;
 
-                    // Trigger block shield wave
-                    const effectCol = player.typeName === 'ALL-ROUNDER' ? '#22c55e' : '#38bdf8';
-                    activeBlockEffect = new BlockEffect(ball.x, ball.y, effectCol);
+                    // Trigger block shield wave (グリーンカラーで超強化)
+                    activeBlockEffect = new BlockEffect(ball.x, ball.y, '#22c55e');
                     
                     // Flash screen
-                    ctx.fillStyle = player.typeName === 'ALL-ROUNDER' ? 'rgba(34, 197, 94, 0.35)' : 'rgba(56, 189, 248, 0.35)';
+                    ctx.fillStyle = 'rgba(34, 197, 94, 0.5)';
                     ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
 
-                    // Large glowing shards
-                    for (let i = 0; i < 30; i++) {
-                        const p = new Particle(ball.x, ball.y, effectCol);
-                        p.size = Math.random() * 5 + 2.5;
-                        p.vx = (Math.random() - 0.5) * 12;
-                        p.vy = (Math.random() - 0.5) * 12 - 2;
+                    // Large glowing shards (45個の大爆発粒子)
+                    for (let i = 0; i < 45; i++) {
+                        const p = new Particle(ball.x, ball.y, '#22c55e');
+                        p.size = Math.random() * 6 + 3.0;
+                        p.vx = (Math.random() - 0.5) * 16;
+                        p.vy = (Math.random() - 0.5) * 16 - 2;
                         particleSystem.push(p);
                     }
 
@@ -2504,7 +2513,6 @@
 
             document.querySelector('.type-select-ui').style.display = 'flex';
 
-            const winnerName = winner === 1 ? p1.name : p2.name;
             title.innerText = `P${winner} VICTORY!`;
             title.className = `text-xl md:text-3xl font-black ${winner === 1 ? 'text-blue-400' : 'text-red-500'} mb-4 arcade-font animate-bounce`;
             sub.innerText = `GAME OVER\n\nFINAL SCORE: ${score1} - ${score2}`;
@@ -2512,7 +2520,6 @@
         }
 
         function startNewRally() {
-            // Wake audio context on click
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
@@ -2687,13 +2694,11 @@
             keys[e.code] = false;
         });
 
-        // Bind Start button click
         document.getElementById('btnStart').addEventListener('click', (e) => {
             e.stopPropagation();
             startNewRally();
         });
 
-        // Bind overlay background clicks to also trigger start (excluding type selector buttons)
         document.getElementById('overlay').addEventListener('click', (e) => {
             if (e.target.closest('#p1TypePrev') || e.target.closest('#p1TypeNext') || 
                 e.target.closest('#p2TypePrev') || e.target.closest('#p2TypeNext')) {
