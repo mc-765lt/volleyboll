@@ -106,7 +106,6 @@
             </div>
         </div>
 
-        <!-- 視認性を向上させた超シンプル＆超コンパクト操作説明パネル -->
         <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 bg-slate-950 p-2.5 rounded-lg border border-blue-900 text-[10px] md:text-[11px] leading-normal font-sans">
             <!-- 左カラム：オールラウンダーとパワー -->
             <div class="border-b md:border-b-0 md:border-r border-blue-950 pb-1.5 md:pb-0 md:pr-2">
@@ -2282,9 +2281,8 @@
                 }
 
                 const incomingSpeed = Math.hypot(ball.vx, ball.vy);
-                const isStrongHit = (touchCount === 1) && (incomingSpeed > 10.0 || ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive);
 
-                // ☄️ メテオボール/メガトンサーブを1打目に食らった時の吹っ飛び処理 (フレーム数調整)
+                // ☄️ メテオボール/メガトンサーブ/アルティメットアタックを1打目に食らった時の吹っ飛び処理 (フレーム数調整)
                 const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive;
                 if (isPowerBall && touchCount === 1 && !(player.state === 'blocking' && !player.isGrounded)) {
                     
@@ -2323,6 +2321,7 @@
                         return;
                     }
 
+                    // ユーザーの要望：パワータイプのスパイクとメガトンサーブでは80%、オールラウンダーのアルティメットでは50%で発動
                     const blowawayChance = ball.isUltimateDrive ? 0.50 : 0.80;
 
                     if (Math.random() < blowawayChance) {
@@ -2377,51 +2376,6 @@
                     }
                 }
 
-                // 🌟 通常の「強打（スマッシュ）」による通常吹っ飛び処理 (吹っ飛び硬直を極限短縮!)
-                if (isStrongHit && !isPowerBall && !(player.state === 'blocking' && !player.isGrounded)) {
-                    if (Math.random() < 0.80) { 
-                        player.state = 'tumbled';
-                        player.hp -= 20; 
-
-                        if (player.hp <= 0) {
-                            player.actionTimer = 75; 
-                            player.serveText = 'EXHAUSTED!!';
-                            player.serveTextTimer = 75;
-                            player.hp = 100; 
-                        } else {
-                            // 🌟 通常吹っ飛び時間を短縮! (一般 22F / 万能 8F)
-                            player.actionTimer = (player.typeName === 'ALL-ROUNDER') ? 8 : 22; 
-                            player.serveText = 'KNOCKDOWN!!';
-                            player.serveTextTimer = player.actionTimer;
-                        }
-
-                        for (let i = 0; i < 20; i++) {
-                            particleSystem.push(new Particle(player.x, player.y, '#dc2626'));
-                            particleSystem.push(new Particle(player.x, player.y, '#f97316'));
-                            particleSystem.push(new Particle(player.x, player.y, '#facc15'));
-                        }
-                        
-                        player.vx = (player.id === 1 ? -4 : 4);
-                        player.vy = -3.5;
-                        player.isGrounded = false;
-                        
-                        ball.vx = (ball.vx * 0.15) + (dx / player.radiusY) * 1.5;
-                        ball.vy = -15.5; 
-                        
-                        ball.isPowerfulSpike = false;
-                        ball.isMegatonServe = false;
-                        ball.isUltimateDrive = false;
-                        ball.isTrickySpike = false; 
-                        ball.isSonicSpike = false;
-                        playSound('hit');
-                        return; 
-                    } else if (player.state === 'receive' || player.state === 'dive') {
-                        player.serveText = 'ABSORB!';
-                        player.serveTextTimer = 45;
-                        createRetroParticles(ball.x, ball.y, '#fde047');
-                    }
-                }
-
                 ball.isFloater = false; 
                 ball.isTrickyFloater = false;
                 ball.isMagicFeint = false;
@@ -2445,6 +2399,7 @@
                         ? (touchCount >= 2 ? 388 : 200) 
                         : (touchCount >= 2 ? 412 : 600); 
                         
+                    const isStrongHit = (touchCount === 1) && (incomingSpeed > 10.0 || ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive);
                     if (isStrongHit) {
                         const absorbFactor = Math.min(40, (incomingSpeed - 8) * 5); 
                         targetX += (player.id === 1 ? -absorbFactor : absorbFactor);
