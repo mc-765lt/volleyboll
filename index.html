@@ -108,21 +108,21 @@
 
         <!-- 視認性を向上させた超シンプル＆超コンパクト操作説明パネル -->
         <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 bg-slate-950 p-2.5 rounded-lg border border-blue-900 text-[10px] md:text-[11px] leading-normal font-sans">
-            <!-- 左カラム：オールラウンダー -->
+            <!-- 左カラム：オールラウンダーとパワー -->
             <div class="border-b md:border-b-0 md:border-r border-blue-950 pb-1.5 md:pb-0 md:pr-2">
-                <span class="font-bold text-green-400 text-[8px] md:text-[9px] arcade-font block mb-1">■ ALL-ROUNDER (GREEN) - ROLE MASTER</span>
+                <span class="font-bold text-green-400 text-[8px] md:text-[9px] arcade-font block mb-1">■ ALL-ROUNDER (GREEN) / POWER (RED)</span>
                 <p class="text-slate-300">
-                    <strong>【特殊】</strong>1撃目: レシーブ範囲拡大 | 2撃目: 黄金トス(確定ジャスト) | 3撃目: 魔球化<br>
-                    <strong>【攻防】</strong>ブロック(Q/U): 唯一無二の「ソリッドミラー」完全防御＆鋭い叩き落としカウンター！
+                    <strong>【万能】</strong>1撃目: レシーブ範囲拡大 | 2撃目: 黄金トス | 3撃目: 魔球化。Q/Uキーで唯一、敵アタックを鋭く跳ね返す「ソリッドミラー」完全ブロック発動！<br>
+                    <strong>【力鬼】</strong>空を切り裂く超重量級：スパイク時は全身から「赤い稲妻」が放電！ボールは「白いV字の風圧（衝撃波）」と赤い流星を纏う、視認性を維持した完全メテオに！
                 </p>
             </div>
             
-            <!-- 右カラム：ソニックタイプ -->
+            <!-- 右カラム：ソニックとクロノス -->
             <div class="pt-1 md:pt-0 md:pl-2">
-                <span class="font-bold text-cyan-400 text-[8px] md:text-[9px] arcade-font block mb-1">■ SONIC TYPE (BLUE) - HYPER STAR</span>
+                <span class="font-bold text-cyan-400 text-[8px] md:text-[9px] arcade-font block mb-1">■ SONIC TYPE (BLUE) / CHRONOS (PURPLE)</span>
                 <p class="text-slate-300">
-                    <strong>【機動】</strong>0.2秒超高速ダイブ復帰 | クイック: トス後Wキー2回連打で超速アプローチ<br>
-                    <strong>【奇襲】</strong>エア・ブリンク: 空中+方向キー+スパイクでワープ(※ラリー中、レシーブ後のみ発動可)
+                    <strong>【音速】</strong>スパイク時限定で全身から「ピキピキ青い稲妻」が激しく噴出！ボールもプラズマ軌道へ。アプローチW2回連打、空中+方向キーアタックでエアブリンク追尾！<br>
+                    <strong>【時空】</strong>アタック時に紫の時計盤が回転し、ボールを空中に一時停止。再発射までの停止時間がシームレスに極端にばらつく(0.1秒〜超ロング)「タイムストップ」を支配！
                 </p>
             </div>
         </div>
@@ -286,6 +286,47 @@
                 gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
                 osc.start(now);
                 osc.stop(now + 0.25);
+            } else if (type === 'meteor_burn') {
+                // ☄️ 彗星が空気を切り裂いて激しく燃え盛る超低音焦熱爆発音 (1.0秒)
+                const duration = 1.0;
+                const bufferSize = audioCtx.sampleRate * duration;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                
+                const lowFilter = audioCtx.createBiquadFilter();
+                lowFilter.type = 'lowpass';
+                lowFilter.frequency.setValueAtTime(280, now);
+                lowFilter.frequency.exponentialRampToValueAtTime(80, now + duration);
+                
+                const subOsc = audioCtx.createOscillator();
+                subOsc.type = 'triangle';
+                subOsc.frequency.setValueAtTime(75, now);
+                subOsc.frequency.linearRampToValueAtTime(35, now + duration);
+                
+                const noiseGain = audioCtx.createGain();
+                noiseGain.gain.setValueAtTime(0.25, now);
+                noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+                
+                const subGain = audioCtx.createGain();
+                subGain.gain.setValueAtTime(0.5, now);
+                subGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+                
+                noise.connect(lowFilter);
+                lowFilter.connect(noiseGain);
+                noiseGain.connect(audioCtx.destination);
+                
+                subOsc.connect(subGain);
+                subGain.connect(audioCtx.destination);
+                
+                noise.start(now);
+                subOsc.start(now);
+                noise.stop(now + duration);
+                subOsc.stop(now + duration);
             }
         }
 
@@ -355,15 +396,16 @@
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.stroke();
 
-                // Draw hexagon barrier pattern
                 ctx.strokeStyle = this.color;
                 ctx.lineWidth = 1.5;
                 ctx.globalAlpha = Math.max(0, this.alpha * 0.4);
+                ctx.beginPath();
                 for (let i = 0; i < 6; i++) {
                     const angle = (Math.PI / 3) * i;
                     const hx = this.x + Math.cos(angle) * this.radius;
                     const hy = this.y + Math.sin(angle) * this.radius;
-                    ctx.lineTo(hx, hy);
+                    if (i === 0) ctx.moveTo(hx, hy);
+                    else ctx.lineTo(hx, hy);
                 }
                 ctx.closePath();
                 ctx.stroke();
@@ -400,12 +442,10 @@
                 ctx.strokeStyle = '#a855f7';
                 ctx.lineWidth = 3.5;
 
-                // Main clock face outer ring
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.stroke();
 
-                // 12 clock hour ticks
                 ctx.fillStyle = '#e9d5ff';
                 for (let i = 0; i < 12; i++) {
                     const tickAngle = (Math.PI / 6) * i + this.angle * 0.2;
@@ -414,7 +454,6 @@
                     ctx.fillRect(tx - 2, ty - 2, 4, 4);
                 }
 
-                // Hours Hand
                 ctx.lineWidth = 4;
                 ctx.strokeStyle = '#c084fc';
                 ctx.beginPath();
@@ -422,7 +461,6 @@
                 ctx.lineTo(this.x + Math.cos(this.angle * 4.5) * (this.radius * 0.45), this.y + Math.sin(this.angle * 4.5) * (this.radius * 0.45));
                 ctx.stroke();
 
-                // Minutes Hand
                 ctx.lineWidth = 2.5;
                 ctx.strokeStyle = '#f3e8ff';
                 ctx.beginPath();
@@ -430,7 +468,6 @@
                 ctx.lineTo(this.x + Math.cos(this.angle * 14) * (this.radius * 0.72), this.y + Math.sin(this.angle * 14) * (this.radius * 0.72));
                 ctx.stroke();
 
-                // Center core pivot point
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
                 ctx.fillStyle = '#ffffff';
@@ -440,15 +477,11 @@
             }
         }
 
-        function createDummyBall(realBall) {
-            dummyBall = null;
-        }
-
+        function createDummyBall(realBall) {}
         function updateDummyBall() {
             if (dummyBall) dummyBall.active = false;
             dummyBall = null;
         }
-
         function drawDummyBall() {}
 
         class Player {
@@ -475,9 +508,8 @@
                 this.warpCooldown = 0; 
                 this.tossActiveTimer = 0; 
                 this.boostWindowTimer = 0;
-                this.lastTossType = 'W'; // S or W
+                this.lastTossType = 'W'; 
                 
-                // Track visual ghosts
                 this.ghosts = [];
 
                 this.setType('ALL-ROUNDER');
@@ -554,22 +586,18 @@
                     this.isIntimidated = false;
                 }
 
-                // SONIC type quick spike approach routing
                 if (this.state === 'quick_approach') {
                     if (this.actionTimer > 0) {
                         this.actionTimer--;
                         
-                        // Keep aligning with the ball dynamically
                         const targetPlayerX = ball.x + (this.id === 1 ? -18 : 18);
                         const targetPlayerY = Math.min(GROUND_Y, ball.y + this.radiusY + 12);
                         
-                        // Seamless interpolation
                         this.x += (targetPlayerX - this.x) * 0.28;
                         this.y += (targetPlayerY - this.y) * 0.28;
                         this.vx = 0;
                         this.vy = 0;
 
-                        // Generate after-images on movement frames (SONIC blue trails)
                         if (globalTick % 2 === 0) {
                             this.ghosts.push({
                                 x: this.x,
@@ -579,7 +607,6 @@
                             particleSystem.push(new Particle(this.x, this.y, '#38bdf8'));
                         }
 
-                        // Enforce strictly secured court boundaries
                         const pad = this.radiusX;
                         if (this.id === 1) {
                             this.x = Math.max(pad, Math.min(this.x, NET_X - NET_WIDTH/2 - pad));
@@ -591,7 +618,7 @@
                             this.state = 'quick_spike';
                             this.actionTimer = 15;
                             this.vy = -3.5; 
-                            this.touchCooldown = 25; // Block immediate recursive touch errors
+                            this.touchCooldown = 25; 
                             
                             playSound('just_spike');
                             createRetroParticles(this.x, this.y - this.radiusY, '#38bdf8');
@@ -612,7 +639,7 @@
                             ball.isQuickSpike = true; 
                             ball.isServeBall = false;
                             ball.isTrickySpike = false; 
-                            ball.isSonicSpike = true; // Trigger blue trail on ball
+                            ball.isSonicSpike = true; 
                             
                             if (this.id === 1) p1TouchCount = 3;
                             else p2TouchCount = 3;
@@ -647,7 +674,6 @@
 
                 this.x += this.vx;
 
-                // Strongest court limitations
                 const padding = this.radiusX;
                 if (this.id === 1) {
                     if (this.x < padding) {
@@ -711,7 +737,6 @@
             triggerAction(actionType, dir = 0, isDoubleTap = false) {
                 if (this.state === 'dive' || this.state === 'tumbled') return;
 
-                // Sonic type Double Tap QUICK SPIKE route
                 if (actionType === 'spike' && this.typeName === 'SONIC' && this.tossActiveTimer > 0 && isDoubleTap) {
                     this.state = 'quick_approach';
                     this.actionTimer = 15; 
@@ -754,8 +779,6 @@
                             return;
                         }
 
-                        // --- AUTO AIR BLINK Action (自動追従スパイク) ---
-                        // 【制限を徹底適用】ラリー中であり、かつサーブされたばかりのボール（isServeBall）ではない場合のみ発動可能
                         if (this.typeName === 'SONIC' && dir !== 0 && rallyState === 'rally' && !ball.isServeBall) {
                             const isBallPlayable = (this.id === 1 && ball.x <= NET_X + 50) || (this.id === 2 && ball.x >= NET_X - 50);
                             
@@ -763,14 +786,12 @@
                                 const prevX = this.x;
                                 const prevY = this.y;
                                 
-                                // プレイヤーのみをボールの現在地にワープさせる
                                 let targetPlayerX = ball.x + (this.id === 1 ? -14 : 14);
                                 let targetPlayerY = Math.min(GROUND_Y, ball.y + this.radiusY + 4);
                                 
                                 this.x = targetPlayerX;
                                 this.y = targetPlayerY;
 
-                                // 境界ガード
                                 const pad = this.radiusX;
                                 if (this.id === 1) {
                                     this.x = Math.max(pad, Math.min(this.x, NET_X - NET_WIDTH/2 - pad));
@@ -778,13 +799,11 @@
                                     this.x = Math.max(NET_X + NET_WIDTH/2 + pad, Math.min(this.x, VIEW_WIDTH - pad));
                                 }
 
-                                // ワープ残像エフェクトを生成
                                 this.ghosts.push({ x: prevX, y: prevY, opacity: 0.8 });
                                 this.ghosts.push({ x: (prevX + this.x) / 2, y: (prevY + this.y) / 2, opacity: 0.5 });
                                 createRetroParticles(prevX, prevY, '#38bdf8');
                                 createRetroParticles(this.x, this.y, '#38bdf8');
 
-                                // 自動スパイクを放つ
                                 playSound('spike');
                                 let targetDir = this.id === 1 ? 1 : -1;
                                 
@@ -798,9 +817,8 @@
                                 ball.isQuickSpike = false;
                                 ball.isServeBall = false;
                                 ball.isTrickySpike = false; 
-                                ball.isSonicSpike = true; // Engage sonic trail on ball
+                                ball.isSonicSpike = true; 
 
-                                // タッチ数カウント処理
                                 if (this.id === 1) {
                                     p1TouchCount++;
                                     p2TouchCount = 0;
@@ -822,7 +840,6 @@
                                 this.hasSpikedInAir = true;
                                 this.touchCooldown = 20;
 
-                                // ソニック・アクセルコンボの受付時間開始
                                 this.boostWindowTimer = 25; 
                                 this.serveText = 'BLINK BOOST!!';
                                 this.serveTextTimer = 45;
@@ -887,7 +904,6 @@
                             this.warpCooldown = 180; 
                             playSound('hit');
                         } else {
-                            // ALL-ROUNDER Libero zero-lag recovery
                             let diveForce = 5.5; 
                             if (this.typeName === 'SONIC') diveForce = 7.5; 
                             if (this.typeName === 'POWER') diveForce = 5.0; 
@@ -906,7 +922,6 @@
                         this.state = 'idle';
                     }
                 } else if (actionType === 'block') {
-                    // ★ブロックをオールラウンダー（ALL-ROUNDER）専用に制限
                     if (this.typeName !== 'ALL-ROUNDER') {
                         this.serveText = 'AR ONLY!';
                         this.serveTextTimer = 35;
@@ -928,7 +943,6 @@
             draw() {
                 ctx.save();
                 
-                // Draw trailing silhouettes
                 this.ghosts.forEach((g) => {
                     g.opacity -= 0.05;
                     if (g.opacity <= 0) return;
@@ -957,7 +971,7 @@
                 ctx.fillStyle = `rgba(0, 0, 0, ${0.4 * shadowScale})`;
                 ctx.fill();
 
-                // 【完全修正】ソニック：スパイク（アタック）動作時のみ青いギザギザ稲妻エフェクト発生（常時オーラは廃止）
+                // ⚡ SONIC TYPE ELECTRIC LIGHTNING EFFECT (スパイク動作時限定)
                 const isSonicAttacking = this.typeName === 'SONIC' && 
                     (this.state === 'spike' || this.state === 'quick_spike' || this.state === 'quick_approach');
                 
@@ -968,7 +982,40 @@
                     ctx.strokeStyle = '#38bdf8';
                     ctx.lineWidth = 1.8;
                     
-                    // キャラクターの中心位置から四方に向けてランダムなギザギザ稲妻を4本生成
+                    const pX = this.x;
+                    const pY = this.y - this.radiusY;
+                    for (let k = 0; k < 4; k++) {
+                        let angle = Math.random() * Math.PI * 2;
+                        let distance = 30 + Math.random() * 25;
+                        let targetX = pX + Math.cos(angle) * distance;
+                        let targetY = pY + Math.sin(angle) * distance;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(pX, pY);
+                        
+                        let midAngle = angle + (Math.random() - 0.5) * 0.4;
+                        let midR = distance * 0.5 + (Math.random() - 0.5) * 8;
+                        let midX = pX + Math.cos(midAngle) * midR;
+                        let midY = pY + Math.sin(midAngle) * midR;
+                        
+                        ctx.lineTo(midX, midY);
+                        ctx.lineTo(targetX, targetY);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+
+                // ☄️ POWER TYPE RED ELECTRIC LIGHTNING EFFECT (スパイク動作時限定の赤い稲妻)
+                const isPowerAttacking = this.typeName === 'POWER' && 
+                    (this.state === 'spike' || this.state === 'quick_spike' || this.state === 'quick_approach');
+                
+                if (isPowerAttacking) {
+                    ctx.save();
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = '#ef4444';
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 1.8;
+                    
                     const pX = this.x;
                     const pY = this.y - this.radiusY;
                     for (let k = 0; k < 4; k++) {
@@ -1125,7 +1172,6 @@
 
                 ctx.restore();
 
-                // Draw health bar
                 const hpRatio = this.hp / 100;
                 ctx.fillStyle = '#1e293b'; 
                 ctx.fillRect(this.x - 12, this.y - this.radiusY * 2.3, 24, 3);
@@ -1135,7 +1181,6 @@
                 ctx.lineWidth = 1;
                 ctx.strokeRect(this.x - 12, this.y - this.radiusY * 2.3, 24, 3);
 
-                // Draw special abilities cooldown bar
                 if (this.typeName === 'CHRONOS') {
                     const warpRatio = 1 - (this.warpCooldown / 180);
                     ctx.fillStyle = '#1e293b'; 
@@ -1151,7 +1196,6 @@
                     ctx.strokeRect(this.x - 12, this.y - this.radiusY * 2.3 + 4, 24, 2);
                 }
 
-                // SONIC type quick spike availability indicator
                 if (this.typeName === 'SONIC' && this.tossActiveTimer > 0) {
                     ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
                     ctx.beginPath();
@@ -1228,6 +1272,7 @@
                 this.spin = 0;
                 this.rotation = 0;
                 
+                this.trail = []; 
                 this.isFloater = false;
                 this.floaterType = ''; 
                 this.floatTimer = 0;
@@ -1247,17 +1292,12 @@
                 this.isMegatonServe = false; 
                 this.isQuickSpike = false; 
 
-                // ALL-ROUNDER Mastery effects
                 this.isGoldToss = false; 
                 this.isUltimateDrive = false;
 
-                // CHRONOS Spike Success Verification Flag
                 this.isTrickySpike = false;
-                
-                // SONIC visual spike flag for electric blue neon trails
                 this.isSonicSpike = false;
 
-                // Sonic Accel and Time Stop triggers
                 this.timeStopTimer = 0;
                 this.timeStopVx = 0;
                 this.timeStopVy = 0;
@@ -1275,6 +1315,7 @@
                 this.vy = 0;
                 this.spin = 0;
                 this.rotation = 0;
+                this.trail = []; 
                 this.isFloater = false;
                 this.floaterType = '';
                 this.floatTimer = 0;
@@ -1319,7 +1360,18 @@
             update() {
                 if (rallyState === 'serving') return;
 
-                // Sonic Accel freezer sequence
+                const hasAnyTrail = this.isPowerfulSpike || this.isMegatonServe || this.isUltimateDrive || this.isSonicSpike || this.isQuickSpike;
+                if (hasAnyTrail) {
+                    this.trail.push({ x: this.x, y: this.y });
+                    if (this.trail.length > 15) {
+                        this.trail.shift();
+                    }
+                } else {
+                    if (this.trail.length > 0) {
+                        this.trail.shift(); 
+                    }
+                }
+
                 if (this.sonicAccelTimer > 0) {
                     this.sonicAccelTimer--;
                     if (globalTick % 2 === 0) {
@@ -1345,7 +1397,6 @@
                     return; 
                 }
 
-                // Tricky Time Stop sequence
                 if (this.timeStopTimer > 0) {
                     this.timeStopTimer--;
                     if (globalTick % 3 === 0) {
@@ -1386,21 +1437,25 @@
                     return; 
                 }
 
-                if (this.isMegatonServe && globalTick % 2 === 0) {
-                    createRetroParticles(this.x, this.y, '#f97316');
-                    createRetroParticles(this.x, this.y, '#dc2626');
-                }
-
-                // Spawning rich visual particles under special ball speeds
                 if (rallyState === 'rally' && !this.isServeBall) {
-                    if (this.isPowerfulSpike) {
+                    if (this.isPowerfulSpike || this.isMegatonServe) {
+                        for (let i = 0; i < 3; i++) {
+                            let p = new Particle(this.x - this.vx * (i * 0.35), this.y - this.vy * (i * 0.35), '#ef4444');
+                            p.vx = -this.vx * 0.2 + (Math.random() - 0.5) * 2;
+                            p.vy = -this.vy * 0.2 + (Math.random() - 0.5) * 2;
+                            p.size = Math.random() * 6 + 3.5;
+                            p.life = Math.random() * 15 + 10;
+                            particleSystem.push(p);
+                        }
+                        for (let i = 0; i < 2; i++) {
+                            let p = new Particle(this.x, this.y, '#f97316');
+                            p.size = Math.random() * 4 + 2;
+                            particleSystem.push(p);
+                        }
                         if (globalTick % 2 === 0) {
-                            particleSystem.push(new Particle(this.x, this.y, '#ef4444'));
-                            particleSystem.push(new Particle(this.x, this.y, '#f97316'));
                             particleSystem.push(new Particle(this.x, this.y, '#facc15'));
                         }
                     } else if (this.isQuickSpike || this.isSonicSpike) {
-                        // SONIC aura active particle spawning
                         if (globalTick % 2 === 0) {
                             particleSystem.push(new Particle(this.x, this.y, '#38bdf8'));
                             particleSystem.push(new Particle(this.x, this.y, '#2563eb'));
@@ -1495,7 +1550,6 @@
 
                 this.rotation += this.vx * 0.07 + this.spin * 0.02;
 
-                // Walls collision bounce
                 if (this.x < this.radius) {
                     this.x = this.radius;
                     this.vx = -this.vx * 0.65; 
@@ -1595,7 +1649,141 @@
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
                 ctx.fill();
 
-                // TIME STOP active glow
+                if (this.trail.length > 0) {
+                    ctx.save();
+                    for (let i = 0; i < this.trail.length; i++) {
+                        const pos = this.trail[i];
+                        const progress = i / this.trail.length; 
+                        const alpha = progress * 0.65;
+                        const size = this.radius * (0.2 + progress * 0.8);
+
+                        ctx.globalAlpha = alpha;
+                        ctx.shadowBlur = 12 * progress;
+                        
+                        let trailColor = '#ffffff';
+                        if (this.isPowerfulSpike || this.isMegatonServe) {
+                            trailColor = '#ef4444'; 
+                            ctx.shadowColor = '#f97316';
+                        } else if (this.isSonicSpike || this.isQuickSpike) {
+                            trailColor = '#38bdf8'; 
+                            ctx.shadowColor = '#2563eb';
+                        } else if (this.isUltimateDrive) {
+                            trailColor = '#22c55e'; 
+                            ctx.shadowColor = '#34d399';
+                        }
+                        
+                        ctx.fillStyle = trailColor;
+                        ctx.beginPath();
+                        ctx.arc(pos.x, pos.y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+
+                // ☄️ POWER TYPE MEGA EFFECT (赤い熱気 ＋ 稲妻 ＋ 風を切るソニックブーム)
+                if (this.isPowerfulSpike || this.isMegatonServe) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.25 + Math.sin(globalTick * 0.25) * 0.1;
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = '#ef4444';
+                    
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius + 3, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fill();
+                    ctx.restore();
+
+                    ctx.save();
+                    ctx.fillStyle = '#facc15';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = '#f97316';
+                    for (let i = 0; i < 4; i++) {
+                        let angle = (globalTick * 0.1) + (Math.PI * 0.5 * i) + (Math.random() - 0.5) * 0.4;
+                        let dist = this.radius + 1 + Math.random() * 4;
+                        let px = this.x + Math.cos(angle) * dist;
+                        let py = this.y + Math.sin(angle) * dist;
+                        
+                        ctx.beginPath();
+                        ctx.arc(px, py, Math.random() * 3 + 1, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+
+                    // ⚡ パワータイプの赤い稲妻放電
+                    ctx.save();
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 1.8;
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = '#ef4444';
+                    
+                    for (let k = 0; k < 3; k++) {
+                        let angle1 = Math.random() * Math.PI * 2;
+                        let angle2 = angle1 + Math.PI * 0.4 + Math.random() * Math.PI * 0.4;
+                        
+                        let r1 = this.radius + 2;
+                        let r2 = this.radius + 14;
+                        
+                        let x1 = this.x + Math.cos(angle1) * r1;
+                        let y1 = this.y + Math.sin(angle1) * r1;
+                        let x2 = this.x + Math.cos(angle2) * r2;
+                        let y2 = this.y + Math.sin(angle2) * r2;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(x1, y1);
+                        
+                        let midAngle = (angle1 + angle2) / 2;
+                        let midR = (r1 + r2) / 2 + (Math.random() - 0.5) * 8;
+                        let midX = this.x + Math.cos(midAngle) * midR;
+                        let midY = this.y + Math.sin(midAngle) * midR;
+                        
+                        ctx.lineTo(midX, midY);
+                        ctx.lineTo(x2, y2);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+
+                    // 🌪️ 風を切り裂くエフェクト (V字の風圧衝撃波 ＋ 流線ウィンドスリット)
+                    const ballSpd = Math.hypot(this.vx, this.vy);
+                    if (ballSpd > 1.5) {
+                        ctx.save();
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+                        ctx.lineWidth = 1.8;
+                        ctx.shadowBlur = 5;
+                        ctx.shadowColor = '#ffffff';
+                        
+                        const angle = Math.atan2(this.vy, this.vx);
+                        const vLen = 28; 
+                        const spreadAngle = 0.38; 
+                        
+                        // 1. 空気を引き裂くV字型の衝撃波コーン
+                        ctx.beginPath();
+                        ctx.moveTo(this.x + Math.cos(angle) * this.radius, this.y + Math.sin(angle) * this.radius);
+                        ctx.lineTo(this.x - Math.cos(angle - spreadAngle) * (this.radius + vLen), this.y - Math.sin(angle - spreadAngle) * (this.radius + vLen));
+                        
+                        ctx.moveTo(this.x + Math.cos(angle) * this.radius, this.y + Math.sin(angle) * this.radius);
+                        ctx.lineTo(this.x - Math.cos(angle + spreadAngle) * (this.radius + vLen), this.y - Math.sin(angle + spreadAngle) * (this.radius + vLen));
+                        ctx.stroke();
+
+                        // 2. 後方に流れ去る極細の風切りスリット
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+                        ctx.lineWidth = 1.0;
+                        for (let i = 0; i < 3; i++) {
+                            const offset = (i - 1) * 7;
+                            const lineLen = 32 + Math.random() * 18;
+                            const startX = this.x - Math.cos(angle) * this.radius + Math.sin(angle) * offset;
+                            const startY = this.y - Math.sin(angle) * this.radius - Math.cos(angle) * offset;
+                            const endX = startX - Math.cos(angle) * lineLen;
+                            const endY = startY - Math.sin(angle) * lineLen;
+                            
+                            ctx.beginPath();
+                            ctx.moveTo(startX, startY);
+                            ctx.lineTo(endX, endY);
+                            ctx.stroke();
+                        }
+                        ctx.restore();
+                    }
+                }
+
                 if (this.timeStopTimer > 0) {
                     ctx.save();
                     ctx.globalAlpha = 0.5 + Math.sin(globalTick * 0.15) * 0.2;
@@ -1608,7 +1796,6 @@
                     ctx.restore();
                 }
 
-                // Sonic Accel charging glow
                 if (this.sonicAccelTimer > 0) {
                     ctx.save();
                     ctx.globalAlpha = 0.6 + Math.sin(globalTick * 0.3) * 0.2;
@@ -1621,7 +1808,6 @@
                     ctx.restore();
                 }
 
-                // Gold Toss active glow
                 if (this.isGoldToss) {
                     ctx.save();
                     ctx.globalAlpha = 0.5 + Math.sin(globalTick * 0.25) * 0.2;
@@ -1634,7 +1820,6 @@
                     ctx.restore();
                 }
 
-                // Ultimate Drive glow
                 if (this.isUltimateDrive) {
                     ctx.save();
                     ctx.globalAlpha = 0.6 + Math.sin(globalTick * 0.3) * 0.2;
@@ -1647,7 +1832,7 @@
                     ctx.restore();
                 }
 
-                // 【完全修正】ソニック：スパイク（アタック）時限定のボール周囲のピキピキギザギザ青い雷エフェクト（丸い青発光は完全廃止）
+                // ⚡ SONIC TYPE PLATINUM ELECTRIC RINGS ON BALL
                 const hasSonicCharge = this.isSonicSpike || this.isQuickSpike;
                 if (hasSonicCharge) {
                     ctx.save();
@@ -1656,7 +1841,6 @@
                     ctx.shadowBlur = 12;
                     ctx.shadowColor = '#38bdf8';
                     
-                    // ボールの外周から四方に、稲妻のような3本の高速放電ギザギザスパークを描画
                     for (let k = 0; k < 3; k++) {
                         let angle1 = Math.random() * Math.PI * 2;
                         let angle2 = angle1 + Math.PI * 0.4 + Math.random() * Math.PI * 0.4;
@@ -1783,10 +1967,8 @@
             if (ball.timeStopTimer > 0) return; 
             if (ball.sonicAccelTimer > 0) return; 
             
-            // トリッキータイプのマジックフェイント中は衝突判定を完全に無効化
             if (ball.isMagicFeint && ball.magicFeintTimer > 0) return;
             
-            // Speedアプローチ中の衝突バグを回避
             if (player.state === 'quick_approach' || player.state === 'quick_spike') return;
 
             const pPower = player.typeData.power;
@@ -1816,12 +1998,10 @@
             const hitDistance = currentRadiusY + ball.radius - 2;
             let assistDistance = hitDistance;
 
-            // ブロック時のアシスト範囲拡大
             if (!player.isGrounded && player.state === 'blocking') {
                 assistDistance += 43; 
             }
 
-            // ALL-ROUNDER Libero 1st touch helper
             const touchCountBefore = player.id === 1 ? p1TouchCount : p2TouchCount;
             if (player.typeName === 'ALL-ROUNDER' && touchCountBefore === 0) {
                 assistDistance *= 1.5; 
@@ -1838,10 +2018,8 @@
                 const targetDir = player.id === 1 ? 1 : -1;
                 const angle = Math.atan2(dy, dx);
 
-                // Power Spikes & Ultimate Drives knockdown handling
                 const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive;
                 if (isPowerBall) {
-                    // ALL-ROUNDER's Solid Mirror Counter
                     if (player.typeName === 'ALL-ROUNDER' && !player.isGrounded && player.state === 'blocking') {
                         playSound('just_spike');
                         ball.x = clampedX + Math.cos(angle) * hitDistance;
@@ -1890,9 +2068,9 @@
                             player.serveTextTimer = 75;
                             player.hp = 100; 
                         } else {
-                            player.actionTimer = (player.typeName === 'ALL-ROUNDER') ? 15 : 45; 
+                            player.actionTimer = (player.typeName === 'ALL-ROUNDER') ? 10 : 28; 
                             player.serveText = ball.isMegatonServe ? 'MEGATON CRASH!!' : 'GUARD BREAK!!';
-                            player.serveTextTimer = (player.typeName === 'ALL-ROUNDER') ? 15 : 45;
+                            player.serveTextTimer = (player.typeName === 'ALL-ROUNDER') ? 10 : 28;
                         }
 
                         const flashColor = ball.isUltimateDrive ? '#22c55e' : '#dc2626';
@@ -1977,7 +2155,6 @@
                         hitType = 'poor';
                     }
 
-                    // ALL-ROUNDER Tactical Serves
                     if (player.typeName === 'ALL-ROUNDER') {
                         if (serveType === 'jump_spike' && hitType !== 'poor') {
                             if (player.lastTossType === 'W') {
@@ -2051,7 +2228,7 @@
                         let isMegaton = (player.typeName === 'POWER' && hitType !== 'poor' && Math.random() < 0.35);
 
                         if (isMegaton) {
-                            playSound('just_spike');
+                            playSound('meteor_burn');
                             let baseVx = 14.0; 
                             let baseVy = 3.5;
                             ball.vx = targetDir * baseVx * pPower; 
@@ -2077,7 +2254,7 @@
                             ball.spin = targetDir * 12.0; 
                             
                             player.serveText = 'JUST SERVE!!'; 
-                            ball.isPowerfulSpike = false; 
+                            ball.isPowerfulSpike = (player.typeName === 'POWER'); 
                             ball.isMegatonServe = false;
                             createRetroParticles(ball.x, ball.y, '#fde047');
                             createRetroParticles(ball.x, ball.y, '#f43f5e');
@@ -2092,7 +2269,7 @@
                             ball.spin = targetDir * 5.0; 
                             createRetroParticles(ball.x, ball.y, '#f43f5e');
                             player.serveText = 'JUMP SERVE';
-                            ball.isPowerfulSpike = false; 
+                            ball.isPowerfulSpike = (player.typeName === 'POWER'); 
                             ball.isMegatonServe = false;
                         } else {
                             playSound('hit');
@@ -2207,9 +2384,9 @@
                             player.serveTextTimer = 75;
                             player.hp = 100; 
                         } else {
-                            player.actionTimer = (player.typeName === 'ALL-ROUNDER') ? 12 : 35; 
+                            player.actionTimer = (player.typeName === 'ALL-ROUNDER') ? 8 : 22; 
                             player.serveText = ball.isMegatonServe ? 'MEGATON CRASH!!' : 'KNOCKDOWN!!';
-                            player.serveTextTimer = (player.typeName === 'ALL-ROUNDER') ? 12 : 35;
+                            player.serveTextTimer = (player.typeName === 'ALL-ROUNDER') ? 8 : 22;
                         }
 
                         for (let i = 0; i < 20; i++) {
@@ -2298,7 +2475,6 @@
                     
                     ball.spin = targetDir * -1.0;
                     
-                    // ALL-ROUNDER Mastery: GOLD TOSS (2nd Touch)
                     if (player.typeName === 'ALL-ROUNDER' && touchCount === 2) {
                         ball.isGoldToss = true; 
                         player.serveText = 'GOLD TOSS!!';
@@ -2333,8 +2509,6 @@
                         player.serveText = 'MAGIC FEINT!'; 
                         ball.isTrickySpike = true; 
 
-                        // ★ [クロノス特殊能力：マジックフェイント発動瞬間] 
-                        // 空中のボール位置に紫の時計エフェクトを展開し、40個の紫デジタル粒子を大爆発させる
                         activeClockEffect = new ClockEffect(ball.x, ball.y);
                         for (let i = 0; i < 40; i++) {
                             const p = new Particle(ball.x, ball.y, '#c084fc');
@@ -2444,12 +2618,12 @@
                         }
 
                         if (hitType === 'just') {
-                            playSound('just_spike'); 
-                            
                             if (player.typeName === 'POWER') {
+                                playSound('meteor_burn');
                                 hitVx = targetDir * (12.0 + vxBonus) * pPower;
                                 hitVy = 3.5 + vyBonus;
                             } else if (player.typeName === 'ALL-ROUNDER' && ball.isGoldToss) {
+                                playSound('just_spike');
                                 hitVx = targetDir * (14.2 + vxBonus) * 1.25; 
                                 hitVy = 3.2 + vyBonus;
                                 ball.isUltimateDrive = true; 
@@ -2457,6 +2631,7 @@
                                 ball.floaterType = 'normal';
                                 ball.floatAmp = 0.5;
                             } else {
+                                playSound('just_spike');
                                 hitVx = targetDir * (15.2 - ratio * 3.5 + vxBonus) * pPower; 
                                 let baseVy = player.typeName === 'ALL-ROUNDER' ? (-0.1 + ratio * 2.2) : (-0.6 + ratio * 1.2);
                                 hitVy = baseVy + vyBonus;
@@ -2466,7 +2641,7 @@
                                 player.boostWindowTimer = 25; 
                                 player.serveText = 'BOOST READY!';
                                 player.serveTextTimer = 25;
-                                ball.isSonicSpike = true; // Trigger intense blue trail
+                                ball.isSonicSpike = true; 
                             }
 
                             ball.shadowColor = 'rgba(255, 255, 255, 0.6)';
@@ -2489,12 +2664,12 @@
                             ball.isPowerfulSpike = (player.typeName === 'POWER'); 
                             ball.isMegatonServe = false;
                         } else if (hitType === 'normal') {
-                            playSound('spike');
-                            
                             if (player.typeName === 'POWER') {
+                                playSound('meteor_burn');
                                 hitVx = targetDir * (9.8 + vxBonus) * pPower;
                                 hitVy = 2.8 + vyBonus;
                             } else if (player.typeName === 'ALL-ROUNDER' && ball.isGoldToss) {
+                                playSound('spike');
                                 hitVx = targetDir * (12.2 + vxBonus) * 1.2;
                                 hitVy = 2.8 + vyBonus;
                                 ball.isUltimateDrive = true;
@@ -2502,6 +2677,7 @@
                                 ball.floaterType = 'normal';
                                 ball.floatAmp = 0.4;
                             } else {
+                                playSound('spike');
                                 hitVx = targetDir * (8.8 - ratio * 2.0 + vxBonus) * pPower; 
                                 let baseVy = player.typeName === 'ALL-ROUNDER' ? (0.6 + ratio * 3.0) : (-0.1 + ratio * 1.8);
                                 hitVy = baseVy + vyBonus;
@@ -2511,7 +2687,7 @@
                                 player.boostWindowTimer = 25; 
                                 player.serveText = 'BOOST READY!';
                                 player.serveTextTimer = 25;
-                                ball.isSonicSpike = true; // Engage trail
+                                ball.isSonicSpike = true; 
                             }
 
                             ball.spin = targetDir * (2.0 + ratio * 3.0);
