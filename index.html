@@ -85,7 +85,7 @@
                         <span class="text-[8px] text-yellow-400 mb-2">P1 TYPE</span>
                         <div class="flex items-center gap-2">
                             <button id="p1TypePrev" class="text-white hover:text-yellow-400 text-xs px-2 py-1 bg-slate-800 rounded border border-slate-600">&lt;</button>
-                            <span id="p1TypeLabel" class="text-[8px] md:text-[10px] text-blue-400 font-bold w-24 text-center">ALL-ROUNDER</span>
+                            <span id="p1TypeLabel" class="text-[8px] md:text-[10px] text-blue-400 font-bold w-24 text-center">SENTINEL</span>
                             <button id="p1TypeNext" class="text-white hover:text-yellow-400 text-xs px-2 py-1 bg-slate-800 rounded border border-slate-600">&gt;</button>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                         <span class="text-[8px] text-yellow-400 mb-2">P2 TYPE</span>
                         <div class="flex items-center gap-2">
                             <button id="p2TypePrev" class="text-white hover:text-yellow-400 text-xs px-2 py-1 bg-slate-800 rounded border border-slate-600">&lt;</button>
-                            <span id="p2TypeLabel" class="text-[8px] md:text-[10px] text-red-500 font-bold w-24 text-center">ALL-ROUNDER</span>
+                            <span id="p2TypeLabel" class="text-[8px] md:text-[10px] text-red-500 font-bold w-24 text-center">SENTINEL</span>
                             <button id="p2TypeNext" class="text-white hover:text-yellow-400 text-xs px-2 py-1 bg-slate-800 rounded border border-slate-600">&gt;</button>
                         </div>
                     </div>
@@ -108,12 +108,12 @@
 
         <!-- 操作説明欄 -->
         <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 bg-slate-950 p-2.5 rounded-lg border border-blue-900 text-[10px] md:text-[11px] leading-normal font-sans">
-            <!-- 左カラム：オールラウンダーとパワー -->
+            <!-- 左カラム：センチネルとバルカン -->
             <div class="border-b md:border-b-0 md:border-r border-blue-950 pb-1.5 md:pb-0 md:pr-2">
-                <span class="font-bold text-green-400 text-[8px] md:text-[9px] arcade-font block mb-1">■ ALL-ROUNDER (GREEN) / POWER (RED)</span>
+                <span class="font-bold text-green-400 text-[8px] md:text-[9px] arcade-font block mb-1">■ SENTINEL (GREEN) / VULCAN (RED)</span>
                 <p class="text-slate-300">
-                    <strong>【万能】</strong>1撃目: レシーブ範囲拡大 | 2撃目: 黄金トス | 3撃目: 魔球化。Q/Uキーで唯一、敵アタックを鋭く跳ね返す「ソリッドミラー」完全ブロック発動！<br>
-                    <strong>【力鬼】</strong>空を切り裂く超重量級：スパイク時は全身から「赤い稲妻」が放電！ボールは「白いV字の風圧（衝撃波）」と赤い流星を纏う、視認性を維持した完全メテオに！
+                    <strong>【守護者】</strong>1撃目: レシーブ範囲拡大 | 2撃目: 黄金トス | 3撃目: 魔球化。Q/Uキーで唯一、敵アタックを鋭く跳ね返す「ソリッドミラー」完全ブロック発動！<br>
+                    <strong>【火神】</strong>空を切り裂く超重量級：スパイク時は全身から「赤い稲妻」が放電！ボールは「白いV字の風圧（衝撃波）」と赤い流星を纏う、視認性を維持した完全メテオに！
                 </p>
             </div>
             
@@ -134,24 +134,24 @@
 
     <script>
         const CHARA_TYPES = {
-            'ALL-ROUNDER': { speed: 6.0, jump: -9.5, gravityScale: 1.0, power: 1.0, float: 1.0, color: '#22c55e' }, // グリーン
-            'POWER':       { speed: 5.0, jump: -10.2, gravityScale: 1.0, power: 1.35, float: 0.7, color: '#ef4444' }, // レッド
-            'SONIC':       { speed: 7.8, jump: -11.5, gravityScale: 1.15, power: 0.85, float: 0.9, color: '#3b82f6' }, // ブルー
-            'CHRONOS':     { speed: 5.8, jump: -9.5, gravityScale: 1.0, power: 0.85, float: 1.5, color: '#a855f7' }  // パープル
+            'SENTINEL': { speed: 6.0, jump: -9.5, gravityScale: 1.0, power: 1.0, float: 1.0, color: '#22c55e' }, // グリーン
+            'VULCAN':   { speed: 5.0, jump: -10.2, gravityScale: 1.0, power: 1.35, float: 0.7, color: '#ef4444' }, // レッド
+            'SONIC':    { speed: 7.8, jump: -11.5, gravityScale: 1.15, power: 0.85, float: 0.9, color: '#3b82f6' }, // ブルー
+            'CHRONOS':  { speed: 5.8, jump: -9.5, gravityScale: 1.0, power: 0.85, float: 1.5, color: '#a855f7' }  // パープル
         };
 
         const P1_COLORS = {
-            'ALL-ROUNDER': { jersey: '#22c55e', hair: '#1e293b', skin: '#fbcfe8' },
-            'POWER':       { jersey: '#1e3a8a', hair: '#0f172a', skin: '#fca5a5' },
-            'SONIC':       { jersey: '#38bdf8', hair: '#fef08a', skin: '#fbcfe8' },
-            'CHRONOS':     { jersey: '#7e22ce', hair: '#ffffff', skin: '#f3e8ff' }
+            'SENTINEL': { jersey: '#22c55e', hair: '#1e293b', skin: '#fbcfe8' },
+            'VULCAN':   { jersey: '#1e3a8a', hair: '#0f172a', skin: '#fca5a5' },
+            'SONIC':    { jersey: '#38bdf8', hair: '#fef08a', skin: '#fbcfe8' },
+            'CHRONOS':  { jersey: '#7e22ce', hair: '#ffffff', skin: '#f3e8ff' }
         };
 
         const P2_COLORS = {
-            'ALL-ROUNDER': { jersey: '#15803d', hair: '#f59e0b', skin: '#ffedd5' },
-            'POWER':       { jersey: '#7f1d1d', hair: '#451a03', skin: '#fca5a5' },
-            'SONIC':       { jersey: '#fb923c', hair: '#fef08a', skin: '#ffedd5' },
-            'CHRONOS':     { jersey: '#c026d3', hair: '#ffffff', skin: '#fae8ff' }
+            'SENTINEL': { jersey: '#15803d', hair: '#f59e0b', skin: '#ffedd5' },
+            'VULCAN':   { jersey: '#7f1d1d', hair: '#451a03', skin: '#fca5a5' },
+            'SONIC':    { jersey: '#fb923c', hair: '#fef08a', skin: '#ffedd5' },
+            'CHRONOS':  { jersey: '#c026d3', hair: '#ffffff', skin: '#fae8ff' }
         };
 
         const TYPE_KEYS = Object.keys(CHARA_TYPES);
@@ -534,7 +534,7 @@
                 
                 this.ghosts = [];
 
-                this.setType('ALL-ROUNDER');
+                this.setType('SENTINEL');
             }
 
             setType(typeName) {
@@ -549,7 +549,7 @@
                 this.hairColor = colors.hair;
                 this.skinColor = colors.skin;
 
-                if (typeName === 'POWER') {
+                if (typeName === 'VULCAN') {
                     this.radiusX = 17;
                     this.radiusY = 22;
                 } else if (typeName === 'SONIC') {
@@ -875,7 +875,7 @@
 
                         const isBallInOwnCourt = (this.id === 1 && ball.x <= NET_X) || (this.id === 2 && ball.x > NET_X);
 
-                        if (this.typeName === 'POWER' && isBallInOwnCourt) {
+                        if (this.typeName === 'VULCAN' && isBallInOwnCourt) {
                             const opponent = this.id === 1 ? p2 : p1;
                             if (opponent) {
                                 opponent.intimidatedTimer = 45; 
@@ -928,14 +928,14 @@
                         } else {
                             let diveForce = 5.5; 
                             if (this.typeName === 'SONIC') diveForce = 7.5; 
-                            if (this.typeName === 'POWER') diveForce = 5.0; 
-                            if (this.typeName === 'ALL-ROUNDER') diveForce = 6.8;
+                            if (this.typeName === 'VULCAN') diveForce = 5.0; 
+                            if (this.typeName === 'SENTINEL') diveForce = 6.8;
 
                             this.vx = dir * diveForce;
                             this.vy = -4.5;
                             this.isGrounded = false;
                             
-                            this.actionTimer = (this.typeName === 'ALL-ROUNDER') ? 2 : 12; 
+                            this.actionTimer = (this.typeName === 'SENTINEL') ? 2 : 12; 
                             
                             createRetroParticles(this.x, this.y, '#ffffff');
                             playSound('hit'); 
@@ -944,8 +944,8 @@
                         this.state = 'idle';
                     }
                 } else if (actionType === 'block') {
-                    if (this.typeName !== 'ALL-ROUNDER') {
-                        this.serveText = 'AR ONLY!';
+                    if (this.typeName !== 'SENTINEL') {
+                        this.serveText = 'ST ONLY!';
                         this.serveTextTimer = 35;
                         this.state = 'idle';
                         this.actionTimer = 0;
@@ -975,7 +975,7 @@
                     let dirScale = (this.id === 1) ? 1 : -1;
                     ctx.scale(dirScale * (this.radiusX / 14), this.radiusY / 22);
                     
-                    ctx.fillStyle = this.typeName === 'ALL-ROUNDER' ? 'rgba(34, 197, 94, 0.45)' : 'rgba(56, 189, 248, 0.45)';
+                    ctx.fillStyle = this.typeName === 'SENTINEL' ? 'rgba(34, 197, 94, 0.45)' : 'rgba(56, 189, 248, 0.45)';
                     ctx.beginPath();
                     ctx.ellipse(0, -this.radiusY, this.radiusX, this.radiusY, 0, 0, Math.PI * 2);
                     ctx.fill();
@@ -1027,11 +1027,11 @@
                     ctx.restore();
                 }
 
-                // ☄️ POWER TYPE RED ELECTRIC LIGHTNING EFFECT
-                const isPowerAttacking = this.typeName === 'POWER' && 
+                // ☄️ VULCAN TYPE RED ELECTRIC LIGHTNING EFFECT
+                const isVulcanAttacking = this.typeName === 'VULCAN' && 
                     (this.state === 'spike' || this.state === 'quick_spike' || this.state === 'quick_approach');
                 
-                if (isPowerAttacking) {
+                if (isVulcanAttacking) {
                     ctx.save();
                     ctx.shadowBlur = 12;
                     ctx.shadowColor = '#ef4444';
@@ -1245,7 +1245,7 @@
                     else if (this.serveText.includes('SOLID MIRROR')) tCol = '#22c55e';
                     else if (this.serveText.includes('DRIVE SERVE')) tCol = '#22c55e';
                     else if (this.serveText.includes('ZONE SERVE')) tCol = '#60a5fa';
-                    else if (this.serveText.includes('AR ONLY')) tCol = '#ef4444'; 
+                    else if (this.serveText.includes('ST ONLY')) tCol = '#ef4444'; 
 
                     ctx.fillStyle = tCol;
                     ctx.textAlign = 'center';
@@ -1705,7 +1705,7 @@
                     ctx.restore();
                 }
 
-                // ☄️ POWER TYPE MEGA EFFECT (赤い放電・稲妻 ＋ 空気を切り裂くソニックブーム)
+                // ☄️ VULCAN TYPE MEGA EFFECT (赤い放電・稲妻 ＋ 空気を切り裂くソニックブーム)
                 if (this.isPowerfulSpike || this.isMegatonServe) {
                     ctx.save();
                     ctx.globalAlpha = 0.25 + Math.sin(globalTick * 0.25) * 0.1;
@@ -1734,7 +1734,7 @@
                     }
                     ctx.restore();
 
-                    // ⚡ パワータイプの赤い稲妻放電
+                    // ⚡ バルカンタイプの赤い稲妻放電
                     ctx.save();
                     ctx.strokeStyle = '#ef4444';
                     ctx.lineWidth = 1.8;
@@ -2028,7 +2028,7 @@
             }
 
             const touchCountBefore = player.id === 1 ? p1TouchCount : p2TouchCount;
-            if (player.typeName === 'ALL-ROUNDER' && touchCountBefore === 0) {
+            if (player.typeName === 'SENTINEL' && touchCountBefore === 0) {
                 assistDistance *= 1.5; 
             }
 
@@ -2086,7 +2086,7 @@
                         hitType = 'poor';
                     }
 
-                    if (player.typeName === 'ALL-ROUNDER') {
+                    if (player.typeName === 'SENTINEL') {
                         if (serveType === 'jump_spike' && hitType !== 'poor') {
                             if (player.lastTossType === 'W') {
                                 playSound('just_spike');
@@ -2156,7 +2156,7 @@
                         ball.isSonicSpike = false;
                         ball.isTrickySpike = false;
                     } else if (serveType === 'jump_spike') {
-                        let isMegaton = (player.typeName === 'POWER' && hitType !== 'poor' && Math.random() < 0.35);
+                        let isMegaton = (player.typeName === 'VULCAN' && hitType !== 'poor' && Math.random() < 0.35);
 
                         if (isMegaton) {
                             playSound('meteor_burn');
@@ -2177,30 +2177,30 @@
                         } else if (hitType === 'just') {
                             playSound('just_spike');
                             
-                            let baseVx = player.typeName === 'POWER' ? 14.0 : 13.8; 
-                            let baseVy = player.typeName === 'POWER' ? 3.5 : 2.0;
+                            let baseVx = player.typeName === 'VULCAN' ? 14.0 : 13.8; 
+                            let baseVy = player.typeName === 'VULCAN' ? 3.5 : 2.0;
                             
                             ball.vx = targetDir * baseVx * pPower; 
                             ball.vy = baseVy; 
                             ball.spin = targetDir * 12.0; 
                             
                             player.serveText = 'JUST SERVE!!'; 
-                            ball.isPowerfulSpike = (player.typeName === 'POWER'); 
+                            ball.isPowerfulSpike = (player.typeName === 'VULCAN'); 
                             ball.isMegatonServe = false;
                             createRetroParticles(ball.x, ball.y, '#fde047');
                             createRetroParticles(ball.x, ball.y, '#f43f5e');
                         } else if (hitType === 'normal') {
                             playSound('spike');
                             
-                            let baseVx = player.typeName === 'POWER' ? 9.8 : 10.8;
-                            let baseVy = player.typeName === 'POWER' ? 2.8 : 1.2;
+                            let baseVx = player.typeName === 'VULCAN' ? 9.8 : 10.8;
+                            let baseVy = player.typeName === 'VULCAN' ? 2.8 : 1.2;
                             
                             ball.vx = targetDir * baseVx * pPower; 
                             ball.vy = baseVy; 
                             ball.spin = targetDir * 5.0; 
                             createRetroParticles(ball.x, ball.y, '#f43f5e');
                             player.serveText = 'JUMP SERVE';
-                            ball.isPowerfulSpike = (player.typeName === 'POWER'); 
+                            ball.isPowerfulSpike = (player.typeName === 'VULCAN'); 
                             ball.isMegatonServe = false;
                         } else {
                             playSound('hit');
@@ -2308,8 +2308,8 @@
                 const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive;
                 if (isPowerBall && touchCount === 1 && !(player.state === 'blocking' && !player.isGrounded)) {
                     
-                    // オールラウンダーの「ソリッドミラー完全ブロック」が優先される
-                    if (player.typeName === 'ALL-ROUNDER' && !player.isGrounded && player.state === 'blocking') {
+                    // センチネルの「ソリッドミラー完全ブロック」が優先される
+                    if (player.typeName === 'SENTINEL' && !player.isGrounded && player.state === 'blocking') {
                         playSound('just_spike');
                         ball.x = clampedX + Math.cos(angle) * hitDistance;
                         ball.y = headY + Math.sin(angle) * hitDistance;
@@ -2343,7 +2343,7 @@
                         return;
                     }
 
-                    // ユーザーの要望：パワータイプのスパイクとメガトンサーブでは80%、オールラウンダーのアルティメットでは50%で発動
+                    // バルカンのスパイクとメガトンサーブでは80%、センチネルのアルティメットでは50%で発動
                     let blowawayChance = 0;
                     if (ball.isUltimateDrive) {
                         blowawayChance = 0.50;
@@ -2362,8 +2362,8 @@
                             player.serveTextTimer = 75;
                             player.hp = 100; 
                         } else {
-                            // 🌟 ガードブレイク時のノックダウン時間をさらに短縮! (一般 28F / 万能 10F)
-                            player.actionTimer = (player.typeName === 'ALL-ROUNDER') ? 10 : 28; 
+                            // 🌟 ガードブレイク時のノックダウン時間をさらに短縮! (一般 28F / センチネル 10F)
+                            player.actionTimer = (player.typeName === 'SENTINEL') ? 10 : 28; 
                             player.serveText = ball.isMegatonServe ? 'MEGATON CRASH!!' : 'GUARD BREAK!!';
                             player.serveTextTimer = player.actionTimer;
                         }
@@ -2463,7 +2463,7 @@
                     
                     ball.spin = targetDir * -1.0;
                     
-                    if (player.typeName === 'ALL-ROUNDER' && touchCount === 2) {
+                    if (player.typeName === 'SENTINEL' && touchCount === 2) {
                         ball.isGoldToss = true; 
                         player.serveText = 'GOLD TOSS!!';
                         player.serveTextTimer = 45;
@@ -2540,11 +2540,9 @@
                             player.isGrounded = false;
                             
                             // 🌟 貫通（確実に得点につながる打ち抜き挙動に変更） 🌟
-                            // 相手コート（ブロックプレイヤーの背後）に向けて、斜め下へ凄まじいスピードで打ち抜く
                             ball.vx = (player.id === 1 ? -15.5 : 15.5);
                             ball.vy = 9.5;
                             
-                            // メテオ/アルティメットの彗星パワーを再点火して、エフェクトをまとったまま貫通させる
                             if (ball.isUltimateDrive) {
                                 ball.isUltimateDrive = true;
                             } else {
@@ -2673,11 +2671,11 @@
                         }
 
                         if (hitType === 'just') {
-                            if (player.typeName === 'POWER') {
+                            if (player.typeName === 'VULCAN') {
                                 playSound('meteor_burn');
                                 hitVx = targetDir * (12.0 + vxBonus) * pPower;
                                 hitVy = 3.5 + vyBonus;
-                            } else if (player.typeName === 'ALL-ROUNDER' && ball.isGoldToss) {
+                            } else if (player.typeName === 'SENTINEL' && ball.isGoldToss) {
                                 playSound('just_spike');
                                 hitVx = targetDir * (14.2 + vxBonus) * 1.25; 
                                 hitVy = 3.2 + vyBonus;
@@ -2688,7 +2686,7 @@
                             } else {
                                 playSound('just_spike');
                                 hitVx = targetDir * (15.2 - ratio * 3.5 + vxBonus) * pPower; 
-                                let baseVy = player.typeName === 'ALL-ROUNDER' ? (-0.1 + ratio * 2.2) : (-0.6 + ratio * 1.2);
+                                let baseVy = player.typeName === 'SENTINEL' ? (-0.1 + ratio * 2.2) : (-0.6 + ratio * 1.2);
                                 hitVy = baseVy + vyBonus;
                             }
                             
@@ -2716,14 +2714,14 @@
                                 createRetroParticles(ball.x, ball.y, '#f43f5e'); 
                             }
                             
-                            ball.isPowerfulSpike = (player.typeName === 'POWER'); 
+                            ball.isPowerfulSpike = (player.typeName === 'VULCAN'); 
                             ball.isMegatonServe = false;
                         } else if (hitType === 'normal') {
-                            if (player.typeName === 'POWER') {
+                            if (player.typeName === 'VULCAN') {
                                 playSound('meteor_burn');
                                 hitVx = targetDir * (9.8 + vxBonus) * pPower;
                                 hitVy = 2.8 + vyBonus;
-                            } else if (player.typeName === 'ALL-ROUNDER' && ball.isGoldToss) {
+                            } else if (player.typeName === 'SENTINEL' && ball.isGoldToss) {
                                 playSound('spike');
                                 hitVx = targetDir * (12.2 + vxBonus) * 1.2;
                                 hitVy = 2.8 + vyBonus;
@@ -2734,7 +2732,7 @@
                             } else {
                                 playSound('spike');
                                 hitVx = targetDir * (8.8 - ratio * 2.0 + vxBonus) * pPower; 
-                                let baseVy = player.typeName === 'ALL-ROUNDER' ? (0.6 + ratio * 3.0) : (-0.1 + ratio * 1.8);
+                                let baseVy = player.typeName === 'SENTINEL' ? (0.6 + ratio * 3.0) : (-0.1 + ratio * 1.8);
                                 hitVy = baseVy + vyBonus;
                             }
 
@@ -2757,12 +2755,12 @@
                             const flashColor = ball.isUltimateDrive ? '#22c55e' : (player.typeName === 'SONIC' ? '#38bdf8' : '#f43f5e');
                             createRetroParticles(ball.x, ball.y, flashColor);
                             
-                            ball.isPowerfulSpike = (player.typeName === 'POWER'); 
+                            ball.isPowerfulSpike = (player.typeName === 'VULCAN'); 
                             ball.isMegatonServe = false;
                         } else {
                             playSound('hit'); 
                             hitVx = targetDir * 4.0;
-                            hitVy = player.typeName === 'ALL-ROUNDER' ? -9.5 : -5.8; 
+                            hitVy = player.typeName === 'SENTINEL' ? -9.5 : -5.8; 
                             ball.spin = targetDir * 1.0;
                             createRetroParticles(ball.x, ball.y, '#9ca3af'); 
                             ball.isPowerfulSpike = false;
