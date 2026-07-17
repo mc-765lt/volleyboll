@@ -106,6 +106,7 @@
             </div>
         </div>
 
+        <!-- 操作説明欄 -->
         <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 bg-slate-950 p-2.5 rounded-lg border border-blue-900 text-[10px] md:text-[11px] leading-normal font-sans">
             <!-- 左カラム：オールラウンダーとパワー -->
             <div class="border-b md:border-b-0 md:border-r border-blue-950 pb-1.5 md:pb-0 md:pr-2">
@@ -134,9 +135,9 @@
     <script>
         const CHARA_TYPES = {
             'ALL-ROUNDER': { speed: 6.0, jump: -9.5, gravityScale: 1.0, power: 1.0, float: 1.0, color: '#22c55e' }, // グリーン
-            'POWER':       { speed: 5.0, jump: -10.2, gravityScale: 1.0, power: 1.35, float: 0.7, color: '#ef4444' },
-            'SONIC':       { speed: 7.8, jump: -11.5, gravityScale: 1.15, power: 0.85, float: 0.9, color: '#3b82f6' },
-            'CHRONOS':     { speed: 5.8, jump: -9.5, gravityScale: 1.0, power: 0.85, float: 1.5, color: '#a855f7' }
+            'POWER':       { speed: 5.0, jump: -10.2, gravityScale: 1.0, power: 1.35, float: 0.7, color: '#ef4444' }, // レッド
+            'SONIC':       { speed: 7.8, jump: -11.5, gravityScale: 1.15, power: 0.85, float: 0.9, color: '#3b82f6' }, // ブルー
+            'CHRONOS':     { speed: 5.8, jump: -9.5, gravityScale: 1.0, power: 0.85, float: 1.5, color: '#a855f7' }  // パープル
         };
 
         const P1_COLORS = {
@@ -175,6 +176,7 @@
             if (audioCtx.state === 'running') playSound('hit');
         }
 
+        // UIイベント
         document.getElementById('p1TypePrev').addEventListener('click', (e) => {
             e.stopPropagation();
             p1TypeIndex = (p1TypeIndex - 1 + TYPE_KEYS.length) % TYPE_KEYS.length;
@@ -286,7 +288,7 @@
                 osc.start(now);
                 osc.stop(now + 0.25);
             } else if (type === 'meteor_burn') {
-                // ☄️ 彗星が空気を切り裂いて激しく燃え盛る超低音焦熱爆発音 (1.0秒に延長)
+                // ☄️ 彗星が空気を切り裂いて激しく燃え盛る超低音焦熱爆発音 (1.0秒)
                 const duration = 1.0;
                 const bufferSize = audioCtx.sampleRate * duration;
                 const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -377,6 +379,7 @@
                 this.alpha = 1.0;
                 this.life = 20;
                 this.currentLife = 20;
+                this.isShattered = false;
             }
             update() {
                 this.currentLife--;
@@ -387,27 +390,47 @@
             draw() {
                 ctx.save();
                 ctx.globalAlpha = Math.max(0, this.alpha);
-                ctx.shadowBlur = 15;
+                ctx.shadowBlur = this.isShattered ? 25 : 15;
                 ctx.shadowColor = this.color;
                 ctx.strokeStyle = this.color;
-                ctx.lineWidth = 4;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.stroke();
+                ctx.lineWidth = this.isShattered ? 6 : 4;
+                
+                if (this.isShattered) {
+                    // 砕け散ったシールドの破片を描画
+                    const numSegments = 12;
+                    const progress = 1 - (this.currentLife / this.life);
+                    for (let i = 0; i < numSegments; i++) {
+                        const angleStart = (Math.PI * 2 / numSegments) * i;
+                        const angleEnd = (Math.PI * 2 / numSegments) * (i + 0.7);
+                        
+                        const shatterOffset = progress * 35;
+                        const ox = Math.cos((angleStart + angleEnd) / 2) * shatterOffset;
+                        const oy = Math.sin((angleStart + angleEnd) / 2) * shatterOffset;
+                        
+                        ctx.beginPath();
+                        ctx.arc(this.x + ox, this.y + oy, this.radius, angleStart, angleEnd);
+                        ctx.stroke();
+                    }
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.stroke();
 
-                ctx.strokeStyle = this.color;
-                ctx.lineWidth = 1.5;
-                ctx.globalAlpha = Math.max(0, this.alpha * 0.4);
-                ctx.beginPath();
-                for (let i = 0; i < 6; i++) {
-                    const angle = (Math.PI / 3) * i;
-                    const hx = this.x + Math.cos(angle) * this.radius;
-                    const hy = this.y + Math.sin(angle) * this.radius;
-                    if (i === 0) ctx.moveTo(hx, hy);
-                    else ctx.lineTo(hx, hy);
+                    // 内側の幾何学ライン
+                    ctx.strokeStyle = this.color;
+                    ctx.lineWidth = 1.5;
+                    ctx.globalAlpha = Math.max(0, this.alpha * 0.4);
+                    ctx.beginPath();
+                    for (let i = 0; i < 6; i++) {
+                        const angle = (Math.PI / 3) * i;
+                        const hx = this.x + Math.cos(angle) * this.radius;
+                        const hy = this.y + Math.sin(angle) * this.radius;
+                        if (i === 0) ctx.moveTo(hx, hy);
+                        else ctx.lineTo(hx, hy);
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
                 }
-                ctx.closePath();
-                ctx.stroke();
 
                 ctx.restore();
             }
@@ -1004,7 +1027,7 @@
                     ctx.restore();
                 }
 
-                // ☄️ POWER TYPE RED ELECTRIC LIGHTNING EFFECT (赤い稲妻を追加!)
+                // ☄️ POWER TYPE RED ELECTRIC LIGHTNING EFFECT
                 const isPowerAttacking = this.typeName === 'POWER' && 
                     (this.state === 'spike' || this.state === 'quick_spike' || this.state === 'quick_approach');
                 
@@ -1359,7 +1382,7 @@
             update() {
                 if (rallyState === 'serving') return;
 
-                // ☄️ 彗星（流れ星）の軌跡記録システム
+                // ☄️ 流れ星（彗星）の最新位置記録システム
                 const hasAnyTrail = this.isPowerfulSpike || this.isMegatonServe || this.isUltimateDrive || this.isSonicSpike || this.isQuickSpike;
                 if (hasAnyTrail) {
                     this.trail.push({ x: this.x, y: this.y });
@@ -1437,7 +1460,7 @@
                     return; 
                 }
 
-                // ☄️ 流れ星・流星のバックファイヤ粒子生成
+                // ☄️ 彗星（メテオ）の爆発的陽炎・火の粉
                 if (rallyState === 'rally' && !this.isServeBall) {
                     if (this.isPowerfulSpike || this.isMegatonServe) {
                         for (let i = 0; i < 3; i++) {
@@ -1682,9 +1705,8 @@
                     ctx.restore();
                 }
 
-                // ☄️ POWER TYPE MEGA EFFECT (赤い熱気 ＋ 稲妻 ＋ 風を切るソニックブーム)
+                // ☄️ POWER TYPE MEGA EFFECT (赤い放電・稲妻 ＋ 空気を切り裂くソニックブーム)
                 if (this.isPowerfulSpike || this.isMegatonServe) {
-                    // ボール背後のオーラを小さくし、視認性をキープ！
                     ctx.save();
                     ctx.globalAlpha = 0.25 + Math.sin(globalTick * 0.25) * 0.1;
                     ctx.shadowBlur = 12;
@@ -1745,7 +1767,7 @@
                     }
                     ctx.restore();
 
-                    // 🌪️ 風を切り裂くエフェクト (V字の風圧衝撃波 ＋ 流線ウィンドスリット)
+                    // 🌪️ 風を切り裂くエフェクト (V字の風圧衝撃波 ＋ 流線スピードスリット)
                     const ballSpd = Math.hypot(this.vx, this.vy);
                     if (ballSpd > 1.5) {
                         ctx.save();
@@ -1758,7 +1780,7 @@
                         const vLen = 28; 
                         const spreadAngle = 0.38; 
                         
-                        // 1. 空気を引き裂くV字型の衝撃波コーン
+                        // 1. V字型衝撃波
                         ctx.beginPath();
                         ctx.moveTo(this.x + Math.cos(angle) * this.radius, this.y + Math.sin(angle) * this.radius);
                         ctx.lineTo(this.x - Math.cos(angle - spreadAngle) * (this.radius + vLen), this.y - Math.sin(angle - spreadAngle) * (this.radius + vLen));
@@ -1767,7 +1789,7 @@
                         ctx.lineTo(this.x - Math.cos(angle + spreadAngle) * (this.radius + vLen), this.y - Math.sin(angle + spreadAngle) * (this.radius + vLen));
                         ctx.stroke();
 
-                        // 2. 後方に流れ去る極細の風切りスリット
+                        // 2. ウィンドスリット流線
                         ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
                         ctx.lineWidth = 1.0;
                         for (let i = 0; i < 3; i++) {
@@ -1835,7 +1857,7 @@
                     ctx.restore();
                 }
 
-                // ⚡ SONIC TYPE PLATINUM ELECTRIC RINGS ON BALL
+                // ⚡ SONIC TYPE ELECTRIC RINGS ON BALL
                 const hasSonicCharge = this.isSonicSpike || this.isQuickSpike;
                 if (hasSonicCharge) {
                     ctx.save();
@@ -1937,10 +1959,10 @@
                     playSound('net');
                     if (ball.vx > 0) {
                         ball.x = netLeft - ball.radius;
-                        ball.vx = -ball.vx * 0.8;
+                        ball.vx = -ball.vx * 0.65;
                     } else {
                         ball.x = netRight + ball.radius;
-                        ball.vx = -ball.vx * 0.8;
+                        ball.vx = -ball.vx * 0.65;
                     }
                     createRetroParticles(ball.x, ball.y, '#2563eb');
                     ball.isPowerfulSpike = false; 
@@ -2282,7 +2304,7 @@
 
                 const incomingSpeed = Math.hypot(ball.vx, ball.vy);
 
-                // ☄️ メテオボール/メガトンサーブ/アルティメットアタックを1打目に食らった時の吹っ飛び処理 (フレーム数調整)
+                // ☄️ メテオボール/メガトンサーブ/アルティメットアタックを1打目に食らった時の吹っ飛び処理 (指定確率での発動)
                 const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive;
                 if (isPowerBall && touchCount === 1 && !(player.state === 'blocking' && !player.isGrounded)) {
                     
@@ -2322,7 +2344,12 @@
                     }
 
                     // ユーザーの要望：パワータイプのスパイクとメガトンサーブでは80%、オールラウンダーのアルティメットでは50%で発動
-                    const blowawayChance = ball.isUltimateDrive ? 0.50 : 0.80;
+                    let blowawayChance = 0;
+                    if (ball.isUltimateDrive) {
+                        blowawayChance = 0.50;
+                    } else if (ball.isMegatonServe || ball.isPowerfulSpike) {
+                        blowawayChance = 0.80;
+                    }
 
                     if (Math.random() < blowawayChance) {
                         player.touchCooldown = 30; 
@@ -2335,7 +2362,7 @@
                             player.serveTextTimer = 75;
                             player.hp = 100; 
                         } else {
-                            // 🌟 ガードブレイク時のノックダウン時間を短縮! (一般 28F / 万能 10F)
+                            // 🌟 ガードブレイク時のノックダウン時間をさらに短縮! (一般 28F / 万能 10F)
                             player.actionTimer = (player.typeName === 'ALL-ROUNDER') ? 10 : 28; 
                             player.serveText = ball.isMegatonServe ? 'MEGATON CRASH!!' : 'GUARD BREAK!!';
                             player.serveTextTimer = player.actionTimer;
@@ -2494,6 +2521,71 @@
                     ball.isUltimateDrive = false;
 
                 } else if (!player.isGrounded && player.state === 'blocking') {
+                    const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive;
+                    
+                    if (isPowerBall) {
+                        const damage = ball.isUltimateDrive ? 25 : 35;
+                        player.hp -= damage;
+                        
+                        if (player.hp <= 0) {
+                            // ブロックが破られた！BLOCK CRASH!
+                            player.hp = 100; // 耐久値リセット
+                            player.state = 'tumbled';
+                            player.actionTimer = 28; // Tumbled duration
+                            player.serveText = 'BLOCK CRASH!!';
+                            player.serveTextTimer = 65;
+                            
+                            player.vx = (player.id === 1 ? -6.5 : 6.5);
+                            player.vy = -5.0;
+                            player.isGrounded = false;
+                            
+                            // 🌟 貫通（確実に得点につながる打ち抜き挙動に変更） 🌟
+                            // 相手コート（ブロックプレイヤーの背後）に向けて、斜め下へ凄まじいスピードで打ち抜く
+                            ball.vx = (player.id === 1 ? -15.5 : 15.5);
+                            ball.vy = 9.5;
+                            
+                            // メテオ/アルティメットの彗星パワーを再点火して、エフェクトをまとったまま貫通させる
+                            if (ball.isUltimateDrive) {
+                                ball.isUltimateDrive = true;
+                            } else {
+                                ball.isPowerfulSpike = true;
+                            }
+                            ball.isMegatonServe = false;
+                            ball.isQuickSpike = false;
+                            ball.isSonicSpike = false;
+                            
+                            playSound('just_spike');
+                            
+                            // 幾何学的なシールド大破エフェクトを生成
+                            activeBlockEffect = new BlockEffect(ball.x, ball.y, '#f97316');
+                            activeBlockEffect.isShattered = true;
+                            activeBlockEffect.life = 35;
+                            activeBlockEffect.currentLife = 35;
+                            
+                            ctx.fillStyle = 'rgba(239, 68, 68, 0.45)';
+                            ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+                            
+                            for (let i = 0; i < 45; i++) {
+                                const p = new Particle(ball.x, ball.y, '#ef4444');
+                                p.size = Math.random() * 8 + 4;
+                                p.vx = (Math.random() - 0.5) * 18;
+                                p.vy = (Math.random() - 0.5) * 18 - 3;
+                                particleSystem.push(p);
+                            }
+                            for (let i = 0; i < 25; i++) {
+                                const p = new Particle(ball.x, ball.y, '#f97316');
+                                p.size = Math.random() * 5 + 2;
+                                p.vx = (Math.random() - 0.5) * 13;
+                                p.vy = (Math.random() - 0.5) * 13 - 1;
+                                particleSystem.push(p);
+                            }
+                            return;
+                        } else {
+                            player.serveText = `GUARD SLAM! (HP -${damage})`;
+                            player.serveTextTimer = 45;
+                        }
+                    }
+
                     playSound('just_spike');
                     ball.x = clampedX + Math.cos(angle) * hitDistance;
                     ball.y = headY + Math.sin(angle) * hitDistance;
@@ -2504,16 +2596,18 @@
                     
                     player.state = 'block'; 
                     player.actionTimer = 15;
-                    player.serveText = 'SOLID MIRROR!!';
-                    player.serveTextTimer = 45;
+                    if (!isPowerBall) {
+                        player.serveText = 'SOLID MIRROR!!';
+                        player.serveTextTimer = 45;
+                    }
 
                     activeBlockEffect = new BlockEffect(ball.x, ball.y, '#22c55e');
                     
-                    ctx.fillStyle = 'rgba(34, 197, 94, 0.5)';
+                    ctx.fillStyle = isPowerBall ? 'rgba(249, 115, 22, 0.3)' : 'rgba(34, 197, 94, 0.5)';
                     ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
 
                     for (let i = 0; i < 45; i++) {
-                        const p = new Particle(ball.x, ball.y, '#22c55e');
+                        const p = new Particle(ball.x, ball.y, isPowerBall ? '#f97316' : '#22c55e');
                         p.size = Math.random() * 6 + 3.0;
                         p.vx = (Math.random() - 0.5) * 16;
                         p.vy = (Math.random() - 0.5) * 16 - 2;
