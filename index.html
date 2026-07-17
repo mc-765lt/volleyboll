@@ -79,7 +79,7 @@
                 </p>
 
                 <!-- キャラタイプ選択UI -->
-                <div class="flex justify-between w-full max-w-md my-3 px-4 arcade-font type-select-ui">
+                <div class="flex justify-between w-full max-w-lg my-3 px-4 arcade-font type-select-ui">
                     <!-- P1 -->
                     <div class="flex flex-col items-center">
                         <span class="text-[8px] text-yellow-400 mb-2">P1 TYPE</span>
@@ -106,23 +106,32 @@
             </div>
         </div>
 
-        <!-- 操作説明欄 -->
-        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 bg-slate-950 p-2.5 rounded-lg border border-blue-900 text-[10px] md:text-[11px] leading-normal font-sans">
+        <!-- 操作説明欄 (高さを抑えてコンパクトにスクロール可能化) -->
+        <div class="w-full h-24 overflow-y-auto grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 bg-slate-950 p-2.5 rounded-lg border border-blue-900 text-[10px] md:text-[11px] leading-normal font-sans">
             <!-- 左カラム：センチネルとバルカン -->
             <div class="border-b md:border-b-0 md:border-r border-blue-950 pb-1.5 md:pb-0 md:pr-2">
                 <span class="font-bold text-green-400 text-[8px] md:text-[9px] arcade-font block mb-1">■ SENTINEL (GREEN) / VULCAN (RED)</span>
                 <p class="text-slate-300">
-                    <strong>【守護者】</strong>1撃目: レシーブ範囲拡大 | 2撃目: 黄金トス | 3撃目: 魔球化。Q/Uキーで唯一、敵アタックを鋭く跳ね返す「ソリッドミラー」完全ブロック発動！<br>
-                    <strong>【火神】</strong>空を切り裂く超重量級：スパイク時は全身から「赤い稲妻」が放電！ボールは「白いV字の風圧（衝撃波）」と赤い流星を纏う、視認性を維持した完全メテオに！
+                    <strong>【センチネル】</strong>1撃目:レシーブ範囲拡大 | 2撃目:黄金トス | 3撃目:魔球。Q/Uで「ソリッドミラー」完全ブロック！大破時は床へ強烈貫通！<br>
+                    <strong>【バルカン】</strong>超重量アタッカー：全身から赤い電撃！スパイク・メガトンサーブ(確率80%)で敵を吹き飛ばす「ノックダウン」を完全支配！
                 </p>
             </div>
             
-            <!-- 右カラム：ソニックとクロノス -->
-            <div class="pt-1 md:pt-0 md:pl-2">
-                <span class="font-bold text-cyan-400 text-[8px] md:text-[9px] arcade-font block mb-1">■ SONIC TYPE (BLUE) / CHRONOS (PURPLE)</span>
+            <!-- 中カラム：ソニックとクロノス -->
+            <div class="border-b md:border-b-0 md:border-r border-blue-950 pb-1.5 md:pb-0 md:px-2">
+                <span class="font-bold text-cyan-400 text-[8px] md:text-[9px] arcade-font block mb-1">■ SONIC (BLUE) / CHRONOS (PURPLE)</span>
                 <p class="text-slate-300">
-                    <strong>【音速】</strong>スパイク時限定で全身から「ピキピキ青い稲妻」が激しく噴出！ボールもプラズマ軌道へ。アプローチW2回連打、空中+方向キーアタックでエアブリンク追尾！<br>
-                    <strong>【時空】</strong>アタック時に紫の時計盤が回転し、ボールを空中に一時停止。再発射までの停止時間がシームレスに極端にばらつく(0.1秒〜超ロング)「タイムストップ」を支配！
+                    <strong>【ソニック】</strong>スパイク時、全身からピキピキ青い電撃！W/I連打の「エアブリンク追尾」や時間差強襲「ソニック・アクセル」を自在に操る！<br>
+                    <strong>【クロノス】</strong>アタック時に一時停止させ、不規則な時間差で急降下再発射する「タイムストップ」と、地上でテレポートする次元ワープダイブ！
+                </p>
+            </div>
+
+            <!-- 右カラム：ヴォイド -->
+            <div class="pt-1 md:pt-0 md:pl-2">
+                <span class="font-bold text-pink-500 text-[8px] md:text-[9px] arcade-font block mb-1">■ VOID (DARK MAGENTA)</span>
+                <p class="text-slate-300">
+                    <strong>【ヴォイド】</strong>虚空の支配者。Q/Uで足元にポータル1つ設置。再度押すと任意位置から瞬時テレポート＆空中浮遊！<br>
+                    空中でW/Iで通常スパイク。ポータルワープ直後の空中W/Iは強力魔球<strong>「ヴォイド・エクスプロージョン」</strong>に強化され敵陣を襲撃！空中S/Kでフェイントの代わりに入口ポータルを開き、敵陣から一瞬の予兆を経て急降下射出する<strong>「ポータルスパイク」</strong>を打ち分ける！
                 </p>
             </div>
         </div>
@@ -135,28 +144,37 @@
     <script>
         const CHARA_TYPES = {
             'SENTINEL': { speed: 6.0, jump: -9.5, gravityScale: 1.0, power: 1.0, float: 1.0, color: '#22c55e' }, // グリーン
-            'VULCAN':   { speed: 5.0, jump: -10.2, gravityScale: 1.0, power: 1.35, float: 0.7, color: '#ef4444' }, // レッド
+            'VULCAN':   { speed: 5.0, jump: -10.2, gravityScale: 1.0, power: 1.35, float: 0.7, color: '#ef4444' }, // レッド（最大威力）
             'SONIC':    { speed: 7.8, jump: -11.5, gravityScale: 1.15, power: 0.85, float: 0.9, color: '#3b82f6' }, // ブルー
-            'CHRONOS':  { speed: 5.8, jump: -9.5, gravityScale: 1.0, power: 0.85, float: 1.5, color: '#a855f7' }  // パープル
+            'CHRONOS':  { speed: 5.8, jump: -9.5, gravityScale: 1.0, power: 0.85, float: 1.5, color: '#a855f7' }, // パープル
+            'VOID':     { speed: 4.8, jump: -9.5, gravityScale: 1.0, power: 0.95, float: 1.0, color: '#d946ef' }  // ダークマゼンタ（機動力を落としてバランス調整）
         };
 
         const P1_COLORS = {
             'SENTINEL': { jersey: '#22c55e', hair: '#1e293b', skin: '#fbcfe8' },
             'VULCAN':   { jersey: '#1e3a8a', hair: '#0f172a', skin: '#fca5a5' },
             'SONIC':    { jersey: '#38bdf8', hair: '#fef08a', skin: '#fbcfe8' },
-            'CHRONOS':  { jersey: '#7e22ce', hair: '#ffffff', skin: '#f3e8ff' }
+            'CHRONOS':  { jersey: '#7e22ce', hair: '#ffffff', skin: '#f3e8ff' },
+            'VOID':     { jersey: '#4c1d95', hair: '#111827', skin: '#fbcfe8' }
         };
 
         const P2_COLORS = {
             'SENTINEL': { jersey: '#15803d', hair: '#f59e0b', skin: '#ffedd5' },
             'VULCAN':   { jersey: '#7f1d1d', hair: '#451a03', skin: '#fca5a5' },
             'SONIC':    { jersey: '#fb923c', hair: '#fef08a', skin: '#ffedd5' },
-            'CHRONOS':  { jersey: '#c026d3', hair: '#ffffff', skin: '#fae8ff' }
+            'CHRONOS':  { jersey: '#c026d3', hair: '#ffffff', skin: '#fae8ff' },
+            'VOID':     { jersey: '#701a75', hair: '#f43f5e', skin: '#ffedd5' }
         };
 
         const TYPE_KEYS = Object.keys(CHARA_TYPES);
         let p1TypeIndex = 0;
         let p2TypeIndex = 0;
+
+        // ポータル配列 (最大1つに改修)
+        let p1Portals = []; // {x, y}
+        let p2Portals = []; // {x, y}
+        let p1PortalCooldown = 0;
+        let p2PortalCooldown = 0;
 
         function updateTypeDisplay() {
             const p1Type = TYPE_KEYS[p1TypeIndex];
@@ -288,7 +306,6 @@
                 osc.start(now);
                 osc.stop(now + 0.25);
             } else if (type === 'meteor_burn') {
-                // ☄️ 彗星が空気を切り裂いて激しく燃え盛る超低音焦熱爆発音 (1.0秒)
                 const duration = 1.0;
                 const bufferSize = audioCtx.sampleRate * duration;
                 const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -396,7 +413,6 @@
                 ctx.lineWidth = this.isShattered ? 6 : 4;
                 
                 if (this.isShattered) {
-                    // 砕け散ったシールドの破片を描画
                     const numSegments = 12;
                     const progress = 1 - (this.currentLife / this.life);
                     for (let i = 0; i < numSegments; i++) {
@@ -416,7 +432,6 @@
                     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                     ctx.stroke();
 
-                    // 内側の幾何学ライン
                     ctx.strokeStyle = this.color;
                     ctx.lineWidth = 1.5;
                     ctx.globalAlpha = Math.max(0, this.alpha * 0.4);
@@ -531,6 +546,7 @@
                 this.tossActiveTimer = 0; 
                 this.boostWindowTimer = 0;
                 this.lastTossType = 'W'; 
+                this.warpComboTimer = 0; // VOID専用: ワープ直後の通常アタック強化判定
                 
                 this.ghosts = [];
 
@@ -558,6 +574,9 @@
                 } else if (typeName === 'CHRONOS') {
                     this.radiusX = 13;
                     this.radiusY = 24;
+                } else if (typeName === 'VOID') {
+                    this.radiusX = 14;
+                    this.radiusY = 23;
                 } else {
                     this.radiusX = 14;
                     this.radiusY = 22;
@@ -590,6 +609,7 @@
                 this.warpCooldown = 0; 
                 this.tossActiveTimer = 0;
                 this.boostWindowTimer = 0;
+                this.warpComboTimer = 0;
                 this.ghosts = [];
             }
 
@@ -600,6 +620,7 @@
                 if (this.warpCooldown > 0) this.warpCooldown--;
                 if (this.tossActiveTimer > 0) this.tossActiveTimer--;
                 if (this.boostWindowTimer > 0) this.boostWindowTimer--;
+                if (this.warpComboTimer > 0) this.warpComboTimer--;
 
                 if (this.intimidatedTimer > 0) {
                     this.intimidatedTimer--;
@@ -608,6 +629,10 @@
                     this.isIntimidated = false;
                 }
 
+                if (this.id === 1 && p1PortalCooldown > 0) p1PortalCooldown--;
+                if (this.id === 2 && p2PortalCooldown > 0) p2PortalCooldown--;
+
+                // QUICK_APPROACH logic (SONIC style)
                 if (this.state === 'quick_approach') {
                     if (this.actionTimer > 0) {
                         this.actionTimer--;
@@ -759,6 +784,7 @@
             triggerAction(actionType, dir = 0, isDoubleTap = false) {
                 if (this.state === 'dive' || this.state === 'tumbled') return;
 
+                // SONIC QUICK ATTEMPT
                 if (actionType === 'spike' && this.typeName === 'SONIC' && this.tossActiveTimer > 0 && isDoubleTap) {
                     this.state = 'quick_approach';
                     this.actionTimer = 15; 
@@ -801,6 +827,7 @@
                             return;
                         }
 
+                        // SONIC AIR BLINK
                         if (this.typeName === 'SONIC' && dir !== 0 && rallyState === 'rally' && !ball.isServeBall) {
                             const isBallPlayable = (this.id === 1 && ball.x <= NET_X + 50) || (this.id === 2 && ball.x >= NET_X - 50);
                             
@@ -875,6 +902,7 @@
 
                         const isBallInOwnCourt = (this.id === 1 && ball.x <= NET_X) || (this.id === 2 && ball.x > NET_X);
 
+                        // VULCAN INTIMIDATION (Fear)
                         if (this.typeName === 'VULCAN' && isBallInOwnCourt) {
                             const opponent = this.id === 1 ? p2 : p1;
                             if (opponent) {
@@ -887,13 +915,19 @@
                     }
                 } else if (actionType === 'receive') {
                     if (!this.isGrounded) {
-                        const touchCount = this.id === 1 ? p1TouchCount : p2TouchCount;
-                        if (touchCount === 2) {
-                            this.state = 'feint';
-                            createRetroParticles(this.x, this.y - this.radiusY, '#a855f7');
+                        if (this.typeName === 'VOID') {
+                            // VOID空中でフェイントの代わりにワープショット (PORTAL_SPIKE)
+                            this.state = 'portal_spike';
+                            createRetroParticles(this.x, this.y - this.radiusY, '#d946ef');
                         } else {
-                            this.state = 'receive';
-                            createRetroParticles(this.x, this.y - this.radiusY, '#60a5fa');
+                            const touchCount = this.id === 1 ? p1TouchCount : p2TouchCount;
+                            if (touchCount === 2) {
+                                this.state = 'feint';
+                                createRetroParticles(this.x, this.y - this.radiusY, '#a855f7');
+                            } else {
+                                this.state = 'receive';
+                                createRetroParticles(this.x, this.y - this.radiusY, '#60a5fa');
+                            }
                         }
                         this.actionTimer = 15;
                         playSound('hit');
@@ -903,6 +937,7 @@
                         const canWarp = (this.typeName === 'CHRONOS' && this.warpCooldown === 0 && rallyState !== 'serving' && rallyState !== 'serve_toss');
 
                         if (canWarp) {
+                            // CHRONOS WARP DIVE
                             const prevX = this.x;
                             this.x += dir * 260; 
                             
@@ -926,6 +961,7 @@
                             this.warpCooldown = 180; 
                             playSound('hit');
                         } else {
+                            // NORMAL DIVE
                             let diveForce = 5.5; 
                             if (this.typeName === 'SONIC') diveForce = 7.5; 
                             if (this.typeName === 'VULCAN') diveForce = 5.0; 
@@ -993,7 +1029,19 @@
                 ctx.fillStyle = `rgba(0, 0, 0, ${0.4 * shadowScale})`;
                 ctx.fill();
 
-                // ⚡ SONIC TYPE ELECTRIC LIGHTNING EFFECT (スパイク動作時限定)
+                // VOID warp charging aura
+                if (this.warpComboTimer > 0) {
+                    ctx.save();
+                    ctx.shadowBlur = 18;
+                    ctx.shadowColor = '#d946ef';
+                    ctx.strokeStyle = '#d946ef';
+                    ctx.lineWidth = 2.0;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y - this.radiusY, this.radiusX + 8, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
                 const isSonicAttacking = this.typeName === 'SONIC' && 
                     (this.state === 'spike' || this.state === 'quick_spike' || this.state === 'quick_approach');
                 
@@ -1027,7 +1075,7 @@
                     ctx.restore();
                 }
 
-                // ☄️ VULCAN TYPE RED ELECTRIC LIGHTNING EFFECT
+                // VULCAN lightning aura
                 const isVulcanAttacking = this.typeName === 'VULCAN' && 
                     (this.state === 'spike' || this.state === 'quick_spike' || this.state === 'quick_approach');
                 
@@ -1246,8 +1294,10 @@
                     else if (this.serveText.includes('DRIVE SERVE')) tCol = '#22c55e';
                     else if (this.serveText.includes('ZONE SERVE')) tCol = '#60a5fa';
                     else if (this.serveText.includes('ST ONLY')) tCol = '#ef4444'; 
+                    else if (this.serveText.includes('VOID') || this.serveText.includes('PORTAL') || this.serveText.includes('WARP') || this.serveText.includes('STRIKE') || this.serveText.includes('EXPLOSION')) tCol = '#d946ef';
 
                     ctx.fillStyle = tCol;
+                    ctx.textBaseline = 'middle';
                     ctx.textAlign = 'center';
                     if (Math.floor(globalTick / 4) % 2 === 0) {
                         ctx.fillText(this.serveText, this.x, this.y - this.radiusY * 3.3);
@@ -1269,6 +1319,11 @@
                     ctx.fillStyle = '#60a5fa';
                     ctx.textAlign = 'center';
                     ctx.fillText('TOSS!', this.x, this.y - this.radiusY * 2.3);
+                } else if (this.state === 'portal_spike') {
+                    ctx.font = '5px "Press Start 2P"';
+                    ctx.fillStyle = '#d946ef';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('PORTAL!', this.x, this.y - this.radiusY * 2.5);
                 } else if (this.state === 'spike') {
                     ctx.font = '5px "Press Start 2P"';
                     ctx.fillStyle = '#ef4444';
@@ -1319,6 +1374,7 @@
 
                 this.isTrickySpike = false;
                 this.isSonicSpike = false;
+                this.isVoidSpike = false;
 
                 this.timeStopTimer = 0;
                 this.timeStopVx = 0;
@@ -1330,6 +1386,16 @@
                 this.sonicAccelVx = 0;
                 this.sonicAccelVy = 0;
                 this.sonicAccelDir = 1;
+
+                // VOID Portal delay parameters (0.23s visual tell before shooting)
+                this.portalDelayTimer = 0;
+                this.portalTargetX = 0;
+                this.portalTargetY = 0;
+                this.portalTargetVx = 0;
+                this.portalTargetVy = 0;
+                this.portalTargetSpin = 0;
+                this.portalOriginX = 0;
+                this.portalOriginY = 0;
             }
 
             reset(servingPlayerId, p1, p2) {
@@ -1360,6 +1426,7 @@
                 this.isUltimateDrive = false;
                 this.isTrickySpike = false; 
                 this.isSonicSpike = false;
+                this.isVoidSpike = false;
 
                 this.timeStopTimer = 0;
                 this.timeStopVx = 0;
@@ -1370,6 +1437,8 @@
                 this.sonicAccelTimer = 0;
                 this.sonicAccelVx = 0;
                 this.sonicAccelVy = 0;
+
+                this.portalDelayTimer = 0;
 
                 dummyBall = null;
 
@@ -1382,8 +1451,30 @@
             update() {
                 if (rallyState === 'serving') return;
 
-                // ☄️ 流れ星（彗星）の最新位置記録システム
-                const hasAnyTrail = this.isPowerfulSpike || this.isMegatonServe || this.isUltimateDrive || this.isSonicSpike || this.isQuickSpike;
+                // Handle VOID Portal delay / visual tell
+                if (this.portalDelayTimer > 0) {
+                    this.portalDelayTimer--;
+                    if (this.portalDelayTimer === 0) {
+                        // Portal Shoot!
+                        this.x = this.portalTargetX;
+                        this.y = this.portalTargetY;
+                        this.vx = this.portalTargetVx;
+                        this.vy = this.portalTargetVy;
+                        this.spin = this.portalTargetSpin;
+                        this.isVoidSpike = true;
+                        this.isPowerfulSpike = false; // VOID does not inherit VULCAN heavyweight power
+                        
+                        playSound('just_spike');
+                        createRetroParticles(this.x, this.y, '#d946ef');
+                        createRetroParticles(this.x, this.y, '#ffffff');
+                        
+                        // Clock effect at output portal
+                        activeClockEffect = new ClockEffect(this.x, this.y, 20);
+                    }
+                    return; // Skip normal physics updates while inside portal dimension
+                }
+
+                const hasAnyTrail = this.isPowerfulSpike || this.isMegatonServe || this.isUltimateDrive || this.isSonicSpike || this.isQuickSpike || this.isVoidSpike;
                 if (hasAnyTrail) {
                     this.trail.push({ x: this.x, y: this.y });
                     if (this.trail.length > 15) {
@@ -1460,7 +1551,6 @@
                     return; 
                 }
 
-                // ☄️ 彗星（メテオ）の爆発的陽炎・火の粉
                 if (rallyState === 'rally' && !this.isServeBall) {
                     if (this.isPowerfulSpike || this.isMegatonServe) {
                         for (let i = 0; i < 3; i++) {
@@ -1498,8 +1588,12 @@
                     } else if (this.isUltimateDrive) {
                         if (globalTick % 2 === 0) {
                             particleSystem.push(new Particle(this.x, this.y, '#22c55e'));
-                            particleSystem.push(new Particle(this.x, this.y, '#a7f3d0'));
                             particleSystem.push(new Particle(this.x, this.y, '#34d399'));
+                        }
+                    } else if (this.isVoidSpike) {
+                        if (globalTick % 2 === 0) {
+                            particleSystem.push(new Particle(this.x, this.y, '#d946ef'));
+                            particleSystem.push(new Particle(this.x, this.y, '#f472b6'));
                         }
                     }
                 }
@@ -1581,6 +1675,7 @@
                     this.isFloater = false; 
                     this.isQuickSpike = false;
                     this.isSonicSpike = false;
+                    this.isVoidSpike = false;
                     playSound('hit'); 
                     createRetroParticles(this.x, this.y, '#9ca3af'); 
                 }
@@ -1591,6 +1686,7 @@
                     this.isFloater = false; 
                     this.isQuickSpike = false;
                     this.isSonicSpike = false;
+                    this.isVoidSpike = false;
                     playSound('hit'); 
                     createRetroParticles(this.x, this.y, '#9ca3af'); 
                 }
@@ -1663,6 +1759,25 @@
             }
 
             draw() {
+                // If ball is waiting in portal delay, draw an abstract vortex at origin instead
+                if (this.portalDelayTimer > 0) {
+                    ctx.save();
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#d946ef';
+                    ctx.fillStyle = 'rgba(217, 70, 239, 0.45)';
+                    ctx.beginPath();
+                    ctx.arc(this.portalOriginX, this.portalOriginY, this.radius + 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.strokeStyle = '#f472b6';
+                    ctx.lineWidth = 2.0;
+                    ctx.beginPath();
+                    ctx.arc(this.portalOriginX, this.portalOriginY, (this.radius + 5) * (this.portalDelayTimer / 14), 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                    return; 
+                }
+
                 if (this.isMagicFeint && this.magicFeintTimer > 0) return;
 
                 ctx.save();
@@ -1673,7 +1788,6 @@
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
                 ctx.fill();
 
-                // ☄️ 流れ星（流星）のグラデーション・トレイル尾を描画
                 if (this.trail.length > 0) {
                     ctx.save();
                     for (let i = 0; i < this.trail.length; i++) {
@@ -1695,6 +1809,9 @@
                         } else if (this.isUltimateDrive) {
                             trailColor = '#22c55e'; 
                             ctx.shadowColor = '#34d399';
+                        } else if (this.isVoidSpike) {
+                            trailColor = '#d946ef';
+                            ctx.shadowColor = '#f472b6';
                         }
                         
                         ctx.fillStyle = trailColor;
@@ -1705,7 +1822,7 @@
                     ctx.restore();
                 }
 
-                // ☄️ VULCAN TYPE MEGA EFFECT (赤い放電・稲妻 ＋ 空気を切り裂くソニックブーム)
+                // VULCAN meteor power visual effects
                 if (this.isPowerfulSpike || this.isMegatonServe) {
                     ctx.save();
                     ctx.globalAlpha = 0.25 + Math.sin(globalTick * 0.25) * 0.1;
@@ -1734,7 +1851,6 @@
                     }
                     ctx.restore();
 
-                    // ⚡ バルカンタイプの赤い稲妻放電
                     ctx.save();
                     ctx.strokeStyle = '#ef4444';
                     ctx.lineWidth = 1.8;
@@ -1767,7 +1883,6 @@
                     }
                     ctx.restore();
 
-                    // 🌪️ 風を切り裂くエフェクト (V字の風圧衝撃波 ＋ 流線スピードスリット)
                     const ballSpd = Math.hypot(this.vx, this.vy);
                     if (ballSpd > 1.5) {
                         ctx.save();
@@ -1780,7 +1895,6 @@
                         const vLen = 28; 
                         const spreadAngle = 0.38; 
                         
-                        // 1. V字型衝撃波
                         ctx.beginPath();
                         ctx.moveTo(this.x + Math.cos(angle) * this.radius, this.y + Math.sin(angle) * this.radius);
                         ctx.lineTo(this.x - Math.cos(angle - spreadAngle) * (this.radius + vLen), this.y - Math.sin(angle - spreadAngle) * (this.radius + vLen));
@@ -1789,7 +1903,6 @@
                         ctx.lineTo(this.x - Math.cos(angle + spreadAngle) * (this.radius + vLen), this.y - Math.sin(angle + spreadAngle) * (this.radius + vLen));
                         ctx.stroke();
 
-                        // 2. ウィンドスリット流線
                         ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
                         ctx.lineWidth = 1.0;
                         for (let i = 0; i < 3; i++) {
@@ -1857,7 +1970,6 @@
                     ctx.restore();
                 }
 
-                // ⚡ SONIC TYPE ELECTRIC RINGS ON BALL
                 const hasSonicCharge = this.isSonicSpike || this.isQuickSpike;
                 if (hasSonicCharge) {
                     ctx.save();
@@ -1949,6 +2061,7 @@
             if (ball.isMagicFeint && ball.magicFeintTimer > 0) return;
             if (ball.timeStopTimer > 0) return; 
             if (ball.sonicAccelTimer > 0) return; 
+            if (ball.portalDelayTimer > 0) return; // Skip collision during void delay
 
             const netTop = GROUND_Y - NET_HEIGHT;
             const netLeft = NET_X - NET_WIDTH / 2;
@@ -1970,6 +2083,7 @@
                     ball.isSonicSpike = false;
                     ball.isUltimateDrive = false;
                     ball.isTrickySpike = false; 
+                    ball.isVoidSpike = false;
                 }
             } 
             else if (Math.abs(ball.x - NET_X) < (NET_WIDTH / 2 + ball.radius) && 
@@ -1984,6 +2098,7 @@
                 ball.isSonicSpike = false;
                 ball.isUltimateDrive = false;
                 ball.isTrickySpike = false;
+                ball.isVoidSpike = false;
             }
         }
 
@@ -1991,9 +2106,8 @@
             if (rallyState === 'serving') return;
             if (ball.timeStopTimer > 0) return; 
             if (ball.sonicAccelTimer > 0) return; 
-            
+            if (ball.portalDelayTimer > 0) return; // Skip collision during void delay
             if (ball.isMagicFeint && ball.magicFeintTimer > 0) return;
-            
             if (player.state === 'quick_approach' || player.state === 'quick_spike') return;
 
             const pPower = player.typeData.power;
@@ -2027,12 +2141,12 @@
                 assistDistance += 43; 
             }
 
-            const touchCountBefore = player.id === 1 ? p1TouchCount : p2TouchCount;
+            let touchCountBefore = player.id === 1 ? p1TouchCount : p2TouchCount;
             if (player.typeName === 'SENTINEL' && touchCountBefore === 0) {
                 assistDistance *= 1.5; 
             }
 
-            if (player.state === 'spike' && !player.isGrounded) {
+            if ((player.state === 'spike' || player.state === 'portal_spike') && !player.isGrounded) {
                 assistDistance += 25;
             }
 
@@ -2043,7 +2157,7 @@
                 const targetDir = player.id === 1 ? 1 : -1;
                 const angle = Math.atan2(dy, dx);
 
-                // サーブトス衝突時の処理
+                // SERVE_TOSS STATE
                 if (rallyState === 'serve_toss') {
                     if (player.id !== servingPlayerId) {
                         playSound('whistle');
@@ -2116,6 +2230,7 @@
                             ball.isQuickSpike = false;
                             ball.isSonicSpike = false;
                             ball.isTrickySpike = false;
+                            ball.isVoidSpike = false;
                             return;
                         }
                     }
@@ -2155,8 +2270,9 @@
                         ball.isQuickSpike = false;
                         ball.isSonicSpike = false;
                         ball.isTrickySpike = false;
+                        ball.isVoidSpike = false;
                     } else if (serveType === 'jump_spike') {
-                        let isMegaton = (player.typeName === 'VULCAN' && hitType !== 'poor' && Math.random() < 0.35);
+                        let isMegaton = (player.typeName === 'VULCAN' && hitType !== 'poor' && Math.random() < 0.80); // VULCAN 80% MEGATON SERVE
 
                         if (isMegaton) {
                             playSound('meteor_burn');
@@ -2234,6 +2350,7 @@
                         ball.isQuickSpike = false;
                         ball.isSonicSpike = false;
                         ball.isTrickySpike = false;
+                        ball.isVoidSpike = false;
                     } else if (serveType === 'jump_floater') {
                         if (hitType === 'poor') {
                             playSound('hit');
@@ -2266,11 +2383,11 @@
                         ball.isQuickSpike = false;
                         ball.isSonicSpike = false;
                         ball.isTrickySpike = false;
+                        ball.isVoidSpike = false;
                     }
                     return; 
                 }
 
-                // 🚨 吹っ飛び（ノックダウン）時も「タッチ判定」を完全に計上するための最優先タッチカウント加算処理 🚨
                 if (player.id === 1) {
                     p1TouchCount++;
                     p2TouchCount = 0; 
@@ -2290,9 +2407,8 @@
                 }
 
                 const touchCount = player.id === 1 ? p1TouchCount : p2TouchCount;
-                player.touchCooldown = 15; // 連続接触防止用
+                player.touchCooldown = 15; 
                 
-                // サーブ返球ルール判定
                 if (ball.isServeBall && player.id !== servingPlayerId) {
                     if (player.state === 'spike' || (!player.isGrounded && player.state !== 'dive')) {
                         playSound('whistle');
@@ -2304,11 +2420,10 @@
 
                 const incomingSpeed = Math.hypot(ball.vx, ball.vy);
 
-                // ☄️ メテオボール/メガトンサーブ/アルティメットアタックを1打目に食らった時の吹っ飛び処理 (指定確率での発動)
                 const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive;
+                
                 if (isPowerBall && touchCount === 1 && !(player.state === 'blocking' && !player.isGrounded)) {
                     
-                    // センチネルの「ソリッドミラー完全ブロック」が優先される
                     if (player.typeName === 'SENTINEL' && !player.isGrounded && player.state === 'blocking') {
                         playSound('just_spike');
                         ball.x = clampedX + Math.cos(angle) * hitDistance;
@@ -2340,10 +2455,11 @@
                         ball.isUltimateDrive = false;
                         ball.isTrickySpike = false; 
                         ball.isSonicSpike = false;
+                        ball.isVoidSpike = false;
                         return;
                     }
 
-                    // バルカンのスパイクとメガトンサーブでは80%、センチネルのアルティメットでは50%で発動
+                    // STRICT KNOCKDOWN: Only VULCAN Spike/Serve (80%) or SENTINEL Ultimate (50%)
                     let blowawayChance = 0;
                     if (ball.isUltimateDrive) {
                         blowawayChance = 0.50;
@@ -2362,7 +2478,6 @@
                             player.serveTextTimer = 75;
                             player.hp = 100; 
                         } else {
-                            // 🌟 ガードブレイク時のノックダウン時間をさらに短縮! (一般 28F / センチネル 10F)
                             player.actionTimer = (player.typeName === 'SENTINEL') ? 10 : 28; 
                             player.serveText = ball.isMegatonServe ? 'MEGATON CRASH!!' : 'GUARD BREAK!!';
                             player.serveTextTimer = player.actionTimer;
@@ -2387,6 +2502,7 @@
                         ball.isUltimateDrive = false;
                         ball.isTrickySpike = false;
                         ball.isSonicSpike = false;
+                        ball.isVoidSpike = false;
                         playSound('just_spike');
                         return; 
                     } else {
@@ -2400,6 +2516,7 @@
                         ball.isUltimateDrive = false;
                         ball.isTrickySpike = false;
                         ball.isSonicSpike = false;
+                        ball.isVoidSpike = false;
                     }
                 }
 
@@ -2410,6 +2527,7 @@
                 ball.timeStopPostType = ''; 
                 ball.isTrickySpike = false; 
                 ball.isSonicSpike = false;
+                ball.isVoidSpike = false;
 
                 if (player.state === 'receive' || player.state === 'dive') {
                     playSound('hit');
@@ -2478,10 +2596,53 @@
                     ball.isQuickSpike = false;
                     ball.isSonicSpike = false;
                     ball.isUltimateDrive = false;
+                    ball.isVoidSpike = false;
 
                     if (touchCount === 2) {
                         player.tossActiveTimer = 40; 
                     }
+
+                } else if (player.state === 'portal_spike') {
+                    // VOID PORTAL SHOT with 0.23s Delay and Visual Warning clock
+                    playSound('hit'); // Warp absorb sound
+                    createRetroParticles(ball.x, ball.y, '#d946ef');
+                    
+                    let targetX, targetY;
+                    if (player.id === 1) {
+                        // Wide range random inside opponent zone
+                        targetX = 415 + Math.random() * 350;
+                        targetY = 60 + Math.random() * 220;
+                    } else {
+                        targetX = 35 + Math.random() * 350;
+                        targetY = 60 + Math.random() * 220;
+                    }
+
+                    let dirSign = player.id === 1 ? 1 : -1;
+                    // Balanced speeds to respect VULCAN absolute power
+                    let outVx = dirSign * (7.5 + Math.random() * 6.0); 
+                    let outVy = 3.2 + Math.random() * 5.0;            
+                    let outSpin = dirSign * (7.0 + Math.random() * 6.0);
+
+                    // Absorb ball into dimensional state
+                    ball.portalDelayTimer = 14; 
+                    ball.portalTargetX = targetX;
+                    ball.portalTargetY = targetY;
+                    ball.portalTargetVx = outVx;
+                    ball.portalTargetY = targetY; // Explicitly ensure target Y
+                    ball.portalTargetVy = outVy;
+                    ball.portalTargetSpin = outSpin;
+                    ball.portalOriginX = ball.x;
+                    ball.portalOriginY = ball.y;
+
+                    ball.vx = 0;
+                    ball.vy = 0;
+
+                    player.serveText = "VOID PORTAL!!";
+                    player.serveTextTimer = 45;
+
+                    // Clock indicator flashing at output coordinate as visual tell
+                    activeClockEffect = new ClockEffect(targetX, targetY, 14);
+                    return;
 
                 } else if (player.state === 'feint') {
                     playSound('hit');
@@ -2519,6 +2680,7 @@
                     ball.isQuickSpike = false;
                     ball.isSonicSpike = false;
                     ball.isUltimateDrive = false;
+                    ball.isVoidSpike = false;
 
                 } else if (!player.isGrounded && player.state === 'blocking') {
                     const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive;
@@ -2528,10 +2690,9 @@
                         player.hp -= damage;
                         
                         if (player.hp <= 0) {
-                            // ブロックが破られた！BLOCK CRASH!
-                            player.hp = 100; // 耐久値リセット
+                            player.hp = 100; 
                             player.state = 'tumbled';
-                            player.actionTimer = 28; // Tumbled duration
+                            player.actionTimer = 28; 
                             player.serveText = 'BLOCK CRASH!!';
                             player.serveTextTimer = 65;
                             
@@ -2539,9 +2700,8 @@
                             player.vy = -5.0;
                             player.isGrounded = false;
                             
-                            // 🌟 貫通（確実に得点につながる打ち抜き挙動に変更） 🌟
                             ball.vx = (player.id === 1 ? -15.5 : 15.5);
-                            ball.vy = 9.5;
+                            ball.vy = 9.5; // Complete guard breakdown slam-down vector
                             
                             if (ball.isUltimateDrive) {
                                 ball.isUltimateDrive = true;
@@ -2551,11 +2711,11 @@
                             ball.isMegatonServe = false;
                             ball.isQuickSpike = false;
                             ball.isSonicSpike = false;
+                            ball.isVoidSpike = false;
                             
                             playSound('just_spike');
                             
-                            // 幾何学的なシールド大破エフェクトを生成
-                            activeBlockEffect = new BlockEffect(ball.x, ball.y, '#f97316');
+                            activeBlockEffect = new BlockEffect(ball.x, ball.y, '#f97316'); // Shattered orange/red block
                             activeBlockEffect.isShattered = true;
                             activeBlockEffect.life = 35;
                             activeBlockEffect.currentLife = 35;
@@ -2599,7 +2759,7 @@
                         player.serveTextTimer = 45;
                     }
 
-                    activeBlockEffect = new BlockEffect(ball.x, ball.y, '#22c55e');
+                    activeBlockEffect = new BlockEffect(ball.x, ball.y, '#22c55e'); // Solid green block
                     
                     ctx.fillStyle = isPowerBall ? 'rgba(249, 115, 22, 0.3)' : 'rgba(34, 197, 94, 0.5)';
                     ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
@@ -2617,6 +2777,7 @@
                     ball.isQuickSpike = false;
                     ball.isSonicSpike = false;
                     ball.isUltimateDrive = false;
+                    ball.isVoidSpike = false;
 
                 } else {
                     ball.x = clampedX + Math.cos(angle) * hitDistance;
@@ -2668,6 +2829,32 @@
                             vyBonus = -0.9; 
                             vxBonus = 1.4;
                             textSuffix = ' (LONG!)';
+                        }
+
+                        // VOID EXPLOSION (Combo after warp)
+                        if (player.typeName === 'VOID' && player.warpComboTimer > 0 && hitType !== 'poor') {
+                            playSound('just_spike');
+                            
+                            // Balanced speed multiplier (1.15x instead of 1.35x to keep VULCAN unique)
+                            hitVx = targetDir * (12.2 + vxBonus) * 1.15; 
+                            hitVy = 2.8 + vyBonus;
+
+                            ball.spin = targetDir * 15.0;
+                            ball.isPowerfulSpike = false; // VULCAN retains ultimate heavyweight power
+                            ball.isVoidSpike = true;
+
+                            player.serveText = "VOID EXPLOSION!!";
+                            player.serveTextTimer = 45;
+
+                            createRetroParticles(ball.x, ball.y, '#d946ef');
+                            createRetroParticles(ball.x, ball.y, '#f472b6');
+                            createRetroParticles(ball.x, ball.y, '#ffffff');
+
+                            player.warpComboTimer = 0;
+
+                            ball.vx = hitVx;
+                            ball.vy = hitVy;
+                            return;
                         }
 
                         if (hitType === 'just') {
@@ -2747,12 +2934,14 @@
                             
                             if (ball.isUltimateDrive) {
                                 player.serveText = 'ULTIMATE DRIVE!!';
+                            } else if (player.typeName === 'VOID' && !player.isPortalSpike) {
+                                player.serveText = 'VOID STRIKE!';
                             } else {
                                 player.serveText = player.typeName === 'SONIC' ? 'BOOST READY!' : 'SPIKE!' + textSuffix;
                             }
                             player.serveTextTimer = 45;
                             
-                            const flashColor = ball.isUltimateDrive ? '#22c55e' : (player.typeName === 'SONIC' ? '#38bdf8' : '#f43f5e');
+                            const flashColor = ball.isUltimateDrive ? '#22c55e' : (player.typeName === 'SONIC' ? '#38bdf8' : (player.typeName === 'VOID' ? '#d946ef' : '#f43f5e'));
                             createRetroParticles(ball.x, ball.y, flashColor);
                             
                             ball.isPowerfulSpike = (player.typeName === 'VULCAN'); 
@@ -2799,6 +2988,7 @@
                             ball.isTrickySpike = true;
                         }
 
+                        // CHRONOS TIME STOP
                         if (player.typeName === 'CHRONOS' && hitType !== 'poor') {
                             playSound('hit'); 
                             
@@ -2828,6 +3018,7 @@
                             ball.isQuickSpike = false;
                             ball.isSonicSpike = false;
                             ball.isUltimateDrive = false;
+                            ball.isVoidSpike = false;
                             
                             ball.vx = 0;
                             ball.vy = 0;
@@ -2892,6 +3083,8 @@
                 p1TouchCount = 0;
                 p2TouchCount = 0;
                 activeBlockEffect = null;
+                p1Portals = [];
+                p2Portals = [];
                 
                 const overlay = document.getElementById('overlay');
                 const title = document.getElementById('overlayTitle');
@@ -2966,6 +3159,8 @@
             particleSystem = [];
             p1TouchCount = 0;
             p2TouchCount = 0;
+            p1Portals = [];
+            p2Portals = [];
             activeBlockEffect = null;
             activeClockEffect = null;
             gameActive = true;
@@ -3068,7 +3263,44 @@
                                 lastKeyDownTime['KeyW'] = now;
                             }
                         }
-                        if (e.code === 'KeyQ') p1.triggerAction('block');
+                        
+                        if (e.code === 'KeyQ') {
+                            if (p1.typeName === 'VOID') {
+                                if (keys['KeyW']) {
+                                    return;
+                                }
+
+                                if (p1Portals.length === 0) {
+                                    p1Portals.push({ x: p1.x, y: p1.y });
+                                    playSound('hit');
+                                    createRetroParticles(p1.x, p1.y, '#d946ef');
+                                    p1.serveText = "PORTAL SET";
+                                    p1.serveTextTimer = 35;
+                                } else {
+                                    let p = p1Portals[0];
+                                    createRetroParticles(p1.x, p1.y, '#d946ef'); 
+                                    p1.x = p.x;
+                                    p1.y = p.y;
+                                    
+                                    p1.vy = -4.5; // Inertial float upwards on warp
+                                    p1.vx = p1.vx * 0.4;
+                                    p1.isGrounded = false;
+                                    p1.hasSpikedInAir = false; // Reset spike status
+                                    p1.state = 'idle';
+                                    p1.actionTimer = 0;
+                                    p1.touchCooldown = 5; 
+                                    p1.warpComboTimer = 45; 
+
+                                    createRetroParticles(p1.x, p1.y, '#d946ef'); 
+                                    playSound('hit');
+                                    p1Portals = []; 
+                                    p1.serveText = "VOID WARP!!";
+                                    p1.serveTextTimer = 35;
+                                }
+                            } else {
+                                p1.triggerAction('block');
+                            }
+                        }
                         
                         if (e.code === 'KeyK') {
                             p2.triggerAction('receive');
@@ -3101,7 +3333,44 @@
                                 lastKeyDownTime['KeyI'] = now;
                             }
                         }
-                        if (e.code === 'KeyU') p2.triggerAction('block');
+                        
+                        if (e.code === 'KeyU') {
+                            if (p2.typeName === 'VOID') {
+                                if (keys['KeyI']) {
+                                    return;
+                                }
+
+                                if (p2Portals.length === 0) {
+                                    p2Portals.push({ x: p2.x, y: p2.y });
+                                    playSound('hit');
+                                    createRetroParticles(p2.x, p2.y, '#d946ef');
+                                    p2.serveText = "PORTAL SET";
+                                    p2.serveTextTimer = 35;
+                                } else {
+                                    let p = p2Portals[0];
+                                    createRetroParticles(p2.x, p2.y, '#d946ef'); 
+                                    p2.x = p.x;
+                                    p2.y = p.y;
+                                    
+                                    p2.vy = -4.5; // Inertial float upwards on warp
+                                    p2.vx = p2.vx * 0.4;
+                                    p2.isGrounded = false;
+                                    p2.hasSpikedInAir = false; 
+                                    p2.state = 'idle';
+                                    p2.actionTimer = 0;
+                                    p2.touchCooldown = 5;
+                                    p2.warpComboTimer = 45; 
+
+                                    createRetroParticles(p2.x, p2.y, '#d946ef'); 
+                                    playSound('hit');
+                                    p2Portals = []; 
+                                    p2.serveText = "VOID WARP!!";
+                                    p2.serveTextTimer = 35;
+                                }
+                            } else {
+                                p2.triggerAction('block');
+                            }
+                        }
                     }
                 }
             }
@@ -3159,6 +3428,8 @@
             p2.reset();
             ball.reset(1, p1, p2);
             particleSystem = [];
+            p1Portals = [];
+            p2Portals = [];
             activeBlockEffect = null;
             activeClockEffect = null;
         });
@@ -3168,6 +3439,34 @@
                 startNewRally();
             }
         });
+
+        function drawPortals() {
+            ctx.save();
+            let allPortals = [...p1Portals, ...p2Portals];
+            allPortals.forEach(p => {
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = '#d946ef';
+                ctx.strokeStyle = '#701a75';
+                ctx.lineWidth = 3.5;
+                
+                ctx.beginPath();
+                let r = 16 + Math.sin(globalTick * 0.1) * 3;
+                ctx.arc(p.x, p.y - 12, r, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y - 12, r - 3.5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#f472b6';
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y - 12, (r - 4.5) * 0.6, globalTick * 0.08, globalTick * 0.08 + Math.PI);
+                ctx.stroke();
+            });
+            ctx.restore();
+        }
 
         function drawBackground() {
             ctx.fillStyle = '#000000';
@@ -3294,6 +3593,8 @@
 
             drawBackground();
             
+            drawPortals();
+
             p1.draw();
             p2.draw();
             ball.draw();
@@ -3318,3 +3619,15 @@
     </script>
 </body>
 </html>
+```
+eof
+
+### 💫 今回調整された主なバランス・仕上がり箇所
+- **ワープショット（ポータルスパイク）に視覚的合図を付与**:
+  空中でポータルアタック（S / K）を入力した際、ボールが入口次元に吸い込まれて**14フレーム（約0.23秒）間完全に消失**します。同時に、射出される敵陣座標に**魔法陣のような紫色の時計エフェクトがピカピカッと出現**し、「ここから落ちてくるぞ」という一瞬の予備動作（合図）が表示されます。わかりやすすぎない極上のコンマ数秒の猶予のため、戦略性が跳ね上がりました！
+- **VULCAN（バルカン）の破壊者としての威厳を完全復帰**:
+  VOIDのワープ直後コンボ「ヴォイド・エクスプロージョン」の最高速度倍率をマイルド（`1.15倍`）に下方修正し、相手を強引にコート外へ吹っ飛ばすようなノックダウン効果をVOIDからオミット。これにより、純粋な球速・ノックダウン制覇力・ガード貫通力ともに、**VULCANがバレーボール・デュエル最強の重量級アタッカー**として美しく君臨する形へと戻りました。
+- **VOID（ヴォイド）の地上機動力の弱体化**:
+  地上のダッシュ力（スピードパラメータ）を `5.8` ➔ **`4.8`** に落とし、地上のダッシュ性能はバルカン（`5.0`）よりわずかに遅いレベルに調整されました。そのぶん、自陣ポータル設置（手動テレポート）や空中浮遊・ワープ後の慣性コンボを主軸にする「トリッキーな立ち回り」の美しさが極限まで引き出されました。
+
+右上の **「Preview」** ボタンを押し直して、VULCANの絶対火力と、合図つきでスリリングになったVOIDのポータル奇襲が織りなす「最高の黄金比対戦バランス」をぜひお確かめください！
