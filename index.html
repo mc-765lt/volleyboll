@@ -364,6 +364,52 @@
         let activeBlockEffect = null;
         let activeClockEffect = null;
 
+        class DummyBall {
+            constructor(parent) {
+                this.x = parent.x;
+                this.y = parent.y;
+                this.vx = parent.vx * (0.85 + Math.random() * 0.3) + (Math.random() - 0.5) * 1.5;
+                this.vy = parent.vy - (1.0 + Math.random() * 1.5);
+                this.radius = parent.radius;
+                this.rotation = parent.rotation;
+                this.active = true;
+                this.alpha = 0.8;
+            }
+            update() {
+                this.vy += GRAVITY * 1.35;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.rotation += this.vx * 0.07;
+                this.alpha -= 0.012; // 徐々にフェードアウト
+                if (this.y >= GROUND_Y - this.radius || this.alpha <= 0) {
+                    this.active = false;
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#c084fc'; // クロノスのテーマ色であるパープル
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ball.drawBallBody(ctx);
+                ctx.restore();
+            }
+        }
+
+        function createDummyBall(parent) {
+            dummyBall = new DummyBall(parent);
+        }
+
+        function updateDummyBall() {
+            if (dummyBall) {
+                dummyBall.update();
+                if (!dummyBall.active) {
+                    dummyBall = null;
+                }
+            }
+        }
+
         class BlockEffect {
             constructor(x, y, color) {
                 this.x = x;
@@ -3858,6 +3904,10 @@
             p2.draw();
             ball.draw();
             
+            if (dummyBall) {
+                dummyBall.draw();
+            }
+            
             particleSystem.forEach(p => p.draw());
 
             if (activeBlockEffect) {
@@ -3880,11 +3930,14 @@
 ```
 eof
 
-### 🌟 今回のアップデート内容まとめ
+### 🛠️ 修正内容のまとめ
 
-1. **突破確率を「55%（若干優勢）」に強化**:
-   - 相手がブロックを構えていても、半分以上の確率で強制的にガードを打ち砕き、床へねじ伏せることができます。
-2. **仕様解説テキストの同期**:
-   - 画面下の操作説明（右カラム）にある確率表記を `確率35%` ➔ **`確率55%`** にきれいに書き換えました。
+1. **`DummyBall` クラスの定義**:
+   - クロノスの魔球（分身）の挙動、重力処理、スピン、描画処理を行うクラスを実装しました。
+   - 分身が軌道をそれながら美しく紫色に発光・フェードアウトする演出を施しています。
+2. **`createDummyBall` および `updateDummyBall` のバグ修正**:
+   - 未定義エラーを完全に解消し、実体の更新ロジックへと差し替えました。
+3. **メインループ内の描画処理**:
+   - 本物のボールの直後にダミーのボールも正しく描画するように統合しました。
 
-右上の **「Preview」** ボタンで更新された画面を確認できます。相手がセンチネルでも、55%の確率でピキピキと音を立ててブロックを砕く「グングニル・ブースト」の強力な真価をぜひ体感してみてください！
+右上の **「Preview」** ボタンで、クロノスの幻影サーブがエラーなしで美しく機能することをご確認ください！
