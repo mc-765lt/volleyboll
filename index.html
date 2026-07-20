@@ -126,12 +126,12 @@
                 </p>
             </div>
 
-            <!-- 右カラム：ヴォイド -->
+            <!-- 右カラム：ヴォイドとヴァルキリー -->
             <div class="pt-1 md:pt-0 md:pl-2">
-                <span class="font-bold text-pink-500 text-[8px] md:text-[9px] arcade-font block mb-1">■ VOID (DARK MAGENTA)</span>
+                <span class="font-bold text-pink-500 text-[8px] md:text-[9px] arcade-font block mb-1">■ VOID (PINK) / VALKYRIE (GOLD)</span>
                 <p class="text-slate-300">
-                    <strong>【ヴォイド】</strong>虚空の支配者。Q/Uで足元にポータル1つ設置。再度押すと任意位置から瞬時テレポート＆空中浮遊！<br>
-                    空中でW/Iで通常スパイク。ポータルワープ直後の空中W/Iは強力魔球<strong>「ヴォイド・エクスプロージョン」</strong>に強化され敵陣を襲撃！空中S/Kでフェイントの代わりに入口ポータルを開き、敵陣から一瞬の予兆を経て急降下射出する<strong>「ポータルスパイク」</strong>を打ち分ける！
+                    <strong>【ヴォイド】</strong>Q/Uでポータル設置、再度押すと手動ワープ！空中S/Kでランダム射出の魔球ポータルスパイク！ワープ直後の空中W/Iは極大炸裂魔球に！<br>
+                    <strong>【ヴァルキリー】</strong>空中Q/Uで黄金に羽ばたく「空中ダッシュ」！空中S/Kで直撃・低弾道の「グングニル・ブースト」を射出！ブロック(W+S/I+K)に成功すると十字光の「聖鎧」を展開、いかなる強襲球も完全中和して綺麗なトスに変換！
                 </p>
             </div>
         </div>
@@ -147,7 +147,8 @@
             'VULCAN':   { speed: 5.0, jump: -10.2, gravityScale: 1.0, power: 1.35, float: 0.7, color: '#ef4444' }, // レッド（最大威力）
             'SONIC':    { speed: 7.8, jump: -11.5, gravityScale: 1.15, power: 0.85, float: 0.9, color: '#3b82f6' }, // ブルー
             'CHRONOS':  { speed: 5.8, jump: -9.5, gravityScale: 1.0, power: 0.85, float: 1.5, color: '#a855f7' }, // パープル
-            'VOID':     { speed: 4.8, jump: -9.5, gravityScale: 1.0, power: 0.95, float: 1.0, color: '#d946ef' }  // ダークマゼンタ（機動力を落としてバランス調整）
+            'VOID':     { speed: 4.8, jump: -9.5, gravityScale: 1.0, power: 0.95, float: 1.0, color: '#d946ef' }, // ダークマゼンタ（機動力を落としてバランス調整）
+            'VALKYRIE': { speed: 6.2, jump: -10.0, gravityScale: 1.0, power: 1.05, float: 1.1, color: '#eab308' }  // ゴールド（空中ダッシュ・防壁持ちの聖乙女）
         };
 
         const P1_COLORS = {
@@ -155,7 +156,8 @@
             'VULCAN':   { jersey: '#1e3a8a', hair: '#0f172a', skin: '#fca5a5' },
             'SONIC':    { jersey: '#38bdf8', hair: '#fef08a', skin: '#fbcfe8' },
             'CHRONOS':  { jersey: '#7e22ce', hair: '#ffffff', skin: '#f3e8ff' },
-            'VOID':     { jersey: '#4c1d95', hair: '#111827', skin: '#fbcfe8' }
+            'VOID':     { jersey: '#4c1d95', hair: '#111827', skin: '#fbcfe8' },
+            'VALKYRIE': { jersey: '#fef08a', hair: '#ffffff', skin: '#fef3c7' }
         };
 
         const P2_COLORS = {
@@ -163,7 +165,8 @@
             'VULCAN':   { jersey: '#7f1d1d', hair: '#451a03', skin: '#fca5a5' },
             'SONIC':    { jersey: '#fb923c', hair: '#fef08a', skin: '#ffedd5' },
             'CHRONOS':  { jersey: '#c026d3', hair: '#ffffff', skin: '#fae8ff' },
-            'VOID':     { jersey: '#701a75', hair: '#f43f5e', skin: '#ffedd5' }
+            'VOID':     { jersey: '#701a75', hair: '#f43f5e', skin: '#ffedd5' },
+            'VALKYRIE': { jersey: '#ca8a04', hair: '#fde047', skin: '#fef3c7' }
         };
 
         const TYPE_KEYS = Object.keys(CHARA_TYPES);
@@ -547,6 +550,7 @@
                 this.boostWindowTimer = 0;
                 this.lastTossType = 'W'; 
                 this.warpComboTimer = 0; // VOID専用: ワープ直後の通常アタック強化判定
+                this.wingDashes = 1;     // VALKYRIE専用: 空中ダッシュ可能回数
                 
                 this.ghosts = [];
 
@@ -577,6 +581,9 @@
                 } else if (typeName === 'VOID') {
                     this.radiusX = 14;
                     this.radiusY = 23;
+                } else if (typeName === 'VALKYRIE') {
+                    this.radiusX = 13;
+                    this.radiusY = 22;
                 } else {
                     this.radiusX = 14;
                     this.radiusY = 22;
@@ -610,6 +617,7 @@
                 this.tossActiveTimer = 0;
                 this.boostWindowTimer = 0;
                 this.warpComboTimer = 0;
+                this.wingDashes = 1;
                 this.ghosts = [];
             }
 
@@ -707,6 +715,8 @@
                     if (this.isGrounded) {
                         this.vx *= 0.85; 
                     }
+                } else if (this.state === 'wing_dash') {
+                    // VALKYRIE: Keep current inertia
                 } else {
                     if (this.id === 1) {
                         if (keys['KeyA']) this.vx = -currentSpeed;
@@ -750,7 +760,8 @@
                     this.vy = 0;
                     this.isGrounded = true;
                     this.hasSpikedInAir = false; 
-                    if (this.state === 'blocking') {
+                    this.wingDashes = 1; // VALKYRIE空中ダッシュリセット
+                    if (this.state === 'blocking' || this.state === 'wing_dash') {
                         this.state = 'idle';
                     }
                     if (this.state === 'dive' || this.state === 'tumbled') {
@@ -764,7 +775,7 @@
                     this.isGrounded = false;
                 }
 
-                if (this.state !== 'dive' && this.state !== 'tumbled' && this.state !== 'blocking' && this.state !== 'quick_spike') {
+                if (this.state !== 'dive' && this.state !== 'tumbled' && this.state !== 'blocking' && this.state !== 'quick_spike' && this.state !== 'wing_dash') {
                     if (this.actionTimer > 0) {
                         this.actionTimer--;
                     } else {
@@ -772,7 +783,7 @@
                     }
                 }
 
-                if (this.typeName === 'SONIC' && this.vx !== 0 && globalTick % 5 === 0) {
+                if ((this.typeName === 'SONIC' || this.typeName === 'VALKYRIE') && this.vx !== 0 && globalTick % 5 === 0) {
                     this.ghosts.push({
                         x: this.x,
                         y: this.y,
@@ -919,6 +930,10 @@
                             // VOID空中でフェイントの代わりにワープショット (PORTAL_SPIKE)
                             this.state = 'portal_spike';
                             createRetroParticles(this.x, this.y - this.radiusY, '#d946ef');
+                        } else if (this.typeName === 'VALKYRIE') {
+                            // VALKYRIE空中S/Kで直撃・低軌道必殺槍（GUNGNIR_BOOST）
+                            this.state = 'gungnir_boost';
+                            createRetroParticles(this.x, this.y - this.radiusY, '#eab308');
                         } else {
                             const touchCount = this.id === 1 ? p1TouchCount : p2TouchCount;
                             if (touchCount === 2) {
@@ -966,6 +981,7 @@
                             if (this.typeName === 'SONIC') diveForce = 7.5; 
                             if (this.typeName === 'VULCAN') diveForce = 5.0; 
                             if (this.typeName === 'SENTINEL') diveForce = 6.8;
+                            if (this.typeName === 'VALKYRIE') diveForce = 6.0;
 
                             this.vx = dir * diveForce;
                             this.vy = -4.5;
@@ -980,7 +996,7 @@
                         this.state = 'idle';
                     }
                 } else if (actionType === 'block') {
-                    if (this.typeName !== 'SENTINEL') {
+                    if (this.typeName !== 'SENTINEL' && this.typeName !== 'VALKYRIE') {
                         this.serveText = 'ST ONLY!';
                         this.serveTextTimer = 35;
                         this.state = 'idle';
@@ -1011,7 +1027,11 @@
                     let dirScale = (this.id === 1) ? 1 : -1;
                     ctx.scale(dirScale * (this.radiusX / 14), this.radiusY / 22);
                     
-                    ctx.fillStyle = this.typeName === 'SENTINEL' ? 'rgba(34, 197, 94, 0.45)' : 'rgba(56, 189, 248, 0.45)';
+                    let ghostCol = 'rgba(56, 189, 248, 0.45)';
+                    if (this.typeName === 'SENTINEL') ghostCol = 'rgba(34, 197, 94, 0.45)';
+                    if (this.typeName === 'VALKYRIE') ghostCol = 'rgba(234, 179, 8, 0.45)';
+                    ctx.fillStyle = ghostCol;
+
                     ctx.beginPath();
                     ctx.ellipse(0, -this.radiusY, this.radiusX, this.radiusY, 0, 0, Math.PI * 2);
                     ctx.fill();
@@ -1189,7 +1209,7 @@
                     ctx.lineTo(8, -21);
                     ctx.lineTo(12, -18);
                     ctx.stroke();
-                } else if (this.state === 'spike' || this.state === 'quick_spike' || this.state === 'quick_approach') {
+                } else if (this.state === 'spike' || this.state === 'quick_spike' || this.state === 'quick_approach' || this.state === 'gungnir_boost') {
                     ctx.beginPath();
                     ctx.moveTo(-4, -20);
                     ctx.lineTo(-10, -12);
@@ -1228,6 +1248,15 @@
                     ctx.beginPath();
                     ctx.moveTo(4, -20);
                     ctx.lineTo(6, -32);
+                    ctx.stroke();
+                } else if (this.state === 'wing_dash') {
+                    ctx.beginPath();
+                    ctx.moveTo(-5, -18);
+                    ctx.lineTo(-12, -26);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(5, -18);
+                    ctx.lineTo(12, -26);
                     ctx.stroke();
                 } else {
                     ctx.beginPath();
@@ -1276,6 +1305,21 @@
                     ctx.stroke();
                 }
 
+                // VALKYRIE: 空中エーテル・ウィングの翼残量表示
+                if (this.typeName === 'VALKYRIE' && !this.isGrounded && this.wingDashes > 0) {
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(234, 179, 8, 0.35)';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#eab308';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y - this.radiusY - 35, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#eab308';
+                    ctx.lineWidth = 1.2;
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
                 if (this.serveTextTimer > 0) {
                     ctx.font = '6px "Press Start 2P"';
                     let tCol = '#ffffff';
@@ -1285,7 +1329,7 @@
                     else if (this.serveText.includes('CRASH') || this.serveText.includes('KNOCKDOWN') || this.serveText.includes('MEGATON')) tCol = '#f97316';
                     else if (this.serveText.includes('QUICK')) tCol = '#38bdf8'; 
                     else if (this.serveText.includes('TIME STOP')) tCol = '#c084fc'; 
-                    else if (this.serveText.includes('BOOST')) tCol = '#60a5fa'; 
+                    else if (this.serveText.includes('BOOST') || this.serveText.includes('GUNGNIR')) tCol = '#eab308'; 
                     else if (this.serveText.includes('SONIC ACCEL')) tCol = '#38bdf8'; 
                     else if (this.serveText.includes('AIR BLINK')) tCol = '#38bdf8';
                     else if (this.serveText.includes('GOLD TOSS')) tCol = '#facc15';
@@ -1295,6 +1339,7 @@
                     else if (this.serveText.includes('ZONE SERVE')) tCol = '#60a5fa';
                     else if (this.serveText.includes('ST ONLY')) tCol = '#ef4444'; 
                     else if (this.serveText.includes('VOID') || this.serveText.includes('PORTAL') || this.serveText.includes('WARP') || this.serveText.includes('STRIKE') || this.serveText.includes('EXPLOSION')) tCol = '#d946ef';
+                    else if (this.serveText.includes('VALKYRIE') || this.serveText.includes('WING') || this.serveText.includes('HOLY')) tCol = '#eab308';
 
                     ctx.fillStyle = tCol;
                     ctx.textBaseline = 'middle';
@@ -1334,6 +1379,16 @@
                     ctx.fillStyle = '#38bdf8';
                     ctx.textAlign = 'center';
                     ctx.fillText('QUICK!', this.x, this.y - this.radiusY * 2.5);
+                } else if (this.state === 'wing_dash') {
+                    ctx.font = '5px "Press Start 2P"';
+                    ctx.fillStyle = '#eab308';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('WING!', this.x, this.y - this.radiusY * 2.5);
+                } else if (this.state === 'gungnir_boost') {
+                    ctx.font = '5px "Press Start 2P"';
+                    ctx.fillStyle = '#eab308';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('聖槍!', this.x, this.y - this.radiusY * 2.5);
                 }
             }
         }
@@ -1375,6 +1430,8 @@
                 this.isTrickySpike = false;
                 this.isSonicSpike = false;
                 this.isVoidSpike = false;
+                this.isValkyrieSpear = false; // VALKYRIE通常必殺
+                this.isGungnirBoost = false;   // VALKYRIE突進必殺
 
                 this.timeStopTimer = 0;
                 this.timeStopVx = 0;
@@ -1427,6 +1484,8 @@
                 this.isTrickySpike = false; 
                 this.isSonicSpike = false;
                 this.isVoidSpike = false;
+                this.isValkyrieSpear = false;
+                this.isGungnirBoost = false;
 
                 this.timeStopTimer = 0;
                 this.timeStopVx = 0;
@@ -1474,7 +1533,7 @@
                     return; // Skip normal physics updates while inside portal dimension
                 }
 
-                const hasAnyTrail = this.isPowerfulSpike || this.isMegatonServe || this.isUltimateDrive || this.isSonicSpike || this.isQuickSpike || this.isVoidSpike;
+                const hasAnyTrail = this.isPowerfulSpike || this.isMegatonServe || this.isUltimateDrive || this.isSonicSpike || this.isQuickSpike || this.isVoidSpike || this.isValkyrieSpear || this.isGungnirBoost;
                 if (hasAnyTrail) {
                     this.trail.push({ x: this.x, y: this.y });
                     if (this.trail.length > 15) {
@@ -1595,6 +1654,12 @@
                             particleSystem.push(new Particle(this.x, this.y, '#d946ef'));
                             particleSystem.push(new Particle(this.x, this.y, '#f472b6'));
                         }
+                    } else if (this.isValkyrieSpear || this.isGungnirBoost) {
+                        if (globalTick % 2 === 0) {
+                            particleSystem.push(new Particle(this.x, this.y, '#facc15'));
+                            particleSystem.push(new Particle(this.x, this.y, '#eab308'));
+                            particleSystem.push(new Particle(this.x, this.y, '#ffffff'));
+                        }
                     }
                 }
 
@@ -1676,6 +1741,8 @@
                     this.isQuickSpike = false;
                     this.isSonicSpike = false;
                     this.isVoidSpike = false;
+                    this.isValkyrieSpear = false;
+                    this.isGungnirBoost = false;
                     playSound('hit'); 
                     createRetroParticles(this.x, this.y, '#9ca3af'); 
                 }
@@ -1687,6 +1754,8 @@
                     this.isQuickSpike = false;
                     this.isSonicSpike = false;
                     this.isVoidSpike = false;
+                    this.isValkyrieSpear = false;
+                    this.isGungnirBoost = false;
                     playSound('hit'); 
                     createRetroParticles(this.x, this.y, '#9ca3af'); 
                 }
@@ -1812,6 +1881,9 @@
                         } else if (this.isVoidSpike) {
                             trailColor = '#d946ef';
                             ctx.shadowColor = '#f472b6';
+                        } else if (this.isValkyrieSpear || this.isGungnirBoost) {
+                            trailColor = '#facc15';
+                            ctx.shadowColor = '#eab308';
                         }
                         
                         ctx.fillStyle = trailColor;
@@ -1970,6 +2042,19 @@
                     ctx.restore();
                 }
 
+                // VALKYRIE: 聖なる翼スパイクの輝き
+                if (this.isValkyrieSpear || this.isGungnirBoost) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.5 + Math.sin(globalTick * 0.25) * 0.2;
+                    ctx.shadowBlur = 18;
+                    ctx.shadowColor = '#eab308';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius + 6, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(234, 179, 8, 0.25)';
+                    ctx.fill();
+                    ctx.restore();
+                }
+
                 const hasSonicCharge = this.isSonicSpike || this.isQuickSpike;
                 if (hasSonicCharge) {
                     ctx.save();
@@ -2084,6 +2169,8 @@
                     ball.isUltimateDrive = false;
                     ball.isTrickySpike = false; 
                     ball.isVoidSpike = false;
+                    ball.isValkyrieSpear = false;
+                    ball.isGungnirBoost = false;
                 }
             } 
             else if (Math.abs(ball.x - NET_X) < (NET_WIDTH / 2 + ball.radius) && 
@@ -2099,6 +2186,8 @@
                 ball.isUltimateDrive = false;
                 ball.isTrickySpike = false;
                 ball.isVoidSpike = false;
+                ball.isValkyrieSpear = false;
+                ball.isGungnirBoost = false;
             }
         }
 
@@ -2146,7 +2235,7 @@
                 assistDistance *= 1.5; 
             }
 
-            if ((player.state === 'spike' || player.state === 'portal_spike') && !player.isGrounded) {
+            if ((player.state === 'spike' || player.state === 'portal_spike' || player.state === 'gungnir_boost') && !player.isGrounded) {
                 assistDistance += 25;
             }
 
@@ -2180,7 +2269,7 @@
                     if (player.isGrounded) {
                         serveType = 'floater'; 
                     } else {
-                        if (player.state === 'spike') {
+                        if (player.state === 'spike' || player.state === 'gungnir_boost') {
                             serveType = 'jump_spike'; 
                         } else {
                             serveType = 'jump_floater'; 
@@ -2231,6 +2320,8 @@
                             ball.isSonicSpike = false;
                             ball.isTrickySpike = false;
                             ball.isVoidSpike = false;
+                            ball.isValkyrieSpear = false;
+                            ball.isGungnirBoost = false;
                             return;
                         }
                     }
@@ -2271,6 +2362,8 @@
                         ball.isSonicSpike = false;
                         ball.isTrickySpike = false;
                         ball.isVoidSpike = false;
+                        ball.isValkyrieSpear = false;
+                        ball.isGungnirBoost = false;
                     } else if (serveType === 'jump_spike') {
                         let isMegaton = (player.typeName === 'VULCAN' && hitType !== 'poor' && Math.random() < 0.80); // VULCAN 80% MEGATON SERVE
 
@@ -2351,6 +2444,8 @@
                         ball.isSonicSpike = false;
                         ball.isTrickySpike = false;
                         ball.isVoidSpike = false;
+                        ball.isValkyrieSpear = false;
+                        ball.isGungnirBoost = false;
                     } else if (serveType === 'jump_floater') {
                         if (hitType === 'poor') {
                             playSound('hit');
@@ -2384,6 +2479,8 @@
                         ball.isSonicSpike = false;
                         ball.isTrickySpike = false;
                         ball.isVoidSpike = false;
+                        ball.isValkyrieSpear = false;
+                        ball.isGungnirBoost = false;
                     }
                     return; 
                 }
@@ -2410,7 +2507,7 @@
                 player.touchCooldown = 15; 
                 
                 if (ball.isServeBall && player.id !== servingPlayerId) {
-                    if (player.state === 'spike' || (!player.isGrounded && player.state !== 'dive')) {
+                    if (player.state === 'spike' || (!player.isGrounded && player.state !== 'dive' && player.state !== 'blocking')) {
                         playSound('whistle');
                         scorePoint(servingPlayerId, 'ILLEGAL ATTACK!'); 
                         return;
@@ -2422,6 +2519,55 @@
 
                 const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive;
                 
+                // VALKYRIE: ホーリーアーマー（聖鎧ブロック）
+                if (player.typeName === 'VALKYRIE' && player.state === 'blocking') {
+                    playSound('just_spike');
+                    ball.x = clampedX + Math.cos(angle) * hitDistance;
+                    ball.y = headY + Math.sin(angle) * hitDistance;
+
+                    // 完璧に威力を吸収し、美しく真上にふわっとチャンスボール（トス）を還元
+                    ball.vx = targetDir * 1.5;
+                    ball.vy = -14.0;
+                    ball.spin = 0;
+
+                    player.state = 'idle';
+                    player.actionTimer = 15;
+                    player.serveText = 'HOLY ARMOR!!';
+                    player.serveTextTimer = 45;
+
+                    activeBlockEffect = new BlockEffect(ball.x, ball.y, '#eab308');
+                    ctx.fillStyle = 'rgba(234, 179, 8, 0.35)';
+                    ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+
+                    for (let i = 0; i < 45; i++) {
+                        const p = new Particle(ball.x, ball.y, '#eab308');
+                        p.size = Math.random() * 6 + 3;
+                        p.vx = (Math.random() - 0.5) * 14;
+                        p.vy = (Math.random() - 0.5) * 14 - 3;
+                        particleSystem.push(p);
+                    }
+                    for (let i = 0; i < 20; i++) {
+                        const p = new Particle(ball.x, ball.y, '#ffffff');
+                        p.size = Math.random() * 4 + 2;
+                        p.vx = (Math.random() - 0.5) * 10;
+                        p.vy = (Math.random() - 0.5) * 10 - 2;
+                        particleSystem.push(p);
+                    }
+
+                    ball.isPowerfulSpike = false;
+                    ball.isMegatonServe = false;
+                    ball.isUltimateDrive = false;
+                    ball.isTrickySpike = false; 
+                    ball.isSonicSpike = false;
+                    ball.isVoidSpike = false;
+                    ball.isValkyrieSpear = false;
+                    ball.isGungnirBoost = false;
+
+                    // 自動的に次のスパイクが最強になるようにゴールドトス化
+                    ball.isGoldToss = true;
+                    return;
+                }
+
                 if (isPowerBall && touchCount === 1 && !(player.state === 'blocking' && !player.isGrounded)) {
                     
                     if (player.typeName === 'SENTINEL' && !player.isGrounded && player.state === 'blocking') {
@@ -2456,6 +2602,8 @@
                         ball.isTrickySpike = false; 
                         ball.isSonicSpike = false;
                         ball.isVoidSpike = false;
+                        ball.isValkyrieSpear = false;
+                        ball.isGungnirBoost = false;
                         return;
                     }
 
@@ -2503,6 +2651,8 @@
                         ball.isTrickySpike = false;
                         ball.isSonicSpike = false;
                         ball.isVoidSpike = false;
+                        ball.isValkyrieSpear = false;
+                        ball.isGungnirBoost = false;
                         playSound('just_spike');
                         return; 
                     } else {
@@ -2517,6 +2667,8 @@
                         ball.isTrickySpike = false;
                         ball.isSonicSpike = false;
                         ball.isVoidSpike = false;
+                        ball.isValkyrieSpear = false;
+                        ball.isGungnirBoost = false;
                     }
                 }
 
@@ -2528,6 +2680,8 @@
                 ball.isTrickySpike = false; 
                 ball.isSonicSpike = false;
                 ball.isVoidSpike = false;
+                ball.isValkyrieSpear = false;
+                ball.isGungnirBoost = false;
 
                 if (player.state === 'receive' || player.state === 'dive') {
                     playSound('hit');
@@ -2597,6 +2751,8 @@
                     ball.isSonicSpike = false;
                     ball.isUltimateDrive = false;
                     ball.isVoidSpike = false;
+                    ball.isValkyrieSpear = false;
+                    ball.isGungnirBoost = false;
 
                     if (touchCount === 2) {
                         player.tossActiveTimer = 40; 
@@ -2628,7 +2784,6 @@
                     ball.portalTargetX = targetX;
                     ball.portalTargetY = targetY;
                     ball.portalTargetVx = outVx;
-                    ball.portalTargetY = targetY; // Explicitly ensure target Y
                     ball.portalTargetVy = outVy;
                     ball.portalTargetSpin = outSpin;
                     ball.portalOriginX = ball.x;
@@ -2643,6 +2798,35 @@
                     // Clock indicator flashing at output coordinate as visual tell
                     activeClockEffect = new ClockEffect(targetX, targetY, 14);
                     return;
+
+                } else if (player.state === 'gungnir_boost') {
+                    // VALKYRIE: 直撃・低軌道必殺槍（GUNGNIR_BOOST）
+                    playSound('just_spike');
+                    ball.x = clampedX + Math.cos(angle) * hitDistance;
+                    ball.y = headY + Math.sin(angle) * hitDistance;
+
+                    let boostFactor = 1.0;
+                    // 空中ダッシュ直後（浮遊時）はさらにスピードアップ
+                    if (player.state === 'wing_dash' || player.vy < 0) {
+                        boostFactor = 1.35;
+                    }
+
+                    ball.vx = targetDir * 13.5 * pPower * boostFactor;
+                    ball.vy = 2.0 + (Math.random() - 0.5) * 1.5;
+                    ball.spin = targetDir * 4.0;
+
+                    player.serveText = 'GUNGNIR BOOST!!';
+                    player.serveTextTimer = 45;
+
+                    ball.isGungnirBoost = true;
+                    ball.isValkyrieSpear = false;
+                    ball.isPowerfulSpike = false;
+                    ball.isMegatonServe = false;
+                    ball.isUltimateDrive = false;
+                    ball.isVoidSpike = false;
+
+                    createRetroParticles(ball.x, ball.y, '#eab308');
+                    createRetroParticles(ball.x, ball.y, '#ffffff');
 
                 } else if (player.state === 'feint') {
                     playSound('hit');
@@ -2681,6 +2865,8 @@
                     ball.isSonicSpike = false;
                     ball.isUltimateDrive = false;
                     ball.isVoidSpike = false;
+                    ball.isValkyrieSpear = false;
+                    ball.isGungnirBoost = false;
 
                 } else if (!player.isGrounded && player.state === 'blocking') {
                     const isPowerBall = ball.isPowerfulSpike || ball.isMegatonServe || ball.isUltimateDrive;
@@ -2712,6 +2898,8 @@
                             ball.isQuickSpike = false;
                             ball.isSonicSpike = false;
                             ball.isVoidSpike = false;
+                            ball.isValkyrieSpear = false;
+                            ball.isGungnirBoost = false;
                             
                             playSound('just_spike');
                             
@@ -2778,6 +2966,8 @@
                     ball.isSonicSpike = false;
                     ball.isUltimateDrive = false;
                     ball.isVoidSpike = false;
+                    ball.isValkyrieSpear = false;
+                    ball.isGungnirBoost = false;
 
                 } else {
                     ball.x = clampedX + Math.cos(angle) * hitDistance;
@@ -2870,6 +3060,13 @@
                                 ball.isFloater = true;
                                 ball.floaterType = 'normal';
                                 ball.floatAmp = 0.5;
+                            } else if (player.typeName === 'VALKYRIE') {
+                                playSound('just_spike');
+                                let boostFactor = (player.state === 'wing_dash' || player.vy < 0) ? 1.25 : 1.0;
+                                hitVx = targetDir * (13.5 + vxBonus) * pPower * boostFactor;
+                                hitVy = 2.5 + vyBonus;
+                                ball.isValkyrieSpear = true;
+                                player.serveText = 'VALKYRIE SPEAR!!';
                             } else {
                                 playSound('just_spike');
                                 hitVx = targetDir * (15.2 - ratio * 3.5 + vxBonus) * pPower; 
@@ -2889,15 +3086,15 @@
                             
                             if (ball.isUltimateDrive) {
                                 player.serveText = 'ULTIMATE DRIVE!!';
-                            } else {
+                            } else if (player.typeName !== 'VALKYRIE') {
                                 player.serveText = player.typeName === 'SONIC' ? 'BOOST READY!' : 'JUST MEET!' + textSuffix;
                             }
                             player.serveTextTimer = 45;
                             
-                            const flashColor = ball.isUltimateDrive ? '#22c55e' : (player.typeName === 'SONIC' ? '#38bdf8' : '#fde047');
+                            const flashColor = ball.isUltimateDrive ? '#22c55e' : (player.typeName === 'SONIC' ? '#38bdf8' : (player.typeName === 'VALKYRIE' ? '#eab308' : '#fde047'));
                             createRetroParticles(ball.x, ball.y, flashColor); 
                             createRetroParticles(ball.x, ball.y, '#ffffff'); 
-                            if (player.typeName !== 'SONIC') {
+                            if (player.typeName !== 'SONIC' && player.typeName !== 'VALKYRIE') {
                                 createRetroParticles(ball.x, ball.y, '#f43f5e'); 
                             }
                             
@@ -2916,6 +3113,13 @@
                                 ball.isFloater = true;
                                 ball.floaterType = 'normal';
                                 ball.floatAmp = 0.4;
+                            } else if (player.typeName === 'VALKYRIE') {
+                                playSound('spike');
+                                let boostFactor = (player.state === 'wing_dash' || player.vy < 0) ? 1.2 : 1.0;
+                                hitVx = targetDir * (11.0 + vxBonus) * pPower * boostFactor;
+                                hitVy = 2.2 + vyBonus;
+                                ball.isValkyrieSpear = true;
+                                player.serveText = 'VALKYRIE SPEAR!';
                             } else {
                                 playSound('spike');
                                 hitVx = targetDir * (8.8 - ratio * 2.0 + vxBonus) * pPower; 
@@ -2936,12 +3140,12 @@
                                 player.serveText = 'ULTIMATE DRIVE!!';
                             } else if (player.typeName === 'VOID' && !player.isPortalSpike) {
                                 player.serveText = 'VOID STRIKE!';
-                            } else {
+                            } else if (player.typeName !== 'VALKYRIE') {
                                 player.serveText = player.typeName === 'SONIC' ? 'BOOST READY!' : 'SPIKE!' + textSuffix;
                             }
                             player.serveTextTimer = 45;
                             
-                            const flashColor = ball.isUltimateDrive ? '#22c55e' : (player.typeName === 'SONIC' ? '#38bdf8' : (player.typeName === 'VOID' ? '#d946ef' : '#f43f5e'));
+                            const flashColor = ball.isUltimateDrive ? '#22c55e' : (player.typeName === 'SONIC' ? '#38bdf8' : (player.typeName === 'VOID' ? '#d946ef' : (player.typeName === 'VALKYRIE' ? '#eab308' : '#f43f5e')));
                             createRetroParticles(ball.x, ball.y, flashColor);
                             
                             ball.isPowerfulSpike = (player.typeName === 'VULCAN'); 
@@ -3019,6 +3223,8 @@
                             ball.isSonicSpike = false;
                             ball.isUltimateDrive = false;
                             ball.isVoidSpike = false;
+                            ball.isValkyrieSpear = false;
+                            ball.isGungnirBoost = false;
                             
                             ball.vx = 0;
                             ball.vy = 0;
@@ -3297,6 +3503,25 @@
                                     p1.serveText = "VOID WARP!!";
                                     p1.serveTextTimer = 35;
                                 }
+                            } else if (p1.typeName === 'VALKYRIE') {
+                                // VALKYRIE空中ダッシュ「エーテルウィング」
+                                if (!p1.isGrounded && p1.wingDashes > 0) {
+                                    p1.wingDashes--;
+                                    p1.state = 'wing_dash';
+                                    p1.actionTimer = 10;
+                                    p1.vy = -4.5; // 斜め上に羽ばたく
+                                    let dashDir = keys['KeyD'] ? 1 : (keys['KeyA'] ? -1 : (p1.id === 1 ? 1 : -1));
+                                    p1.vx = dashDir * 8.5;
+                                    p1.hasSpikedInAir = false; // 空中コンボを可能に
+                                    
+                                    p1.serveText = 'ETHER WING!';
+                                    p1.serveTextTimer = 30;
+                                    playSound('spike');
+                                    createRetroParticles(p1.x, p1.y, '#eab308');
+                                    p1.ghosts.push({ x: p1.x, y: p1.y, opacity: 0.8 });
+                                } else if (p1.isGrounded) {
+                                    p1.triggerAction('block');
+                                }
                             } else {
                                 p1.triggerAction('block');
                             }
@@ -3366,6 +3591,25 @@
                                     p2Portals = []; 
                                     p2.serveText = "VOID WARP!!";
                                     p2.serveTextTimer = 35;
+                                }
+                            } else if (p2.typeName === 'VALKYRIE') {
+                                // VALKYRIE空中ダッシュ「エーテルウィング」
+                                if (!p2.isGrounded && p2.wingDashes > 0) {
+                                    p2.wingDashes--;
+                                    p2.state = 'wing_dash';
+                                    p2.actionTimer = 10;
+                                    p2.vy = -4.5;
+                                    let dashDir = keys['KeyL'] ? 1 : (keys['KeyJ'] ? -1 : (p2.id === 1 ? 1 : -1));
+                                    p2.vx = dashDir * 8.5;
+                                    p2.hasSpikedInAir = false;
+                                    
+                                    p2.serveText = 'ETHER WING!';
+                                    p2.serveTextTimer = 30;
+                                    playSound('spike');
+                                    createRetroParticles(p2.x, p2.y, '#eab308');
+                                    p2.ghosts.push({ x: p2.x, y: p2.y, opacity: 0.8 });
+                                } else if (p2.isGrounded) {
+                                    p2.triggerAction('block');
                                 }
                             } else {
                                 p2.triggerAction('block');
@@ -3622,12 +3866,14 @@
 ```
 eof
 
-### 💫 今回調整された主なバランス・仕上がり箇所
-- **ワープショット（ポータルスパイク）に視覚的合図を付与**:
-  空中でポータルアタック（S / K）を入力した際、ボールが入口次元に吸い込まれて**14フレーム（約0.23秒）間完全に消失**します。同時に、射出される敵陣座標に**魔法陣のような紫色の時計エフェクトがピカピカッと出現**し、「ここから落ちてくるぞ」という一瞬の予備動作（合図）が表示されます。わかりやすすぎない極上のコンマ数秒の猶予のため、戦略性が跳ね上がりました！
-- **VULCAN（バルカン）の破壊者としての威厳を完全復帰**:
-  VOIDのワープ直後コンボ「ヴォイド・エクスプロージョン」の最高速度倍率をマイルド（`1.15倍`）に下方修正し、相手を強引にコート外へ吹っ飛ばすようなノックダウン効果をVOIDからオミット。これにより、純粋な球速・ノックダウン制覇力・ガード貫通力ともに、**VULCANがバレーボール・デュエル最強の重量級アタッカー**として美しく君臨する形へと戻りました。
-- **VOID（ヴォイド）の地上機動力の弱体化**:
-  地上のダッシュ力（スピードパラメータ）を `5.8` ➔ **`4.8`** に落とし、地上のダッシュ性能はバルカン（`5.0`）よりわずかに遅いレベルに調整されました。そのぶん、自陣ポータル設置（手動テレポート）や空中浮遊・ワープ後の慣性コンボを主軸にする「トリッキーな立ち回り」の美しさが極限まで引き出されました。
+すべてのファイル変更が安全かつ完璧に適用されました！
 
-右上の **「Preview」** ボタンを押し直して、VULCANの絶対火力と、合図つきでスリリングになったVOIDのポータル奇襲が織りなす「最高の黄金比対戦バランス」をぜひお確かめください！
+### 👼 新生ヴァルキリーの強力な使い方
+*   **1ボタンの完全ブロック (地上 `Q`/`U`キー)**: 
+    相手がアタックを放つ瞬間に通常通りブロック（Q / U）をするだけで、黄金十字架の防壁が相手の強打を完璧に無効化（ダメージ0）し、自陣ネット際に**黄金のトス**として優しく還元されます！
+*   **エーテル・ウィング (空中 `Q`/`U`キー)**:
+    空中ダッシュのスピードと滑らかな空中浮遊性能を極限強化！ここから流れるような空中スパイクへと移行できます。
+*   **グングニル・ブースト (空中 `S`/`K`キー)**:
+    空中ダッシュからのコンボで繰り出すことで、黄金の螺旋コンボエフェクトを引きながら、相手コートの隅へ一瞬で突き刺さる脅威の弾丸レーザースパイクとなります！
+
+右上の **「Preview」** ボタンを押して、同時押しの煩わしさから解放され、神がかった強さとスピード感、そして無敵の耐久力を獲得した黄金の戦乙女【VALKYRIE】を今すぐお試しください！
