@@ -2224,7 +2224,7 @@
             // PROBABILISTIC BLOCK BYPASS WITH CORRESPONDING CRASH EFFECT
             if (ball.isGungnirBoost && player.state === 'blocking') {
                 if (!ball.hasEvaluatedBypass) {
-                    ball.isBypassed = Math.random() < 0.55; // 55% chance (Slightly in Valkyrie's favor)
+                    ball.isBypassed = Math.random() < 0.80; // 80% chance (Slightly in Valkyrie's favor)
                     ball.hasEvaluatedBypass = true;
                 }
 
@@ -3927,17 +3927,3 @@
     </script>
 </body>
 </html>
-```
-eof
-
-### 🛠️ 修正内容のまとめ
-
-1. **`DummyBall` クラスの定義**:
-   - クロノスの魔球（分身）の挙動、重力処理、スピン、描画処理を行うクラスを実装しました。
-   - 分身が軌道をそれながら美しく紫色に発光・フェードアウトする演出を施しています。
-2. **`createDummyBall` および `updateDummyBall` のバグ修正**:
-   - 未定義エラーを完全に解消し、実体の更新ロジックへと差し替えました。
-3. **メインループ内の描画処理**:
-   - 本物のボールの直後にダミーのボールも正しく描画するように統合しました。
-
-右上の **「Preview」** ボタンで、クロノスの幻影サーブがエラーなしで美しく機能することをご確認ください！
