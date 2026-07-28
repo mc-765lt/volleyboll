@@ -131,7 +131,7 @@
                 <span class="font-bold text-pink-500 text-[8px] md:text-[9px] arcade-font block mb-1">■ VOID / SON GOKUU</span>
                 <p class="text-slate-300">
                     <strong>【ヴォイド】</strong>地上Q/Uでポータル設置、再入力でワープ。空中レシーブS/Kでポータルスパイク！ワープ直後のW/Iは極大エクスプロージョン！<br>
-                    <strong>【孫悟空】</strong>空中でQ/Uを押すたびに「觔斗雲(きんとうん)」に乗って自在に滞空・移動できる(発動時の急な突進や上昇はなし。キーを押した分だけ動く)！ダイブ入力(A/D or J/Lの素早い2回押し)をすると「如意棒」が伸びてどこに飛んだボールも拾える(1ラリーに1回、発動時はダイブの動き・硬直なし。クールタイム中は通常のダイブ)！レシーブの吸収は常に成功、失敗して怯むことはない！スパイクは同時押し不要のワンボタンで高威力の「かめはめ波」！ブロックは使えない代わりに機動力とスパイク火力に特化！
+                    <strong>【孫悟空】</strong>空中でQ/Uを押すたびに「觔斗雲(きんとうん)」に乗って自在に滞空・移動できる(発動時の急な突進や上昇はなし。キーを押した分だけ動く)！ダイブ入力(A/D or J/Lの素早い2回押し)をすると「如意棒」が伸びてどこに飛んだボールも拾える(通常1ラリーに1回、発動時はダイブの動き・硬直なし。クールタイム中は通常のダイブ)！レシーブの吸収は常に成功、失敗して怯むことはない！スパイクは同時押し不要のワンボタンで高威力の「かめはめ波」！ブロックは使えない代わりに機動力とスパイク火力に特化！点差が5点以上開くと覚醒(金髪+金色オーラ+青いイナズマ)し、勝敗が決まるまで持続。覚醒中は如意棒が1ラリー3回に増加し、かめはめ波が空中の相手をコート端まで吹き飛ばす！さらに覚醒中はスパイクと同時にゆっくり進む気弾を放ち、当たった相手をノックバックさせる！
                 </p>
             </div>
         </div>
@@ -342,6 +342,9 @@
         let score1 = 0;
         let score2 = 0;
         let gameActive = false;
+        let hasShownAwakeningEffect = false;
+        let awakeningFlashTimer = 0;
+        const AWAKENING_FLASH_MAX = 40;
         let winner = null;
         let lastScorer = 1;
         let particleSystem = [];
@@ -572,11 +575,12 @@
                 this.warpComboTimer = 0; 
                 this.wingDashes = 1;     
                 this.hasWingDashedInAir = false; 
-                this.nyoiboReady = true;
+                this.nyoiboCharges = 1;
                 this.nyoiboActive = false;
                 this.nyoiboEffectTimer = 0;
                 this.nyoiboTargetX = 0;
                 this.nyoiboTargetY = 0;
+                this.isTransformed = false;
                 
                 this.ghosts = [];
 
@@ -589,6 +593,7 @@
                 this.jumpStrength = this.typeData.jump;
                 this.gravityScale = this.typeData.gravityScale;
                 this.typeName = typeName;
+                this.isTransformed = false;
 
                 const colors = this.id === 1 ? P1_COLORS[typeName] : P2_COLORS[typeName];
                 this.jerseyColor = colors.jersey;
@@ -645,7 +650,7 @@
                 this.warpComboTimer = 0;
                 this.wingDashes = 1;
                 this.hasWingDashedInAir = false;
-                this.nyoiboReady = true;
+                this.nyoiboCharges = this.isTransformed ? 3 : 1;
                 this.nyoiboActive = false;
                 this.nyoiboEffectTimer = 0;
                 this.ghosts = [];
@@ -1021,7 +1026,7 @@
                             this.warpCooldown = 180; 
                             playSound('hit');
                         } else {
-                            const nyoiboCharge = (this.typeName === 'SON GOKUU' && this.nyoiboReady);
+                            const nyoiboCharge = (this.typeName === 'SON GOKUU' && this.nyoiboCharges > 0);
 
                             if (!nyoiboCharge) {
                                 let diveForce = 5.5; 
@@ -1038,8 +1043,8 @@
                             }
                             
                             if (this.typeName === 'SON GOKUU') {
-                                if (this.nyoiboReady) {
-                                    this.nyoiboReady = false;
+                                if (this.nyoiboCharges > 0) {
+                                    this.nyoiboCharges--;
                                     this.nyoiboActive = true;
                                     this.nyoiboEffectTimer = 14;
                                     this.nyoiboTargetX = ball.x;
@@ -1219,6 +1224,34 @@
                     ctx.translate(0, 12);
                 }
 
+                if (this.isTransformed) {
+                    ctx.save();
+                    const auraPulse = 0.55 + Math.sin(globalTick * 0.25) * 0.15;
+                    ctx.globalAlpha = auraPulse * 0.3;
+                    ctx.fillStyle = '#fde047';
+                    ctx.shadowBlur = 6;
+                    ctx.shadowColor = '#facc15';
+                    ctx.beginPath();
+                    ctx.ellipse(0, -18, 10, 24, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+
+                    if (globalTick % 24 < 3) {
+                        ctx.save();
+                        ctx.globalAlpha = 0.75;
+                        ctx.strokeStyle = '#38bdf8';
+                        ctx.lineWidth = 0.8;
+                        const boltX = (Math.random() - 0.5) * 10;
+                        ctx.beginPath();
+                        ctx.moveTo(boltX - 4, -42);
+                        ctx.lineTo(boltX + 2, -32);
+                        ctx.lineTo(boltX - 3, -24);
+                        ctx.lineTo(boltX + 3, -12);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+
                 ctx.fillStyle = '#ffffff'; 
                 ctx.fillRect(-4, -4, 2, 4);
                 ctx.fillRect(2, -4, 2, 4);
@@ -1256,13 +1289,27 @@
                 ctx.fillStyle = '#000000';
                 ctx.fillRect(2, -33, 2, 2); 
 
-                ctx.fillStyle = this.hairColor;
+                ctx.fillStyle = (this.isTransformed) ? '#fde047' : this.hairColor;
                 ctx.beginPath();
                 ctx.arc(-2, -33, 6, Math.PI * 0.5, Math.PI * 1.5, false);
                 ctx.fill();
-                ctx.fillRect(-5, -39, 8, 3);
-                ctx.fillRect(-3, -41, 3, 2);
-                ctx.fillRect(1, -40, 2, 2);
+
+                if (this.isTransformed) {
+                    ctx.beginPath();
+                    ctx.moveTo(-6, -38);
+                    ctx.lineTo(-4, -50);
+                    ctx.lineTo(-1, -39);
+                    ctx.lineTo(1, -52);
+                    ctx.lineTo(3, -38);
+                    ctx.lineTo(6, -48);
+                    ctx.lineTo(7, -37);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(-5, -39, 8, 3);
+                    ctx.fillRect(-3, -41, 3, 2);
+                    ctx.fillRect(1, -40, 2, 2);
+                }
 
                 ctx.strokeStyle = this.skinColor;
                 ctx.lineWidth = 3.5;
@@ -1469,6 +1516,7 @@
                     else if (this.serveText.includes('VOID') || this.serveText.includes('PORTAL') || this.serveText.includes('WARP') || this.serveText.includes('STRIKE') || this.serveText.includes('EXPLOSION')) tCol = '#d946ef';
                     else if (this.serveText.includes('KAMEHAMEHA')) tCol = '#38bdf8';
                     else if (this.serveText.includes('NYOI-BOU')) tCol = '#fbbf24';
+                    else if (this.serveText.includes('AWAKENED')) tCol = '#fde047';
                     else if (this.serveText.includes('CLOUD') || this.serveText.includes('KINTOUN')) tCol = '#f97316';
                     else if (this.serveText.includes('BLOCK BYPASS')) tCol = '#facc15'; 
 
@@ -2261,6 +2309,67 @@
             }
         }
 
+        class KiBlast {
+            constructor(x, y, vx, ownerId) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = 0;
+                this.speed = Math.abs(vx);
+                this.radius = 9;
+                this.ownerId = ownerId;
+                this.life = 240;
+                this.alive = true;
+            }
+
+            update() {
+                const target = this.ownerId === 1 ? p2 : p1;
+                const targetX = target.x;
+                const targetY = target.y - target.radiusY * 0.6;
+                const dx = targetX - this.x;
+                const dy = targetY - this.y;
+                const dist = Math.hypot(dx, dy) || 1;
+
+                const homingStrength = 0.05;
+                const desiredVx = (dx / dist) * this.speed;
+                const desiredVy = (dy / dist) * this.speed;
+                this.vx += (desiredVx - this.vx) * homingStrength;
+                this.vy += (desiredVy - this.vy) * homingStrength;
+
+                const curSpeed = Math.hypot(this.vx, this.vy) || 1;
+                this.vx = (this.vx / curSpeed) * this.speed;
+                this.vy = (this.vy / curSpeed) * this.speed;
+
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life--;
+                if (this.life <= 0 || this.x < -20 || this.x > VIEW_WIDTH + 20) {
+                    this.alive = false;
+                }
+                if (globalTick % 3 === 0) {
+                    particleSystem.push(new Particle(this.x, this.y, Math.random() < 0.5 ? '#7dd3fc' : '#ffffff'));
+                }
+            }
+
+            draw() {
+                ctx.save();
+                const pulse = 0.75 + Math.sin(globalTick * 0.4) * 0.2;
+                ctx.globalAlpha = pulse;
+                ctx.shadowBlur = 16;
+                ctx.shadowColor = '#38bdf8';
+                ctx.fillStyle = '#e0f2fe';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        let kiBlasts = [];
+
         const p1 = new Player(1, VIEW_WIDTH * 0.18, 'JAPAN-1');
         const p2 = new Player(2, VIEW_WIDTH * 0.82, 'RIGHT-2');
         const ball = new Ball();
@@ -2271,6 +2380,47 @@
             for (let i = 0; i < 15; i++) {
                 particleSystem.push(new Particle(x, y, color));
             }
+        }
+
+        function applyGokuuKnockback(player) {
+            if (!player.isTransformed) return;
+            const opponent = player.id === 1 ? p2 : p1;
+            if (opponent.isGrounded) return;
+
+            const pushDir = opponent.id === 1 ? -1 : 1; 
+            opponent.state = 'tumbled';
+            opponent.touchCooldown = 20;
+            opponent.actionTimer = (opponent.typeName === 'SENTINEL') ? 10 : 26;
+            opponent.vx = pushDir * 22;
+            opponent.vy = -2.5;
+            createRetroParticles(opponent.x, opponent.y, '#38bdf8');
+            createRetroParticles(opponent.x, opponent.y, '#ffffff');
+        }
+
+        function checkKiBlastCollisions() {
+            for (const blast of kiBlasts) {
+                if (!blast.alive) continue;
+                const target = blast.ownerId === 1 ? p2 : p1;
+                const dx = target.x - blast.x;
+                const dy = (target.y - target.radiusY * 0.6) - blast.y;
+                const hitRange = blast.radius + target.radiusX;
+
+                if (Math.hypot(dx, dy) < hitRange) {
+                    blast.alive = false;
+
+                    const pushDir = target.id === 1 ? -1 : 1;
+                    target.state = 'tumbled';
+                    target.touchCooldown = 12;
+                    target.actionTimer = (target.typeName === 'SENTINEL') ? 6 : 14;
+                    target.vx = pushDir * 8;
+                    target.vy = -1.0;
+
+                    createRetroParticles(target.x, target.y, '#38bdf8');
+                    createRetroParticles(target.x, target.y, '#e0f2fe');
+                    createRetroParticles(target.x, target.y, '#ffffff');
+                }
+            }
+            kiBlasts = kiBlasts.filter(b => b.alive);
         }
 
         function checkNetCollision() {
@@ -3192,6 +3342,10 @@
                                 hitVy = 2.5 + vyBonus;
                                 ball.isValkyrieSpear = true;
                                 player.serveText = 'KAMEHAMEHA!!';
+                                applyGokuuKnockback(player);
+                                if (player.isTransformed) {
+                                    kiBlasts.push(new KiBlast(player.x, player.y - player.radiusY * 0.7, hitVx / 6, player.id));
+                                }
                             } else {
                                 playSound('just_spike');
                                 hitVx = targetDir * (15.2 - ratio * 3.5 + vxBonus) * pPower; 
@@ -3243,6 +3397,10 @@
                                 hitVy = 2.2 + vyBonus;
                                 ball.isValkyrieSpear = true;
                                 player.serveText = 'KAMEHAMEHA!';
+                                applyGokuuKnockback(player);
+                                if (player.isTransformed) {
+                                    kiBlasts.push(new KiBlast(player.x, player.y - player.radiusY * 0.7, hitVx / 6, player.id));
+                                }
                             } else {
                                 playSound('spike');
                                 hitVx = targetDir * (8.8 - ratio * 2.0 + vxBonus) * pPower; 
@@ -3384,6 +3542,28 @@
             }
         }
 
+        function triggerGokuuAwakening(pl) {
+            pl.isTransformed = true;
+            pl.nyoiboCharges = 3;
+            pl.serveText = 'AWAKENED!!';
+            pl.serveTextTimer = 60;
+            createRetroParticles(pl.x, pl.y, '#fde047');
+            createRetroParticles(pl.x, pl.y, '#38bdf8');
+            createRetroParticles(pl.x, pl.y, '#ffffff');
+
+            if (!hasShownAwakeningEffect) {
+                hasShownAwakeningEffect = true;
+                awakeningFlashTimer = AWAKENING_FLASH_MAX;
+                for (let i = 0; i < 60; i++) {
+                    const p = new Particle(pl.x, pl.y, Math.random() < 0.5 ? '#fde047' : '#38bdf8');
+                    p.size = Math.random() * 5 + 3;
+                    p.vx = (Math.random() - 0.5) * 16;
+                    p.vy = (Math.random() - 0.5) * 16 - 4;
+                    particleSystem.push(p);
+                }
+            }
+        }
+
         function scorePoint(winningPlayer, reason = '') {
             playSound('score');
             
@@ -3395,6 +3575,11 @@
                 score2++;
                 lastScorer = 2;
                 document.getElementById('score2').innerText = String(score2).padStart(2, '0');
+            }
+
+            if (Math.abs(score1 - score2) >= 5) {
+                if (p1.typeName === 'SON GOKUU' && !p1.isTransformed) triggerGokuuAwakening(p1);
+                if (p2.typeName === 'SON GOKUU' && !p2.isTransformed) triggerGokuuAwakening(p2);
             }
 
             if (score1 >= 15 || score2 >= 15) {
@@ -3413,6 +3598,7 @@
                 activeBlockEffect = null;
                 p1Portals = [];
                 p2Portals = [];
+                kiBlasts = [];
                 
                 const overlay = document.getElementById('overlay');
                 const title = document.getElementById('overlayTitle');
@@ -3470,6 +3656,8 @@
                 document.getElementById('score2').innerText = '00';
                 p1.hp = 100;
                 p2.hp = 100;
+                p1.isTransformed = false;
+                p2.isTransformed = false;
             }
 
             const overlay = document.getElementById('overlay');
@@ -3488,6 +3676,7 @@
             p1TouchCount = 0;
             p2TouchCount = 0;
             p1Portals = [];
+            kiBlasts = [];
             p2Portals = [];
             activeBlockEffect = null;
             activeClockEffect = null;
@@ -3809,6 +3998,7 @@
             particleSystem = [];
             p1Portals = [];
             p2Portals = [];
+            kiBlasts = [];
             activeBlockEffect = null;
             activeClockEffect = null;
         });
@@ -3917,6 +4107,8 @@
             globalTick++;
             ctx.clearRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
 
+            if (awakeningFlashTimer > 0) awakeningFlashTimer--;
+
             if (gameActive) {
                 if (rallyState === 'serving') {
                     const server = servingPlayerId === 1 ? p1 : p2;
@@ -3936,6 +4128,9 @@
                 checkPlayerBallCollision(p2);
 
                 checkNetCollision();
+
+                kiBlasts.forEach(b => b.update());
+                checkKiBlastCollisions();
 
                 if (ball.y + ball.radius >= GROUND_Y) {
                     ball.y = GROUND_Y - ball.radius;
@@ -3983,12 +4178,25 @@
             
             particleSystem.forEach(p => p.draw());
 
+            kiBlasts.forEach(b => b.draw());
+
             if (activeBlockEffect) {
                 activeBlockEffect.draw();
             }
 
             if (activeClockEffect) {
                 activeClockEffect.draw();
+            }
+
+            if (awakeningFlashTimer > 0) {
+                ctx.save();
+                ctx.globalAlpha = (awakeningFlashTimer / AWAKENING_FLASH_MAX) * 0.55;
+                const grad = ctx.createRadialGradient(VIEW_WIDTH / 2, VIEW_HEIGHT / 2, 20, VIEW_WIDTH / 2, VIEW_HEIGHT / 2, VIEW_WIDTH * 0.7);
+                grad.addColorStop(0, '#fff7cc');
+                grad.addColorStop(1, '#facc15');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+                ctx.restore();
             }
 
             requestAnimationFrame(loop);
