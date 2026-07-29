@@ -131,7 +131,7 @@
                 <span class="font-bold text-pink-500 text-[8px] md:text-[9px] arcade-font block mb-1">■ VOID / SON GOKUU</span>
                 <p class="text-slate-300">
                     <strong>【ヴォイド】</strong>地上Q/Uでポータル設置、再入力でワープ。空中レシーブS/Kでポータルスパイク！ワープ直後のW/Iは極大エクスプロージョン！<br>
-                    <strong>【孫悟空】</strong>空中でQ/Uを押すたびに「觔斗雲(きんとうん)」に乗って自在に滞空・移動できる(発動時の急な突進や上昇はなし。キーを押した分だけ動く)！ダイブ入力(A/D or J/Lの素早い2回押し)をすると「如意棒」が伸びてどこに飛んだボールも拾える(通常1ラリーに1回、発動時はダイブの動き・硬直なし。クールタイム中は通常のダイブ)！レシーブの吸収は常に成功、失敗して怯むことはない！スパイクは同時押し不要のワンボタンで高威力の「かめはめ波」！ブロックは使えない代わりに機動力とスパイク火力に特化！点差が5点以上開くと覚醒(金髪+金色オーラ+青いイナズマ)し、勝敗が決まるまで持続。覚醒中は如意棒が1ラリー3回に増加し、かめはめ波が空中の相手をコート端まで吹き飛ばす！さらに覚醒中はスパイクと同時にゆっくり進む気弾を放ち、当たった相手をノックバックさせる！
+                    <strong>【孫悟空】</strong>空中でQ/Uを押すたびに「觔斗雲(きんとうん)」に乗って自在に滞空・移動できる(発動時の急な突進や上昇はなし。キーを押した分だけ動く)！ダイブ入力(A/D or J/Lの素早い2回押し)をすると「如意棒」が伸びてどこに飛んだボールも拾える(通常1ラリーに1回、発動時はダイブの動き・硬直なし。クールタイム中は通常のダイブ)！レシーブの吸収は常に成功、失敗して怯むことはない！スパイクは同時押し不要のワンボタンで高威力の「かめはめ波」！ブロックは使えない代わりに機動力とスパイク火力に特化！点差が5点以上開くと覚醒(金髪+金色オーラ+青いイナズマ)し、勝敗が決まるまで持続。覚醒中は如意棒が1ラリー3回に増加し、かめはめ波が空中の相手をコート端まで吹き飛ばす！さらに覚醒中はスパイクと同時にホーミングする気弾を放ち、当たった相手をノックバックさせる！スパイクボタンを長押ししてから離すと「溜めかめはめ波」になり、威力アップ&気弾3連発の全力の一撃を放てる(溜めすぎるとタイミングを逃すリスクあり)！
                 </p>
             </div>
         </div>
@@ -581,6 +581,10 @@
                 this.nyoiboTargetX = 0;
                 this.nyoiboTargetY = 0;
                 this.isTransformed = false;
+                this.isChargingKamehameha = false;
+                this.chargeStartTick = 0;
+                this.chargeDir = 0;
+                this.kamehamehaChargeRatio = 0;
                 
                 this.ghosts = [];
 
@@ -653,6 +657,8 @@
                 this.nyoiboCharges = this.isTransformed ? 3 : 1;
                 this.nyoiboActive = false;
                 this.nyoiboEffectTimer = 0;
+                this.isChargingKamehameha = false;
+                this.kamehamehaChargeRatio = 0;
                 this.ghosts = [];
             }
 
@@ -820,6 +826,10 @@
                     this.hasSpikedInAir = false; 
                     this.wingDashes = 1; 
                     this.hasWingDashedInAir = false; 
+                    if (this.isChargingKamehameha) {
+                        this.isChargingKamehameha = false;
+                        this.kamehamehaChargeRatio = 0;
+                    }
                     if (this.state === 'blocking' || this.state === 'wing_dash') {
                         this.state = 'idle';
                     }
@@ -1252,6 +1262,33 @@
                     }
                 }
 
+                if (this.isChargingKamehameha) {
+                    const chargeRatio = Math.max(0, Math.min(1, (globalTick - this.chargeStartTick) / 35));
+                    const handOffset = (this.id === 1) ? 9 : -9;
+                    const orbSize = 3 + chargeRatio * 9;
+
+                    ctx.save();
+                    ctx.globalAlpha = 0.55 + chargeRatio * 0.35;
+                    ctx.shadowBlur = 10 + chargeRatio * 10;
+                    ctx.shadowColor = '#38bdf8';
+                    ctx.fillStyle = chargeRatio >= 0.8 ? '#ffffff' : '#7dd3fc';
+                    ctx.beginPath();
+                    ctx.arc(handOffset, -22, orbSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#38bdf8';
+                    ctx.lineWidth = 1.2;
+                    ctx.stroke();
+                    ctx.restore();
+
+                    if (globalTick % 4 === 0) {
+                        particleSystem.push(new Particle(
+                            this.x + handOffset * 0.9,
+                            this.y - 22,
+                            Math.random() < 0.5 ? '#7dd3fc' : '#ffffff'
+                        ));
+                    }
+                }
+
                 ctx.fillStyle = '#ffffff'; 
                 ctx.fillRect(-4, -4, 2, 4);
                 ctx.fillRect(2, -4, 2, 4);
@@ -1611,6 +1648,7 @@
                 this.isVoidSpike = false;
                 this.isValkyrieSpear = false; 
                 this.isGungnirBoost = false;   
+                this.gokuuTransformedHit = false;
 
                 this.hasEvaluatedBypass = false;
                 this.isBypassed = false;
@@ -1668,7 +1706,7 @@
                 this.isVoidSpike = false;
                 this.isValkyrieSpear = false;
                 this.isGungnirBoost = false;
-
+                this.gokuuTransformedHit = false;
                 this.hasEvaluatedBypass = false;
                 this.isBypassed = false;
                 this.bypassTriggered = false;
@@ -2316,7 +2354,7 @@
                 this.vx = vx;
                 this.vy = 0;
                 this.speed = Math.abs(vx);
-                this.radius = 9;
+                this.radius = 11;
                 this.ownerId = ownerId;
                 this.life = 240;
                 this.alive = true;
@@ -2971,6 +3009,18 @@
                     if (player.typeName === 'SON GOKUU' && player.nyoiboActive) {
                         player.nyoiboEffectTimer = Math.min(player.nyoiboEffectTimer, 4);
                     }
+
+                    if (ball.gokuuTransformedHit) {
+                        ball.gokuuTransformedHit = false;
+                        const pushDir = player.id === 1 ? -1 : 1;
+                        player.state = 'tumbled';
+                        player.touchCooldown = 12;
+                        player.actionTimer = (player.typeName === 'SENTINEL') ? 6 : 14;
+                        player.vx = pushDir * 8;
+                        player.vy = -1.0;
+                        createRetroParticles(player.x, player.y, '#38bdf8');
+                        createRetroParticles(player.x, player.y, '#ffffff');
+                    }
                     
                     if (ball.isMegatonServe) {
                         player.vx = (player.id === 1 ? -4.5 : 4.5);
@@ -3338,14 +3388,25 @@
                                 ball.floatAmp = 0.5;
                             } else if (player.typeName === 'SON GOKUU') {
                                 playSound('just_spike');
-                                hitVx = targetDir * (14.8 + vxBonus) * pPower;
+                                const chargeRatio = player.kamehamehaChargeRatio || 0;
+                                const chargeMult = 1 + chargeRatio * 1.6;
+                                hitVx = targetDir * (14.8 + vxBonus) * pPower * chargeMult;
                                 hitVy = 2.5 + vyBonus;
                                 ball.isValkyrieSpear = true;
-                                player.serveText = 'KAMEHAMEHA!!';
+                                ball.gokuuTransformedHit = player.isTransformed;
+                                player.serveText = (chargeRatio >= 0.8) ? 'FULL POWER KAMEHAMEHA!!' : 'KAMEHAMEHA!!';
                                 applyGokuuKnockback(player);
                                 if (player.isTransformed) {
-                                    kiBlasts.push(new KiBlast(player.x, player.y - player.radiusY * 0.7, hitVx / 6, player.id));
+                                    const blastCount = chargeRatio >= 0.8 ? 3 : 1;
+                                    const spread = [-16, 0, 16];
+                                    for (let i = 0; i < blastCount; i++) {
+                                        const off = blastCount === 1 ? 0 : spread[i];
+                                        const blast = new KiBlast(player.x, player.y - player.radiusY * 0.7 + off * 0.3, hitVx / 6, player.id);
+                                        blast.vy = off * 0.05;
+                                        kiBlasts.push(blast);
+                                    }
                                 }
+                                player.kamehamehaChargeRatio = 0;
                             } else {
                                 playSound('just_spike');
                                 hitVx = targetDir * (15.2 - ratio * 3.5 + vxBonus) * pPower; 
@@ -3393,14 +3454,25 @@
                                 ball.floatAmp = 0.4;
                             } else if (player.typeName === 'SON GOKUU') {
                                 playSound('spike');
-                                hitVx = targetDir * (12.0 + vxBonus) * pPower;
+                                const chargeRatio = player.kamehamehaChargeRatio || 0;
+                                const chargeMult = 1 + chargeRatio * 1.6;
+                                hitVx = targetDir * (12.0 + vxBonus) * pPower * chargeMult;
                                 hitVy = 2.2 + vyBonus;
                                 ball.isValkyrieSpear = true;
-                                player.serveText = 'KAMEHAMEHA!';
+                                ball.gokuuTransformedHit = player.isTransformed;
+                                player.serveText = (chargeRatio >= 0.8) ? 'FULL POWER KAMEHAMEHA!!' : 'KAMEHAMEHA!';
                                 applyGokuuKnockback(player);
                                 if (player.isTransformed) {
-                                    kiBlasts.push(new KiBlast(player.x, player.y - player.radiusY * 0.7, hitVx / 6, player.id));
+                                    const blastCount = chargeRatio >= 0.8 ? 3 : 1;
+                                    const spread = [-16, 0, 16];
+                                    for (let i = 0; i < blastCount; i++) {
+                                        const off = blastCount === 1 ? 0 : spread[i];
+                                        const blast = new KiBlast(player.x, player.y - player.radiusY * 0.7 + off * 0.3, hitVx / 6, player.id);
+                                        blast.vy = off * 0.05;
+                                        kiBlasts.push(blast);
+                                    }
                                 }
+                                player.kamehamehaChargeRatio = 0;
                             } else {
                                 playSound('spike');
                                 hitVx = targetDir * (8.8 - ratio * 2.0 + vxBonus) * pPower; 
@@ -3797,8 +3869,15 @@
                                 if (keys['KeyA']) dir = -1;
                                 if (keys['KeyD']) dir = 1;
                                 const isDouble = (now - (lastKeyDownTime['KeyW'] || 0) < doubleTapDelay);
-                                p1.triggerAction('spike', dir, isDouble);
                                 lastKeyDownTime['KeyW'] = now;
+
+                                if (p1.typeName === 'SON GOKUU' && p1.isTransformed && !p1.isGrounded && !p1.hasSpikedInAir) {
+                                    p1.isChargingKamehameha = true;
+                                    p1.chargeStartTick = globalTick;
+                                    p1.chargeDir = dir;
+                                } else {
+                                    p1.triggerAction('spike', dir, isDouble);
+                                }
                             }
                         }
                         
@@ -3882,8 +3961,15 @@
                                 if (keys['KeyJ']) dir = -1;
                                 if (keys['KeyL']) dir = 1;
                                 const isDouble = (now - (lastKeyDownTime['KeyI'] || 0) < doubleTapDelay);
-                                p2.triggerAction('spike', dir, isDouble);
                                 lastKeyDownTime['KeyI'] = now;
+
+                                if (p2.typeName === 'SON GOKUU' && p2.isTransformed && !p2.isGrounded && !p2.hasSpikedInAir) {
+                                    p2.isChargingKamehameha = true;
+                                    p2.chargeStartTick = globalTick;
+                                    p2.chargeDir = dir;
+                                } else {
+                                    p2.triggerAction('spike', dir, isDouble);
+                                }
                             }
                         }
                         
@@ -3946,6 +4032,29 @@
 
         window.addEventListener('keyup', (e) => {
             keys[e.code] = false;
+
+            if (gameActive) {
+                if (e.code === 'KeyW' && p1.isChargingKamehameha) {
+                    p1.isChargingKamehameha = false;
+                    const chargeFrames = globalTick - p1.chargeStartTick;
+                    p1.kamehamehaChargeRatio = Math.max(0, Math.min(1, chargeFrames / 35));
+                    let dir = 0;
+                    if (keys['KeyA']) dir = -1;
+                    if (keys['KeyD']) dir = 1;
+                    if (dir === 0) dir = p1.chargeDir;
+                    p1.triggerAction('spike', dir, false);
+                }
+                if (e.code === 'KeyI' && p2.isChargingKamehameha) {
+                    p2.isChargingKamehameha = false;
+                    const chargeFrames = globalTick - p2.chargeStartTick;
+                    p2.kamehamehaChargeRatio = Math.max(0, Math.min(1, chargeFrames / 35));
+                    let dir = 0;
+                    if (keys['KeyJ']) dir = -1;
+                    if (keys['KeyL']) dir = 1;
+                    if (dir === 0) dir = p2.chargeDir;
+                    p2.triggerAction('spike', dir, false);
+                }
+            }
         });
 
         document.getElementById('btnStart').addEventListener('click', (e) => {
