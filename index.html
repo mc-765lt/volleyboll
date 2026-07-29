@@ -1649,6 +1649,7 @@
                 this.isValkyrieSpear = false; 
                 this.isGungnirBoost = false;   
                 this.gokuuTransformedHit = false;
+                this.isGokuuCharged = false;
 
                 this.hasEvaluatedBypass = false;
                 this.isBypassed = false;
@@ -1707,6 +1708,7 @@
                 this.isValkyrieSpear = false;
                 this.isGungnirBoost = false;
                 this.gokuuTransformedHit = false;
+                this.isGokuuCharged = false;
                 this.hasEvaluatedBypass = false;
                 this.isBypassed = false;
                 this.bypassTriggered = false;
@@ -1876,7 +1878,13 @@
                             particleSystem.push(new Particle(this.x, this.y, '#f472b6'));
                         }
                     } else if (this.isValkyrieSpear || this.isGungnirBoost) {
-                        if (globalTick % 2 === 0) {
+                        if (this.isGokuuCharged) {
+                            for (let i = 0; i < 3; i++) {
+                                const p = new Particle(this.x, this.y, Math.random() < 0.5 ? '#38bdf8' : '#ffffff');
+                                p.size = (p.size || 3) * 1.8;
+                                particleSystem.push(p);
+                            }
+                        } else if (globalTick % 2 === 0) {
                             particleSystem.push(new Particle(this.x, this.y, '#38bdf8'));
                             particleSystem.push(new Particle(this.x, this.y, '#7dd3fc'));
                             particleSystem.push(new Particle(this.x, this.y, '#ffffff'));
@@ -1943,6 +1951,9 @@
                 if (!this.isFloater && !this.isQuickSpike) {
                     if (this.isMegatonServe || this.isPowerfulSpike || this.isUltimateDrive) {
                         this.vy += 0.15; 
+                    }
+                    if (this.isValkyrieSpear) {
+                        this.vy += 0.35; 
                     }
                 }
 
@@ -2079,14 +2090,15 @@
 
                 if (this.trail.length > 0) {
                     ctx.save();
+                    const chargedMult = this.isGokuuCharged ? 1.9 : 1;
                     for (let i = 0; i < this.trail.length; i++) {
                         const pos = this.trail[i];
                         const progress = i / this.trail.length; 
                         const alpha = progress * 0.65;
-                        const size = this.radius * (0.2 + progress * 0.8);
+                        const size = this.radius * (0.2 + progress * 0.8) * chargedMult;
 
                         ctx.globalAlpha = alpha;
-                        ctx.shadowBlur = 12 * progress;
+                        ctx.shadowBlur = 12 * progress * chargedMult;
                         
                         let trailColor = '#ffffff';
                         if (this.isPowerfulSpike || this.isMegatonServe) {
@@ -2102,7 +2114,7 @@
                             trailColor = '#d946ef';
                             ctx.shadowColor = '#f472b6';
                         } else if (this.isValkyrieSpear || this.isGungnirBoost) {
-                            trailColor = '#7dd3fc';
+                            trailColor = this.isGokuuCharged ? '#ffffff' : '#7dd3fc';
                             ctx.shadowColor = '#38bdf8';
                         }
                         
@@ -2263,14 +2275,27 @@
 
                 if (this.isValkyrieSpear || this.isGungnirBoost) {
                     ctx.save();
-                    ctx.globalAlpha = 0.5 + Math.sin(globalTick * 0.25) * 0.2;
-                    ctx.shadowBlur = 18;
+                    const chargedBoost = this.isGokuuCharged ? 1.7 : 1;
+                    ctx.globalAlpha = (0.5 + Math.sin(globalTick * 0.25) * 0.2) * (this.isGokuuCharged ? 1 : 1);
+                    ctx.shadowBlur = 18 * chargedBoost;
                     ctx.shadowColor = '#38bdf8';
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.radius + 6, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+                    ctx.arc(this.x, this.y, (this.radius + 6) * chargedBoost, 0, Math.PI * 2);
+                    ctx.fillStyle = this.isGokuuCharged ? 'rgba(224, 242, 254, 0.4)' : 'rgba(56, 189, 248, 0.25)';
                     ctx.fill();
                     ctx.restore();
+
+                    if (this.isGokuuCharged) {
+                        ctx.save();
+                        const ringPulse = (globalTick % 12) / 12;
+                        ctx.globalAlpha = 1 - ringPulse;
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2.5;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius + 6 + ringPulse * 16, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
                 }
 
                 const hasSonicCharge = this.isSonicSpike || this.isQuickSpike;
@@ -2348,13 +2373,14 @@
         }
 
         class KiBlast {
-            constructor(x, y, vx, ownerId) {
+            constructor(x, y, vx, ownerId, charged = false) {
                 this.x = x;
                 this.y = y;
                 this.vx = vx;
                 this.vy = 0;
                 this.speed = Math.abs(vx);
-                this.radius = 11;
+                this.charged = charged;
+                this.radius = charged ? 16 : 11;
                 this.ownerId = ownerId;
                 this.life = 240;
                 this.alive = true;
@@ -2384,7 +2410,8 @@
                 if (this.life <= 0 || this.x < -20 || this.x > VIEW_WIDTH + 20) {
                     this.alive = false;
                 }
-                if (globalTick % 3 === 0) {
+                const trailFreq = this.charged ? 1 : 3;
+                if (globalTick % trailFreq === 0) {
                     particleSystem.push(new Particle(this.x, this.y, Math.random() < 0.5 ? '#7dd3fc' : '#ffffff'));
                 }
             }
@@ -2393,14 +2420,14 @@
                 ctx.save();
                 const pulse = 0.75 + Math.sin(globalTick * 0.4) * 0.2;
                 ctx.globalAlpha = pulse;
-                ctx.shadowBlur = 16;
+                ctx.shadowBlur = this.charged ? 26 : 16;
                 ctx.shadowColor = '#38bdf8';
                 ctx.fillStyle = '#e0f2fe';
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.strokeStyle = '#38bdf8';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = this.charged ? 4 : 2;
                 ctx.stroke();
                 ctx.restore();
             }
@@ -3394,6 +3421,7 @@
                                 hitVy = 2.5 + vyBonus;
                                 ball.isValkyrieSpear = true;
                                 ball.gokuuTransformedHit = player.isTransformed;
+                                ball.isGokuuCharged = chargeRatio >= 0.8;
                                 player.serveText = (chargeRatio >= 0.8) ? 'FULL POWER KAMEHAMEHA!!' : 'KAMEHAMEHA!!';
                                 applyGokuuKnockback(player);
                                 if (player.isTransformed) {
@@ -3401,7 +3429,7 @@
                                     const spread = [-16, 0, 16];
                                     for (let i = 0; i < blastCount; i++) {
                                         const off = blastCount === 1 ? 0 : spread[i];
-                                        const blast = new KiBlast(player.x, player.y - player.radiusY * 0.7 + off * 0.3, hitVx / 6, player.id);
+                                        const blast = new KiBlast(player.x, player.y - player.radiusY * 0.7 + off * 0.3, hitVx / 6, player.id, chargeRatio >= 0.8);
                                         blast.vy = off * 0.05;
                                         kiBlasts.push(blast);
                                     }
@@ -3460,6 +3488,7 @@
                                 hitVy = 2.2 + vyBonus;
                                 ball.isValkyrieSpear = true;
                                 ball.gokuuTransformedHit = player.isTransformed;
+                                ball.isGokuuCharged = chargeRatio >= 0.8;
                                 player.serveText = (chargeRatio >= 0.8) ? 'FULL POWER KAMEHAMEHA!!' : 'KAMEHAMEHA!';
                                 applyGokuuKnockback(player);
                                 if (player.isTransformed) {
@@ -3467,7 +3496,7 @@
                                     const spread = [-16, 0, 16];
                                     for (let i = 0; i < blastCount; i++) {
                                         const off = blastCount === 1 ? 0 : spread[i];
-                                        const blast = new KiBlast(player.x, player.y - player.radiusY * 0.7 + off * 0.3, hitVx / 6, player.id);
+                                        const blast = new KiBlast(player.x, player.y - player.radiusY * 0.7 + off * 0.3, hitVx / 6, player.id, chargeRatio >= 0.8);
                                         blast.vy = off * 0.05;
                                         kiBlasts.push(blast);
                                     }
