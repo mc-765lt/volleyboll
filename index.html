@@ -131,7 +131,7 @@
                 <span class="font-bold text-pink-500 text-[8px] md:text-[9px] arcade-font block mb-1">■ VOID / SON GOKUU</span>
                 <p class="text-slate-300">
                     <strong>【ヴォイド】</strong>地上Q/Uでポータル設置、再入力でワープ。空中レシーブS/Kでポータルスパイク！ワープ直後のW/Iは極大エクスプロージョン！<br>
-                    <strong>【孫悟空】</strong>空中でQ/Uを押すたびに「觔斗雲(きんとうん)」に乗って自在に滞空・移動できる(発動時の急な突進や上昇はなし。キーを押した分だけ動く)！ダイブ入力(A/D or J/Lの素早い2回押し)をすると「如意棒」が伸びてどこに飛んだボールも拾える(通常1ラリーに1回、発動時はダイブの動き・硬直なし。クールタイム中は通常のダイブ)！レシーブの吸収は常に成功、失敗して怯むことはない！スパイクは同時押し不要のワンボタンで高威力の「かめはめ波」！ブロックは使えない代わりに機動力とスパイク火力に特化！点差が5点以上開くと覚醒(金髪+金色オーラ+青いイナズマ)し、勝敗が決まるまで持続。覚醒中は如意棒が1ラリー3回に増加し、かめはめ波が空中の相手をコート端まで吹き飛ばす！さらに覚醒中はスパイクと同時にホーミングする気弾を放ち、当たった相手をノックバックさせる！スパイクボタンを長押ししてから離すと「溜めかめはめ波」になり、威力アップ&気弾3連発の全力の一撃を放てる(溜めすぎるとタイミングを逃すリスクあり)！また、地上でQ/Uを押すと変身の有無を問わず「界王拳」を発動でき、8秒間スピードとかめはめ波の威力が上昇する(クールタイムあり、連発は不可)！効果が切れた直後は反動でしばらく動きが鈍り威力も落ちる！
+                    <strong>【孫悟空】</strong>空中でQ/Uを押すたびに「觔斗雲(きんとうん)」に乗って自在に滞空・移動できる(発動時の急な突進や上昇はなし。キーを押した分だけ動く)！ダイブ入力(A/D or J/Lの素早い2回押し)をすると「如意棒」が伸びてどこに飛んだボールも拾える(通常1ラリーに1回、発動時はダイブの動き・硬直なし。クールタイム中は通常のダイブ)！レシーブの吸収は常に成功、失敗して怯むことはない！スパイクは同時押し不要のワンボタンで高威力の「かめはめ波」！ブロックは使えない代わりに機動力とスパイク火力に特化！点差が5点以上開くと覚醒(金髪+金色オーラ+青いイナズマ)し、勝敗が決まるまで持続。覚醒中は如意棒が1ラリー3回に増加し、かめはめ波が空中の相手をコート端まで吹き飛ばす！さらに覚醒中はスパイクと同時にホーミングする気弾を放ち、当たった相手をノックバックさせる！スパイクボタンを長押ししてから離すと「溜めかめはめ波」になり、威力アップ&気弾3連発の全力の一撃を放てる(溜めすぎるとタイミングを逃すリスクあり)！また、地上でQ/Uを押すと変身の有無を問わず「界王拳」を発動できる(サーブ中は時間経過なし)。15秒間、スピード大幅アップし、スパイク威力も上昇して小さなノックバックが付く！クールタイムは20秒で、クールタイム中は通常より弱体化する。さらに超サイヤ人状態で界王拳を使うと、ラリーが続くごとにゲージが溜まり、満タンになると特大威力の「ULTIMATE KAMEHAMEHA」を放てる(気弾5連発)！
                 </p>
             </div>
         </div>
@@ -345,9 +345,8 @@
         let hasShownAwakeningEffect = false;
         let awakeningFlashTimer = 0;
         const AWAKENING_FLASH_MAX = 40;
-        const KAIOKEN_DURATION = 480;
-        const KAIOKEN_COOLDOWN = 600;
-        const KAIOKEN_RECOIL_DURATION = 90;
+        const KAIOKEN_DURATION = 900;
+        const KAIOKEN_COOLDOWN = 1200;
         let winner = null;
         let lastScorer = 1;
         let particleSystem = [];
@@ -591,7 +590,8 @@
                 this.kaiokenActive = false;
                 this.kaiokenTimer = 0;
                 this.kaiokenCooldown = 0;
-                this.kaiokenRecoilTimer = 0;
+                this.kaiokenSSComboActive = false;
+                this.kaiokenSSGauge = 0;
                 
                 this.ghosts = [];
 
@@ -682,18 +682,22 @@
                     if (this.nyoiboEffectTimer === 0) this.nyoiboActive = false;
                 }
                 if (this.kaiokenActive) {
-                    this.kaiokenTimer--;
+                    if (rallyState !== 'serving') {
+                        this.kaiokenTimer--;
+                    }
                     if (this.kaiokenTimer <= 0) {
                         this.kaiokenActive = false;
                         this.kaiokenCooldown = KAIOKEN_COOLDOWN;
-                        this.kaiokenRecoilTimer = KAIOKEN_RECOIL_DURATION;
                         this.serveText = 'EXHAUSTED...';
                         this.serveTextTimer = 40;
+                        if (this.kaiokenSSComboActive) {
+                            this.kaiokenSSComboActive = false;
+                            this.kaiokenSSGauge = 0;
+                        }
                     }
                 } else if (this.kaiokenCooldown > 0) {
                     this.kaiokenCooldown--;
                 }
-                if (this.kaiokenRecoilTimer > 0) this.kaiokenRecoilTimer--;
 
                 if (this.intimidatedTimer > 0) {
                     this.intimidatedTimer--;
@@ -772,9 +776,9 @@
                     baseSpeed *= 0.85; 
                 }
                 if (this.kaiokenActive) {
-                    baseSpeed *= 1.3;
-                } else if (this.kaiokenRecoilTimer > 0) {
-                    baseSpeed *= 0.6;
+                    baseSpeed *= 1.8;
+                } else if (this.kaiokenCooldown > 0) {
+                    baseSpeed *= 0.65;
                 }
                 const currentSpeed = this.isGrounded ? baseSpeed : baseSpeed * 0.6;
 
@@ -1278,16 +1282,22 @@
                             '#ef4444'
                         ));
                     }
-                }
 
-                if (this.kaiokenRecoilTimer > 0) {
-                    ctx.save();
-                    ctx.globalAlpha = 0.25;
-                    ctx.fillStyle = '#6b7280';
-                    ctx.beginPath();
-                    ctx.ellipse(0, -18, 12, 26, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
+                    if (this.kaiokenSSComboActive) {
+                        const gaugeW = 24;
+                        const gaugeRatio = this.kaiokenSSGauge / 100;
+                        const gaugeY = -52;
+                        ctx.save();
+                        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                        ctx.fillRect(-gaugeW / 2, gaugeY, gaugeW, 3);
+                        ctx.fillStyle = gaugeRatio >= 1 ? '#fde047' : '#38bdf8';
+                        if (gaugeRatio >= 1) {
+                            ctx.shadowBlur = 6;
+                            ctx.shadowColor = '#fde047';
+                        }
+                        ctx.fillRect(-gaugeW / 2, gaugeY, gaugeW * gaugeRatio, 3);
+                        ctx.restore();
+                    }
                 }
 
                 if (this.isTransformed) {
@@ -1607,6 +1617,7 @@
                     else if (this.serveText.includes('ZONE SERVE')) tCol = '#60a5fa';
                     else if (this.serveText.includes('ST ONLY')) tCol = '#ef4444'; 
                     else if (this.serveText.includes('VOID') || this.serveText.includes('PORTAL') || this.serveText.includes('WARP') || this.serveText.includes('STRIKE') || this.serveText.includes('EXPLOSION')) tCol = '#d946ef';
+                    else if (this.serveText.includes('ULTIMATE KAMEHAMEHA')) tCol = '#fde047';
                     else if (this.serveText.includes('KAMEHAMEHA')) tCol = '#38bdf8';
                     else if (this.serveText.includes('NYOI-BOU')) tCol = '#fbbf24';
                     else if (this.serveText.includes('AWAKENED')) tCol = '#fde047';
@@ -2522,6 +2533,19 @@
             createRetroParticles(opponent.x, opponent.y, '#ffffff');
         }
 
+        function applyKaiokenKnockback(player) {
+            const opponent = player.id === 1 ? p2 : p1;
+            if (opponent.state === 'tumbled') return;
+
+            const pushDir = opponent.id === 1 ? -1 : 1;
+            opponent.state = 'tumbled';
+            opponent.touchCooldown = 10;
+            opponent.actionTimer = (opponent.typeName === 'SENTINEL') ? 5 : 10;
+            opponent.vx = pushDir * 6;
+            opponent.vy = -0.6;
+            createRetroParticles(opponent.x, opponent.y, '#ef4444');
+        }
+
         function checkKiBlastCollisions() {
             for (const blast of kiBlasts) {
                 if (!blast.alive) continue;
@@ -2955,6 +2979,10 @@
                         scorePoint(1, 'FOUR TOUCHES!'); 
                         return;
                     }
+                }
+
+                if (player.kaiokenSSComboActive && player.kaiokenSSGauge < 100) {
+                    player.kaiokenSSGauge = Math.min(100, player.kaiokenSSGauge + 20);
                 }
 
                 const touchCount = player.id === 1 ? p1TouchCount : p2TouchCount;
@@ -3476,23 +3504,32 @@
                             } else if (player.typeName === 'SON GOKUU') {
                                 playSound('just_spike');
                                 const chargeRatio = player.kamehamehaChargeRatio || 0;
-                                const chargeMult = (1 + chargeRatio * 1.6) * (player.kaiokenActive ? 1.4 : (player.kaiokenRecoilTimer > 0 ? 0.8 : 1));
+                                const ssComboReady = player.kaiokenSSComboActive && player.kaiokenSSGauge >= 100;
+                                const chargeMult = (1 + chargeRatio * 1.6) * (player.kaiokenActive ? 1.5 : (player.kaiokenCooldown > 0 ? 0.75 : 1)) * (ssComboReady ? 1.8 : 1);
                                 hitVx = targetDir * (14.8 + vxBonus) * pPower * chargeMult;
                                 hitVy = 2.5 + vyBonus;
                                 ball.isValkyrieSpear = true;
                                 ball.gokuuTransformedHit = player.isTransformed;
-                                ball.isGokuuCharged = chargeRatio >= 0.8;
-                                player.serveText = (chargeRatio >= 0.8) ? 'FULL POWER KAMEHAMEHA!!' : 'KAMEHAMEHA!!';
+                                ball.isGokuuCharged = chargeRatio >= 0.8 || ssComboReady;
+                                player.serveText = ssComboReady ? 'ULTIMATE KAMEHAMEHA!!!' : ((chargeRatio >= 0.8) ? 'FULL POWER KAMEHAMEHA!!' : 'KAMEHAMEHA!!');
                                 applyGokuuKnockback(player);
+                                if (player.kaiokenActive) {
+                                    applyKaiokenKnockback(player);
+                                }
                                 if (player.isTransformed) {
-                                    const blastCount = chargeRatio >= 0.8 ? 3 : 1;
-                                    const spread = [-16, 0, 16];
+                                    const blastCount = ssComboReady ? 5 : (chargeRatio >= 0.8 ? 3 : 1);
+                                    const spread5 = [-24, -12, 0, 12, 24];
+                                    const spread3 = [-16, 0, 16];
+                                    const spread = blastCount === 5 ? spread5 : spread3;
                                     for (let i = 0; i < blastCount; i++) {
                                         const off = blastCount === 1 ? 0 : spread[i];
-                                        const blast = new KiBlast(player.x, player.y - player.radiusY * 0.7 + off * 0.3, hitVx / 6, player.id, chargeRatio >= 0.8);
+                                        const blast = new KiBlast(player.x, player.y - player.radiusY * 0.7 + off * 0.3, hitVx / 6, player.id, chargeRatio >= 0.8 || ssComboReady);
                                         blast.vy = off * 0.05;
                                         kiBlasts.push(blast);
                                     }
+                                }
+                                if (ssComboReady) {
+                                    player.kaiokenSSGauge = 0;
                                 }
                                 player.kamehamehaChargeRatio = 0;
                             } else {
@@ -3543,23 +3580,32 @@
                             } else if (player.typeName === 'SON GOKUU') {
                                 playSound('spike');
                                 const chargeRatio = player.kamehamehaChargeRatio || 0;
-                                const chargeMult = (1 + chargeRatio * 1.6) * (player.kaiokenActive ? 1.4 : (player.kaiokenRecoilTimer > 0 ? 0.8 : 1));
+                                const ssComboReady = player.kaiokenSSComboActive && player.kaiokenSSGauge >= 100;
+                                const chargeMult = (1 + chargeRatio * 1.6) * (player.kaiokenActive ? 1.5 : (player.kaiokenCooldown > 0 ? 0.75 : 1)) * (ssComboReady ? 1.8 : 1);
                                 hitVx = targetDir * (12.0 + vxBonus) * pPower * chargeMult;
                                 hitVy = 2.2 + vyBonus;
                                 ball.isValkyrieSpear = true;
                                 ball.gokuuTransformedHit = player.isTransformed;
-                                ball.isGokuuCharged = chargeRatio >= 0.8;
-                                player.serveText = (chargeRatio >= 0.8) ? 'FULL POWER KAMEHAMEHA!!' : 'KAMEHAMEHA!';
+                                ball.isGokuuCharged = chargeRatio >= 0.8 || ssComboReady;
+                                player.serveText = ssComboReady ? 'ULTIMATE KAMEHAMEHA!!!' : ((chargeRatio >= 0.8) ? 'FULL POWER KAMEHAMEHA!!' : 'KAMEHAMEHA!');
                                 applyGokuuKnockback(player);
+                                if (player.kaiokenActive) {
+                                    applyKaiokenKnockback(player);
+                                }
                                 if (player.isTransformed) {
-                                    const blastCount = chargeRatio >= 0.8 ? 3 : 1;
-                                    const spread = [-16, 0, 16];
+                                    const blastCount = ssComboReady ? 5 : (chargeRatio >= 0.8 ? 3 : 1);
+                                    const spread5 = [-24, -12, 0, 12, 24];
+                                    const spread3 = [-16, 0, 16];
+                                    const spread = blastCount === 5 ? spread5 : spread3;
                                     for (let i = 0; i < blastCount; i++) {
                                         const off = blastCount === 1 ? 0 : spread[i];
-                                        const blast = new KiBlast(player.x, player.y - player.radiusY * 0.7 + off * 0.3, hitVx / 6, player.id, chargeRatio >= 0.8);
+                                        const blast = new KiBlast(player.x, player.y - player.radiusY * 0.7 + off * 0.3, hitVx / 6, player.id, chargeRatio >= 0.8 || ssComboReady);
                                         blast.vy = off * 0.05;
                                         kiBlasts.push(blast);
                                     }
+                                }
+                                if (ssComboReady) {
+                                    player.kaiokenSSGauge = 0;
                                 }
                                 player.kamehamehaChargeRatio = 0;
                             } else {
@@ -3819,6 +3865,14 @@
                 p2.hp = 100;
                 p1.isTransformed = false;
                 p2.isTransformed = false;
+                p1.kaiokenActive = false;
+                p2.kaiokenActive = false;
+                p1.kaiokenCooldown = 0;
+                p2.kaiokenCooldown = 0;
+                p1.kaiokenSSComboActive = false;
+                p2.kaiokenSSComboActive = false;
+                p1.kaiokenSSGauge = 0;
+                p2.kaiokenSSGauge = 0;
             }
 
             const overlay = document.getElementById('overlay');
@@ -4024,6 +4078,10 @@
                                         playSound('hit');
                                         createRetroParticles(p1.x, p1.y, '#ef4444');
                                         createRetroParticles(p1.x, p1.y, '#ffffff');
+                                        if (p1.isTransformed) {
+                                            p1.kaiokenSSComboActive = true;
+                                            p1.kaiokenSSGauge = 0;
+                                        }
                                     } else if (!p1.kaiokenActive) {
                                         p1.serveText = 'COOLING DOWN...';
                                         p1.serveTextTimer = 30;
@@ -4127,6 +4185,10 @@
                                         playSound('hit');
                                         createRetroParticles(p2.x, p2.y, '#ef4444');
                                         createRetroParticles(p2.x, p2.y, '#ffffff');
+                                        if (p2.isTransformed) {
+                                            p2.kaiokenSSComboActive = true;
+                                            p2.kaiokenSSGauge = 0;
+                                        }
                                     } else if (!p2.kaiokenActive) {
                                         p2.serveText = 'COOLING DOWN...';
                                         p2.serveTextTimer = 30;
